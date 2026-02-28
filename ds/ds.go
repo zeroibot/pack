@@ -11,3 +11,11 @@ func (b Boolean) ToInt() Int {
 	}
 	return 0
 }
+
+// ToUint converts a Boolean to Uint (true = 1, false = 0)
+func (b Boolean) ToUint() Uint {
+	if b {
+		return 1
+	}
+	return 0
+}

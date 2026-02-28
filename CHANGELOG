@@ -2,10 +2,8 @@ v0.1.0 - Data Types
     - Commit:
     x ds.Int, Uint, Float
     x ds.String, Boolean
-    - ds.List, Map, Set
-    - ds.Error
-    - Number methods
-        - Convert into other number types
+    x ds.List, Map, Set
+    x Number methods
     - String methods
     - List methods
     - Map methods

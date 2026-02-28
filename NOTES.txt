@@ -1,0 +1,1 @@
+- ds.Error type and methods
