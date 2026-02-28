@@ -28,3 +28,13 @@ func (l List[T]) Copy() List[T] {
 	items := append(List[T]{}, l...)
 	return items
 }
+
+// Last returns the nth item from the back of the list (starts at 1)
+func (l List[T]) Last(rank int) (T, Boolean) {
+	numItems := len(l)
+	if rank > numItems || rank <= 0 {
+		var item T
+		return item, false
+	}
+	return l[numItems-rank], true
+}

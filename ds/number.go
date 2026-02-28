@@ -2,6 +2,16 @@ package ds
 
 import "fmt"
 
+// Number interface unifies the number types
+type Number interface {
+	Int | Uint | Float
+}
+
+// Integer interface unifies the Integer types
+type Integer interface {
+	Int | Uint
+}
+
 // Int extends the int type
 type Int int
 

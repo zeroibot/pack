@@ -3,8 +3,9 @@ v0.1.0 - Data Types
     x ds.Int, Uint, Float
     x ds.String, Boolean
     x ds.List, Map, Set
+    x ds.NumberList, Range
     x Number methods
-    - String methods
     - List methods
     - Map methods
     - Set methods
+    - String methods
