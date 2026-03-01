@@ -17,7 +17,7 @@ func NewInclusiveRange[T Integer](first, last T) *Range[T] {
 }
 
 // ToList expands the Range into a List of Integers
-func (r *Range[T]) ToList() *NumberList[T] {
+func (r *Range[T]) ToList() List[T] {
 	return NewRangeList[T](r.Start, r.End)
 }
 

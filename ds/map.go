@@ -48,7 +48,7 @@ func (m Map[K, V]) Values() List[V] {
 
 // Entries returns the Map entries, in arbitrary order
 func (m Map[K, V]) Entries() List[Entry[K, V]] {
-	entries := make(List[Entry[K, V]], 0, len(m))
+	entries := NewEmptyList[Entry[K, V]](len(m))
 	for k, v := range m {
 		entries = append(entries, Entry[K, V]{k, v})
 	}
