@@ -7,5 +7,5 @@ v0.1.0 - Data Types
     x Set methods
     x Conv package
     x Transfer methods to list package
-    - Transfer methods to dict package
+    x Transfer methods to dict package
     - String functions

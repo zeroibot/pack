@@ -5,9 +5,48 @@ import (
 	"cmp"
 	"maps"
 	"slices"
-
-	"github.com/roidaradal/pack/ds"
 )
+
+// Len returns the map size
+func Len[K comparable, V any](items map[K]V) int {
+	return len(items)
+}
+
+// IsEmpty checks if map is empty
+func IsEmpty[K comparable, V any](items map[K]V) bool {
+	return len(items) == 0
+}
+
+// NotEmpty checks if map is not empty
+func NotEmpty[K comparable, V any](items map[K]V) bool {
+	return len(items) > 0
+}
+
+// Copy creates a new Map with copied entries
+func Copy[K comparable, V any](items map[K]V) map[K]V {
+	items2 := make(map[K]V, len(items))
+	maps.Copy(items2, items)
+	return items2
+}
+
+// Keys returns the Map keys, in arbitrary order
+func Keys[K comparable, V any](items map[K]V) []K {
+	return slices.Collect(maps.Keys(items))
+}
+
+// Values returns the Map values, in arbitrary order
+func Values[K comparable, V any](items map[K]V) []V {
+	return slices.Collect(maps.Values(items))
+}
+
+// Entries returns the Map entries, in arbitrary order
+func Entries[K comparable, V any](items map[K]V) []Entry[K, V] {
+	entries := make([]Entry[K, V], 0, len(items))
+	for k, v := range items {
+		entries = append(entries, Entry[K, V]{k, v})
+	}
+	return entries
+}
 
 // HasKey checks if Map has given key
 func HasKey[K comparable, V any](items map[K]V, key K) bool {
@@ -35,26 +74,41 @@ func NoValue[K, V comparable](items map[K]V, value V) bool {
 	return !HasValue(items, value)
 }
 
+// SetDefault assigns default value to key, if key is not in Map
+func SetDefault[K comparable, V any](items map[K]V, key K, defaultValue V) {
+	if _, ok := items[key]; !ok {
+		items[key] = defaultValue
+	}
+}
+
+// GetOrDefault gets value associated with key, or return the default value if key does not exist
+func GetOrDefault[K comparable, V any](items map[K]V, key K, defaultValue V) V {
+	if value, ok := items[key]; ok {
+		return value
+	}
+	return defaultValue
+}
+
 // SortedKeys returns the Map keys in sorted order
 func SortedKeys[K cmp.Ordered, V any](items map[K]V) []K {
-	keys := slices.Collect(maps.Keys(items))
+	keys := Keys(items)
 	slices.Sort(keys)
 	return keys
 }
 
 // SortedValues returns the Map values in sorted order
 func SortedValues[K comparable, V cmp.Ordered](items map[K]V) []V {
-	values := slices.Collect(maps.Values(items))
+	values := Values(items)
 	slices.Sort(values)
 	return values
 }
 
 // SortedEntries returns the Map entries in sorted key order
-func SortedEntries[K cmp.Ordered, V any](items map[K]V) []ds.Entry[K, V] {
+func SortedEntries[K cmp.Ordered, V any](items map[K]V) []Entry[K, V] {
 	keys := SortedKeys(items)
-	entries := make([]ds.Entry[K, V], len(keys))
+	entries := make([]Entry[K, V], len(keys))
 	for i, k := range keys {
-		entries[i] = ds.Entry[K, V]{Key: k, Value: items[k]}
+		entries[i] = Entry[K, V]{k, items[k]}
 	}
 	return entries
 }

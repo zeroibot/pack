@@ -1,12 +1,14 @@
 package ds
 
+import "github.com/roidaradal/pack/dict"
+
 type Set[T comparable] struct {
-	items Map[T, struct{}]
+	items map[T]struct{}
 }
 
 // NewEmptySet creates a new empty set
 func NewEmptySet[T comparable]() *Set[T] {
-	return &Set[T]{items: make(Map[T, struct{}])}
+	return &Set[T]{items: make(map[T]struct{})}
 }
 
 // NewSetFrom creates a new set from given items
@@ -18,27 +20,27 @@ func NewSetFrom[T comparable](items []T) *Set[T] {
 
 // Len returns the Set size
 func (s *Set[T]) Len() int {
-	return s.items.Len()
+	return len(s.items)
 }
 
 // IsEmpty checks if the Set is empty
 func (s *Set[T]) IsEmpty() bool {
-	return s.items.IsEmpty()
+	return dict.IsEmpty(s.items)
 }
 
 // NotEmpty checks if the Set is not empty
 func (s *Set[T]) NotEmpty() bool {
-	return s.items.NotEmpty()
+	return dict.NotEmpty(s.items)
 }
 
 // Copy creates a new Set with copied items
 func (s *Set[T]) Copy() *Set[T] {
-	return &Set[T]{items: s.items.Copy()}
+	return &Set[T]{items: dict.Copy(s.items)}
 }
 
 // Items returns the Set items, in arbitrary order
 func (s *Set[T]) Items() []T {
-	return s.items.Keys()
+	return dict.Keys(s.items)
 }
 
 // Add adds an item to the set
@@ -72,7 +74,7 @@ func (s *Set[T]) Delete(item T) {
 // Union computes the union of two sets
 func (s *Set[T]) Union(s2 *Set[T]) *Set[T] {
 	s3 := NewEmptySet[T]()
-	for _, items := range []Map[T, struct{}]{s.items, s2.items} {
+	for _, items := range []map[T]struct{}{s.items, s2.items} {
 		for item := range items {
 			s3.Add(item)
 		}

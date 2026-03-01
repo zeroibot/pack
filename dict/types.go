@@ -14,6 +14,17 @@ type (
 	Flags[T comparable]   = map[T]bool
 )
 
+// Entry represents a Key-Value pair
+type Entry[K comparable, V any] struct {
+	Key   K
+	Value V
+}
+
+// Tuple returns the Key, Value of Entry
+func (e Entry[K, V]) Tuple() (K, V) {
+	return e.Key, e.Value
+}
+
 // NewCounter creates a new counter, with each item initialized to count = 0
 func NewCounter[T comparable](items []T) Counter[T] {
 	count := make(Counter[T], len(items))
