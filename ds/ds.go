@@ -1,21 +1,38 @@
 // Package ds contains data structures
 package ds
 
-// Boolean extends the bool type
-type Boolean bool
+import "strings"
 
-// ToInt converts a Boolean to Int (true = 1, false = 0)
-func (b Boolean) ToInt() Int {
-	if b {
-		return 1
-	}
-	return 0
+// Number interface unifies the number types
+type Number interface {
+	Integer | Float
 }
 
-// ToUint converts a Boolean to Uint (true = 1, false = 0)
-func (b Boolean) ToUint() Uint {
-	if b {
-		return 1
-	}
-	return 0
+// Integer interface unifies the integer types
+type Integer interface {
+	~int | ~uint | ~int64
+}
+
+// Float interface unifies the float types
+type Float interface {
+	~float32 | ~float64
+}
+
+type StringBuilder struct {
+	items []string
+}
+
+// NewStringBuilder creates a new StringBuilder
+func NewStringBuilder() *StringBuilder {
+	return &StringBuilder{items: make([]string, 0)}
+}
+
+// Add adds a string to the StringBuilder
+func (sb *StringBuilder) Add(item string) {
+	sb.items = append(sb.items, item)
+}
+
+// Build builds the full string parts, joined by the separator
+func (sb *StringBuilder) Build(separator string) string {
+	return strings.Join(sb.items, separator)
 }

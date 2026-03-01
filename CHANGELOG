@@ -1,11 +1,11 @@
 v0.1.0 - Data Types
     - Commit:
-    x ds.Int, Uint, Float
-    x ds.String, Boolean
     x ds.List, Map, Set
     x ds.Range
-    x Number methods
     x List methods
     x Map methods
-    - Set methods
-    - String methods
+    x Set methods
+    x Conv package
+    - Transfer list methods to list package
+    - Transfer map methods to dict package
+    - String functions
