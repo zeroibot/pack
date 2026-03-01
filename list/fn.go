@@ -1,5 +1,5 @@
-// Package fn contains functional programming functions for Lists
-package fn
+// Package list contains List functions
+package list
 
 import "github.com/roidaradal/pack/ds"
 

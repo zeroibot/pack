@@ -1,4 +1,4 @@
-package fn
+package list
 
 import "github.com/roidaradal/pack/ds"
 
