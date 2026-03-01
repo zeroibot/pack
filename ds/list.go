@@ -128,3 +128,44 @@ func (l List[T]) AnyWithIndex(ok func(int, T) Boolean) Boolean {
 	}
 	return false
 }
+
+// Filter filters the list by only keeping items that pass the keep function
+func (l List[T]) Filter(keep func(T) Boolean) List[T] {
+	results := NewEmptyList[T](len(l))
+	for _, item := range l {
+		if keep(item) {
+			results = append(results, item)
+		}
+	}
+	return results
+}
+
+// FilterWithIndex filters the list by only keeping items that pass the keep function: (index, item)
+func (l List[T]) FilterWithIndex(keep func(int, T) Boolean) List[T] {
+	results := NewEmptyList[T](len(l))
+	for i, item := range l {
+		if keep(i, item) {
+			results = append(results, item)
+		}
+	}
+	return results
+}
+
+// Reduce applies the reduce function to each item to get the final result
+// Reducer function has the signature (result, item) => result
+func (l List[T]) Reduce(reducer func(T, T) T, initial T) T {
+	current := initial
+	for _, item := range l {
+		current = reducer(current, item)
+	}
+	return current
+}
+
+// Apply applies the task function to each item
+func (l List[T]) Apply(task func(T) T) List[T] {
+	results := make(List[T], len(l))
+	for i, item := range l {
+		results[i] = task(item)
+	}
+	return results
+}
