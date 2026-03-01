@@ -14,6 +14,11 @@ type Entry[K comparable, V any] struct {
 	Value V
 }
 
+// Tuple returns the Key, Value of Entry
+func (e Entry[K, V]) Tuple() (K, V) {
+	return e.Key, e.Value
+}
+
 // Len returns the Map size
 func (m Map[K, V]) Len() int {
 	return len(m)
@@ -53,4 +58,19 @@ func (m Map[K, V]) Entries() List[Entry[K, V]] {
 		entries = append(entries, Entry[K, V]{k, v})
 	}
 	return entries
+}
+
+// SetDefault assigns default value to key, if key is not in Map
+func (m Map[K, V]) SetDefault(key K, defaultValue V) {
+	if _, ok := m[key]; !ok {
+		m[key] = defaultValue
+	}
+}
+
+// GetOrDefault gets the value associated with key, or returns the default value if key is not in Map
+func (m Map[K, V]) GetOrDefault(key K, defaultValue V) V {
+	if value, ok := m[key]; ok {
+		return value
+	}
+	return defaultValue
 }
