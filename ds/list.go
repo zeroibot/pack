@@ -58,6 +58,15 @@ func (l List[T]) Copy() List[T] {
 	return items
 }
 
+// ToAnyList creates a List of <any> items from List
+func (l List[T]) ToAnyList() List[any] {
+	items := make(List[any], len(l))
+	for i, item := range l {
+		items[i] = item
+	}
+	return items
+}
+
 // Last returns the nth item from the back of the list (starts at 1)
 func (l List[T]) Last(rank int) (T, Boolean) {
 	numItems := len(l)
