@@ -6,6 +6,6 @@ v0.1.0 - Data Types
     x ds.Range
     x Number methods
     x List methods
-    - Map methods
+    x Map methods
     - Set methods
     - String methods
