@@ -1,5 +1,12 @@
+v0.1.1 - Numbers and Conversions
+    x Commit: 2026-03-09 14:58
+    x Number package
+    x Conv package: bool, float, int
+    x Number parse functions
+    x Number format functions
+    x Number math functions
 v0.1.0 - Data Types
-    - Commit:
+    x Commit: 2026-03-01 18:40
     x ds.List, Map, Set
     x ds.Range
     x List methods
