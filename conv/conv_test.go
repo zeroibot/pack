@@ -166,3 +166,114 @@ func TestFloatToString(t *testing.T) {
 		}
 	}
 }
+
+func TestIntToBool(t *testing.T) {
+	testCases1 := []testCase[int, bool]{
+		{-5, true},
+		{0, false},
+		{1, true},
+		{999, true},
+	}
+	testCases2 := []testCase[uint, bool]{
+		{0, false},
+		{1, true},
+		{5, true},
+		{999, true},
+	}
+	for _, x := range testCases1 {
+		actual := IntToBool(x.input)
+		if actual != x.want {
+			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+	for _, x := range testCases2 {
+		actual := IntToBool(x.input)
+		if actual != x.want {
+			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}
+
+func TestIntToFloat(t *testing.T) {
+	testCases1 := []testCase[int, float64]{
+		{-5, -5.0},
+		{0, 0.0},
+		{1, 1.0},
+		{999, 999.0},
+	}
+	testCases2 := []testCase[uint, float64]{
+		{0, 0.0},
+		{1, 1.0},
+		{5, 5.0},
+		{999, 999.0},
+	}
+	for _, x := range testCases1 {
+		actual := IntToFloat(x.input)
+		if actual != x.want {
+			t.Errorf("IntToFloat(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+	for _, x := range testCases2 {
+		actual := IntToFloat(x.input)
+		if actual != x.want {
+			t.Errorf("IntToFloat(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}
+
+func TestIntToString(t *testing.T) {
+	testCases1 := []testCase[int, string]{
+		{-5, "-5"},
+		{0, "0"},
+		{1, "1"},
+		{999, "999"},
+	}
+	testCases2 := []testCase[uint, string]{
+		{0, "0"},
+		{1, "1"},
+		{5, "5"},
+		{999, "999"},
+	}
+	for _, x := range testCases1 {
+		actual := IntToString(x.input)
+		if actual != x.want {
+			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+	for _, x := range testCases2 {
+		actual := IntToString(x.input)
+		if actual != x.want {
+			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}
+
+func TestIntToUint(t *testing.T) {
+	testCases := []testCase[int, uint]{
+		{1, 1},
+		{67, 67},
+		{0, 0},
+		{-5, 0},
+		{-100, 0},
+	}
+	for _, x := range testCases {
+		actual := IntToUint(x.input)
+		if actual != x.want {
+			t.Errorf("IntToUint(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}
+
+func TestUintToInt(t *testing.T) {
+	testCases := []testCase[uint, int]{
+		{1, 1},
+		{67, 67},
+		{0, 0},
+	}
+	for _, x := range testCases {
+		actual := UintToInt(x.input)
+		if actual != x.want {
+			t.Errorf("IntToUint(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}

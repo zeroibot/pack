@@ -3,12 +3,22 @@ package number
 
 // Type interface unifies the number types
 type Type interface {
-	Integer | Float
+	Int | Uint | Float
 }
 
 // Integer interface unifies the integer types
 type Integer interface {
-	~uint | ~int | ~int8 | ~int16 | ~int32 | ~int64
+	Int | Uint
+}
+
+// Int interface unifies the Int types
+type Int interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+// Uint interface unifies the Uint types
+type Uint interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
 // Float interface unifies the float types
