@@ -1,3 +1,4 @@
 .idea/
 main.go
 *.txt
+coverage.out

@@ -1,9 +1,10 @@
-v0.1.1 - Data Structures
+v0.1.1 - Numbers and Conversions
     - Commit:
     x Number package
     - Conv package: bool, float, int
     - Number Parse functions
     - Number Format functions: DecimalString, CommaString
+    - Number Math / Ceil functions
 v0.1.0 - Data Types
     x Commit: 2026-03-01 18:40
     x ds.List, Map, Set
