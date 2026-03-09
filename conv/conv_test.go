@@ -1,12 +1,48 @@
 package conv
 
 import (
+	"reflect"
 	"testing"
 )
 
 type testCase[T, V any] struct {
 	input T
 	want  V
+}
+
+func TestAnyToString(t *testing.T) {
+	testCases := []testCase[any, string]{
+		{true, "true"},
+		{false, "false"},
+		{1, "1"},
+		{-1, "-1"},
+		{0, "0"},
+		{1.25, "1.25"},
+		{nil, "<nil>"},
+	}
+	for _, x := range testCases {
+		actual := AnyToString(x.input)
+		if actual != x.want {
+			t.Errorf("AnyToString(%v) = %v; want %v", x.input, actual, x.want)
+		}
+	}
+}
+
+func TestAnyToStringList(t *testing.T) {
+	type testCase[T any] struct {
+		items []T
+		want  []string
+	}
+	testCases := []testCase[int]{
+		{[]int{1, 2, 3}, []string{"1", "2", "3"}},
+		{[]int{4, 5, 6, 7}, []string{"4", "5", "6", "7"}},
+	}
+	for _, x := range testCases {
+		actual := AnyToStringList(x.items)
+		if !reflect.DeepEqual(actual, x.want) {
+			t.Errorf("AnyToStringList(%v) = %v; want %v", x.items, actual, x.want)
+		}
+	}
 }
 
 func TestBoolToInt(t *testing.T) {

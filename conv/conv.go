@@ -7,6 +7,20 @@ import (
 	"github.com/roidaradal/pack/number"
 )
 
+// AnyToString converts item to string
+func AnyToString[T any](item T) string {
+	return fmt.Sprintf("%v", item)
+}
+
+// AnyToStringList converts each item to a string
+func AnyToStringList[T any](items []T) []string {
+	items2 := make([]string, len(items))
+	for i, item := range items {
+		items2[i] = AnyToString(item)
+	}
+	return items2
+}
+
 // BoolToInt converts bool to int (true = 1, false = 0)
 func BoolToInt(b bool) int {
 	if b {
