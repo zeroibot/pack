@@ -3,7 +3,7 @@ v0.1.1 - Numbers and Conversions
     x Number package
     x Conv package: bool, float, int
     x Number parse functions
-    - Number format functions
+    x Number format functions
     - Number math functions
 v0.1.0 - Data Types
     x Commit: 2026-03-01 18:40
