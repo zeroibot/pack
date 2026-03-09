@@ -2,7 +2,7 @@ v0.1.1 - Numbers and Conversions
     - Commit:
     x Number package
     x Conv package: bool, float, int
-    - Number parse functions
+    x Number parse functions
     - Number format functions
     - Number math functions
 v0.1.0 - Data Types
