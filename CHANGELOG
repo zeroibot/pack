@@ -1,6 +1,6 @@
 v0.1.5 - Sets
     - Commit:
-    - Set type
+    x Set type
     - Set methods
     - CustomSet: set with a key function
     - Map tests
