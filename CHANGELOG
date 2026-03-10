@@ -1,7 +1,7 @@
 v0.1.3 - Option and Tuples
     - Commit:
     x Option type
-    - Tuple types: Tuple2, Tuple3, Tuple4
+    x Tuple types: Tuple2, Tuple3, Tuple4
     - Homogeneous Tuple types: Pair, Triple, Quad
 v0.1.2 - Strings and Lang Package
     x Commit: 2026-03-09 16:55

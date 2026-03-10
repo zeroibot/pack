@@ -25,3 +25,15 @@ func TestTuple3(t *testing.T) {
 		t.Errorf("Tuple3.Values() = %v, %v, %v want %v, %v, %v", a, b, c, v1, v2, v3)
 	}
 }
+
+func TestTuple4(t *testing.T) {
+	v1, v2, v3, v4 := "apple", 5, 12.5, 'x'
+	t4 := NewTuple4(v1, v2, v3, v4)
+	if t4.V1 != v1 || t4.V2 != v2 || t4.V3 != v3 || t4.V4 != v4 {
+		t.Errorf("Tuple4.V1, V2, V3, V4 = %v, %v, %v, %v want %v, %v, %v, %v", t4.V1, t4.V2, t4.V3, t4.V4, v1, v2, v3, v4)
+	}
+	a, b, c, d := t4.Values()
+	if a != v1 || b != v2 || c != v3 || d != v4 {
+		t.Errorf("Tuple4.Values() = %v, %v, %v, %v want %v, %v, %v, %v", a, b, c, d, v1, v2, v3, v4)
+	}
+}
