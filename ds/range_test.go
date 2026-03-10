@@ -1,7 +1,7 @@
 package ds
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -94,7 +94,7 @@ func TestRange(t *testing.T) {
 	}
 	for _, x := range sliceCases {
 		items, want := x.Values()
-		if reflect.DeepEqual(items, want) == false {
+		if slices.Equal(items, want) == false {
 			t.Errorf("Range.ToSlice() = %v, want = %v", items, want)
 		}
 	}
@@ -175,7 +175,7 @@ func TestReverseRange(t *testing.T) {
 	}
 	for _, x := range sliceCases {
 		items, want := x.Values()
-		if reflect.DeepEqual(items, want) == false {
+		if slices.Equal(items, want) == false {
 			t.Errorf("Range.ToSlice() = %v, want = %v", items, want)
 		}
 	}

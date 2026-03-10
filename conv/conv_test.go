@@ -1,7 +1,7 @@
 package conv
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -39,7 +39,7 @@ func TestAnyToStringList(t *testing.T) {
 	}
 	for _, x := range testCases {
 		actual := AnyToStringList(x.items)
-		if !reflect.DeepEqual(actual, x.want) {
+		if !slices.Equal(actual, x.want) {
 			t.Errorf("AnyToStringList(%v) = %v; want %v", x.items, actual, x.want)
 		}
 	}

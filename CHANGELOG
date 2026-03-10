@@ -1,10 +1,11 @@
 v0.1.4 - Maps and Sets
     - Commit:
     x Map type
-    - Map queries
-    - Map functions
-    - Custom map types
+    x Map functions
     - Set type
+    - Map sorted functions
+    - Map transformations
+    - Custom map types
 v0.1.3 - Option, Tuples, Ranges
     x Commit: 2026-03-10 10:45
     x Option type

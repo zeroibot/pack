@@ -1,7 +1,7 @@
 package str
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -20,7 +20,7 @@ func TestCleanSplit(t *testing.T) {
 	}
 	for _, x := range testCases {
 		actual := CleanSplit(x.text, x.sep)
-		if !reflect.DeepEqual(actual, x.want) {
+		if !slices.Equal(actual, x.want) {
 			t.Errorf("CleanSplit(%q, %q) = %v, want %v", x.text, x.sep, actual, x.want)
 		}
 	}
@@ -45,7 +45,7 @@ func TestCleanSplitN(t *testing.T) {
 	}
 	for _, x := range testCases {
 		actual := CleanSplitN(x.text, x.sep, x.n)
-		if !reflect.DeepEqual(actual, x.want) {
+		if !slices.Equal(actual, x.want) {
 			t.Errorf("CleanSplitN(%q, %q, %d) = %v, want %v", x.text, x.sep, x.n, actual, x.want)
 		}
 	}
@@ -63,7 +63,7 @@ func TestSpaceSplit(t *testing.T) {
 	}
 	for _, x := range testCases {
 		actual := SpaceSplit(x.text)
-		if !reflect.DeepEqual(actual, x.want) {
+		if !slices.Equal(actual, x.want) {
 			t.Errorf("SpaceSplit(%q) = %v, want %v", x.text, actual, x.want)
 		}
 	}

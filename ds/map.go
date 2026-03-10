@@ -2,6 +2,7 @@ package ds
 
 import (
 	"fmt"
+	"iter"
 	"maps"
 	"slices"
 	"strings"
@@ -44,4 +45,59 @@ func (m Map[K, V]) Copy() Map[K, V] {
 	m2 := make(Map[K, V], len(m))
 	maps.Copy(m2, m)
 	return m2
+}
+
+// KeysIter returns an iterator for the Map keys
+func (m Map[K, V]) KeysIter() iter.Seq[K] {
+	return maps.Keys(m)
+}
+
+// ValuesIter returns an iterator for the Map values
+func (m Map[K, V]) ValuesIter() iter.Seq[V] {
+	return maps.Values(m)
+}
+
+// Keys returns the Map keys, in arbitrary order
+func (m Map[K, V]) Keys() List[K] {
+	return slices.Collect(m.KeysIter())
+}
+
+// Values returns the Map values, in arbitrary order
+func (m Map[K, V]) Values() List[V] {
+	return slices.Collect(m.ValuesIter())
+}
+
+// Entries returns the Map entries, in arbitrary order
+func (m Map[K, V]) Entries() List[Tuple2[K, V]] {
+	entries := make([]Tuple2[K, V], 0, len(m))
+	for k, v := range m {
+		entries = append(entries, Tuple2[K, V]{k, v})
+	}
+	return entries
+}
+
+// HasKey checks if Map has given key
+func (m Map[K, V]) HasKey(key K) bool {
+	_, ok := m[key]
+	return ok
+}
+
+// NoKey checks if Map does not have given key
+func (m Map[K, V]) NoKey(key K) bool {
+	return !m.HasKey(key)
+}
+
+// SetDefault assigns default value to key, if key is not in Map
+func (m Map[K, V]) SetDefault(key K, defaultValue V) {
+	if _, ok := m[key]; !ok {
+		m[key] = defaultValue
+	}
+}
+
+// GetOrDefault gets the value associated with key if it exists, otherwise returns the default value
+func (m Map[K, V]) GetOrDefault(key K, defaultValue V) V {
+	if value, ok := m[key]; ok {
+		return value
+	}
+	return defaultValue
 }
