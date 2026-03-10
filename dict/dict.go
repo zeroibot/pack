@@ -69,9 +69,24 @@ func HasKey[K comparable, V any](items map[K]V, key K) bool {
 	return ok
 }
 
+// HasKeyFunc checks if any map key passes the test function
+func HasKeyFunc[K comparable, V any](items map[K]V, test func(K) bool) bool {
+	for k := range items {
+		if test(k) {
+			return true
+		}
+	}
+	return false
+}
+
 // NoKey checks if map does not have given key
 func NoKey[K comparable, V any](items map[K]V, key K) bool {
 	return !HasKey(items, key)
+}
+
+// NoKeyFunc checks that no map key passes the test function
+func NoKeyFunc[K comparable, V any](items map[K]V, test func(K) bool) bool {
+	return !HasKeyFunc(items, test)
 }
 
 // HasValue checks if map has given value
@@ -84,9 +99,24 @@ func HasValue[K, V comparable](items map[K]V, value V) bool {
 	return false
 }
 
+// HasValueFunc checks if any map value passes the test function
+func HasValueFunc[K comparable, V any](items map[K]V, test func(V) bool) bool {
+	for _, v := range items {
+		if test(v) {
+			return true
+		}
+	}
+	return false
+}
+
 // NoValue checks if map does not have given value
 func NoValue[K, V comparable](items map[K]V, value V) bool {
 	return !HasValue(items, value)
+}
+
+// NoValueFunc checks that no Map value passes the test function
+func NoValueFunc[K comparable, V any](items map[K]V, test func(V) bool) bool {
+	return !HasValueFunc(items, test)
 }
 
 // SetDefault assigns default value to key, if key is not in Map

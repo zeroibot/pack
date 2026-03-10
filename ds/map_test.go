@@ -89,6 +89,28 @@ func TestMap(t *testing.T) {
 			t.Errorf("Map.SetDefault(%q, %v) = %v, want %v", key, defaultValue, actual, want)
 		}
 	}
+	keyFnCases := []Tuple2[func(string) bool, bool]{
+		{func(key string) bool { return key == "apple" }, false},
+		{func(key string) bool { return key == "zebra" }, true},
+	}
+	for _, x := range keyFnCases {
+		test, want := x.Values()
+		actual := m.NoKeyFunc(test)
+		if actual != want {
+			t.Errorf("Map.NoKeyFunc = %v, want %v", actual, want)
+		}
+	}
+	valueFnCases := []Tuple2[func(int) bool, bool]{
+		{func(value int) bool { return value > 100 }, true},
+		{func(value int) bool { return value == 5 }, false},
+	}
+	for _, x := range valueFnCases {
+		test, want := x.Values()
+		actual := m.NoValueFunc(test)
+		if actual != want {
+			t.Errorf("Map.NoValueFunc = %v, want %v", actual, want)
+		}
+	}
 
 	m.Clear()
 	isEmpty := m.IsEmpty()

@@ -82,9 +82,39 @@ func (m Map[K, V]) HasKey(key K) bool {
 	return ok
 }
 
+// HasKeyFunc checks if any Map key passes the test function
+func (m Map[K, V]) HasKeyFunc(test func(K) bool) bool {
+	for k := range m {
+		if test(k) {
+			return true
+		}
+	}
+	return false
+}
+
 // NoKey checks if Map does not have given key
 func (m Map[K, V]) NoKey(key K) bool {
 	return !m.HasKey(key)
+}
+
+// NoKeyFunc checks that no Map key passes the test function
+func (m Map[K, V]) NoKeyFunc(test func(K) bool) bool {
+	return !m.HasKeyFunc(test)
+}
+
+// HasValueFunc checks if any Map value passes the test function
+func (m Map[K, V]) HasValueFunc(test func(V) bool) bool {
+	for _, v := range m {
+		if test(v) {
+			return true
+		}
+	}
+	return false
+}
+
+// NoValueFunc checks that no Map value passes the test function
+func (m Map[K, V]) NoValueFunc(test func(V) bool) bool {
+	return !m.HasValueFunc(test)
 }
 
 // SetDefault assigns default value to key, if key is not in Map

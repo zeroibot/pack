@@ -104,6 +104,28 @@ func TestDict(t *testing.T) {
 			t.Errorf("SetDefault(%q, %v) = %v, want %v", key, defaultValue, actual, want)
 		}
 	}
+	keyFnCases := []Entry[bool, func(string) bool]{
+		{false, func(key string) bool { return key == "apple" }},
+		{true, func(key string) bool { return key == "zebra" }},
+	}
+	for _, x := range keyFnCases {
+		want, test := x.Tuple()
+		actual := NoKeyFunc(m, test)
+		if actual != want {
+			t.Errorf("NoKeyFunc = %v, want %v", actual, want)
+		}
+	}
+	valueFnCases := []Entry[bool, func(int) bool]{
+		{true, func(value int) bool { return value > 100 }},
+		{false, func(value int) bool { return value == 5 }},
+	}
+	for _, x := range valueFnCases {
+		want, test := x.Tuple()
+		actual := NoValueFunc(m, test)
+		if actual != want {
+			t.Errorf("NoValueFunc = %v, want %v", actual, want)
+		}
+	}
 
 	Clear(m)
 	isEmpty := IsEmpty(m)
