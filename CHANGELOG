@@ -1,9 +1,9 @@
 v0.1.3 - Option, Tuples, Ranges
-    - Commit:
+    x Commit: 2026-03-10 10:45
     x Option type
     x Tuple types: Tuple2, Tuple3, Tuple4
     x Homogeneous Tuple types: Pair, Triple, Quad
-    - Range type: Normal, Reversed
+    x Range type: Normal, Reversed
 v0.1.2 - Strings and Lang Package
     x Commit: 2026-03-09 16:55
     x Lang package
