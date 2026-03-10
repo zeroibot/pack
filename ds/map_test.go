@@ -111,6 +111,10 @@ func TestMap(t *testing.T) {
 			t.Errorf("Map.NoValueFunc = %v, want %v", actual, want)
 		}
 	}
+	m.Delete("cherry")
+	if m.HasKey("cherry") {
+		t.Errorf("Map.Delete, HasKey = true, want false")
+	}
 
 	m.Clear()
 	isEmpty := m.IsEmpty()

@@ -26,4 +26,12 @@ func TestSetMethods(t *testing.T) {
 
 func TestSetOperations(t *testing.T) {
 	// TODO: Test Add
+	// TODO: Test Has
+	// TODO: Test HasNo
+	// TODO: Test Delete
+	// TODO: Test Union
+	// TODO: Test Intersection
+	// TODO: Test Difference
+	// TODO: Test HasIntersection, HasNoIntersection
+	// TODO: Test HasDifference, HasNoDifference
 }

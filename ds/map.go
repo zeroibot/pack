@@ -47,6 +47,11 @@ func (m Map[K, V]) Copy() Map[K, V] {
 	return m2
 }
 
+// Delete removes key from the Map
+func (m Map[K, V]) Delete(key K) {
+	delete(m, key)
+}
+
 // KeysIter returns an iterator for the Map keys
 func (m Map[K, V]) KeysIter() iter.Seq[K] {
 	return maps.Keys(m)
