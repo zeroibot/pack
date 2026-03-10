@@ -75,8 +75,6 @@ func UpdateCounterFunc[T any, K comparable](counter Counter[K], items []T, keyFn
 	}
 }
 
-// TODO: Start writing tests here...
-
 // NewFlagsFor creates a new Flags map, with each item initialized to given flag
 func NewFlagsFor[T comparable](items []T, flag bool) Flags[T] {
 	flags := make(Flags[T], len(items))

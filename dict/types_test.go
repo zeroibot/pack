@@ -88,3 +88,31 @@ func TestUpdateCounterFunc(t *testing.T) {
 		t.Errorf("UpdateCounterFunc = %v, want %v", counter, expected)
 	}
 }
+
+func TestNewFlagsFor(t *testing.T) {
+	// TODO
+}
+
+func TestNewFlagsFunc(t *testing.T) {
+	// TODO
+}
+
+func TestLookupFlagsFor(t *testing.T) {
+	// TODO
+}
+
+func TestMustLookupFunc(t *testing.T) {
+	// TODO
+}
+
+func TestGet(t *testing.T) {
+	// TODO
+}
+
+func TestGetRef(t *testing.T) {
+	// TODO
+}
+
+func TestGetList(t *testing.T) {
+	// TODO
+}

@@ -1,16 +1,17 @@
 v0.1.5 - Sets
     - Commit:
-    - Map transformations
     - Set type
     - Set methods
     - CustomSet: set with a key function
+    - Map tests
+    - Set tests
+    - Map transformations
 v0.1.4 - Maps
-    - Commit:
+    x Commit: 2026-03-10 16:03
     x Map type
     x Map functions
     x Custom map types
-    - Map sorted functions
-    - Map tests
+    x Map sorted functions
 v0.1.3 - Option, Tuples, Ranges
     x Commit: 2026-03-10 10:45
     x Option type

@@ -62,9 +62,23 @@ func (m Map[K, V]) Keys() List[K] {
 	return slices.Collect(m.KeysIter())
 }
 
+// SortedKeysFunc returns the Map keys in sorted order, using sortFn
+func (m Map[K, V]) SortedKeysFunc(sortFn func(K, K) int) List[K] {
+	keys := m.Keys()
+	slices.SortFunc(keys, sortFn)
+	return keys
+}
+
 // Values returns the Map values, in arbitrary order
 func (m Map[K, V]) Values() List[V] {
 	return slices.Collect(m.ValuesIter())
+}
+
+// SortedValuesFunc returns the Map values in sorted order, using SortFn
+func (m Map[K, V]) SortedValuesFunc(sortFn func(V, V) int) List[V] {
+	values := m.Values()
+	slices.SortFunc(values, sortFn)
+	return values
 }
 
 // Entries returns the Map entries, in arbitrary order
@@ -73,6 +87,13 @@ func (m Map[K, V]) Entries() List[Tuple2[K, V]] {
 	for k, v := range m {
 		entries = append(entries, Tuple2[K, V]{k, v})
 	}
+	return entries
+}
+
+// SortedEntriesFunc returns the Map entries in sorted order, using SortFn
+func (m Map[K, V]) SortedEntriesFunc(sortFn func(Tuple2[K, V], Tuple2[K, V]) int) List[Tuple2[K, V]] {
+	entries := m.Entries()
+	slices.SortFunc(entries, sortFn)
 	return entries
 }
 
