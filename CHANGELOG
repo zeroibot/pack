@@ -2,7 +2,7 @@ v0.1.6 - Lists
     - Commit:
     x List type
     x List methods
-    - Equality functions
+    x Equality functions
     - List check functions
     - List ordered functions
     - List compare functions
