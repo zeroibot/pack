@@ -71,16 +71,94 @@ func TestNewSet(t *testing.T) {
 	}
 }
 
-func TestSetOperations(t *testing.T) {
-	// TODO: Test Copy
-	// TODO: Test Clear
-	// TODO: Test Add
-	// TODO: Test Has
-	// TODO: Test HasNo
-	// TODO: Test Delete
-	// TODO: Test Union
-	// TODO: Test Intersection
-	// TODO: Test Difference
-	// TODO: Test HasIntersection, HasNoIntersection
-	// TODO: Test HasDifference, HasNoDifference
+func TestSetFunctions(t *testing.T) {
+	m := NewSet[int]()
+	m.Add(1)
+	m.Add(1, 2, 3)
+	m.Add(2, 3, 4)
+	// Has and HasNo
+	testCases := []Tuple2[int, bool]{
+		{1, true},
+		{0, false},
+		{3, true},
+		{5, false},
+		{4, true},
+	}
+	for _, x := range testCases {
+		item, want := x.Values()
+		actual := m.Has(item)
+		if actual != want {
+			t.Errorf("Set.Has(%d) = %v, want %v", item, actual, want)
+		}
+		want = !want
+		actual = m.HasNo(item)
+		if actual != want {
+			t.Errorf("Set.HasNo(%d) = %v, want %v", item, actual, want)
+		}
+	}
+	// Add and Delete
+	m.Add(5)
+	if m.Has(5) != true {
+		t.Errorf("Set.Add.Has(%d) = %v, want true", 5, m.Has(5))
+	}
+	m.Delete(5)
+	if m.HasNo(5) != true {
+		t.Errorf("Set.Delete.HasNo(%d) = %v, want true", 5, m.HasNo(5))
+	}
+
+	// Copy and Clear
+	mc := m.Copy()
+	copyItems := mc.Items()
+	slices.Sort(copyItems)
+	want := []int{1, 2, 3, 4}
+	if slices.Equal(copyItems, want) == false {
+		t.Errorf("Set.Copy.Items = %v, want %v", copyItems, want)
+	}
+	mc.Clear()
+	if mc.Len() != 0 {
+		t.Errorf("Set.Clear.Len = %d, want 0", mc.Len())
+	}
+	if m.Len() != 4 {
+		t.Errorf("Set.Len = %d, want 4", m.Len())
+	}
+}
+
+func TestSetMethods(t *testing.T) {
+	s1 := NewSetFrom([]int{1, 2, 3, 4})
+	s2 := NewSetFrom([]int{3, 4, 5, 6})
+	s3 := NewSetFrom([]int{6, 7, 8, 9})
+	s4 := NewSetFrom([]int{1, 2, 3, 4, 4, 3, 2, 1})
+
+	testCases := []Tuple3[string, List[int], List[int]]{
+		{"Union", s1.Union(s2).Items(), List[int]{1, 2, 3, 4, 5, 6}},
+		{"Union", s1.Union(s4).Items(), List[int]{1, 2, 3, 4}},
+		{"Intersection", s1.Intersection(s2).Items(), List[int]{3, 4}},
+		{"Intersection", s1.Intersection(s3).Items(), List[int]{}},
+		{"Difference", s1.Difference(s2).Items(), List[int]{1, 2}},
+		{"Difference", s1.Difference(s4).Items(), List[int]{}},
+	}
+	for _, x := range testCases {
+		name, actual, want := x.Values()
+		slices.Sort(actual)
+		if slices.Equal(actual, want) == false {
+			t.Errorf("Set.%s = %v, want %v", name, actual, want)
+		}
+	}
+
+	actual := s1.HasIntersection(s2)
+	if actual != true {
+		t.Errorf("Set.HasIntersection = %v, want true", actual)
+	}
+	actual = s1.HasNoIntersection(s3)
+	if actual != true {
+		t.Errorf("Set.HasNoIntersection = %v, want true", actual)
+	}
+	actual = s1.HasDifference(s2)
+	if actual != true {
+		t.Errorf("Set.HasDifference = %v, want true", actual)
+	}
+	actual = s1.HasNoDifference(s4)
+	if actual != true {
+		t.Errorf("Set.HasNoDifference = %v, want true", actual)
+	}
 }
