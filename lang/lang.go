@@ -23,3 +23,8 @@ func Deref[T any](ref *T) T {
 	}
 	return item
 }
+
+// Identity returns the passed argument, used as function argument
+func Identity[T any](item T) T {
+	return item
+}

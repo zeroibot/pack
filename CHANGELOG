@@ -1,11 +1,12 @@
 v0.1.5 - Sets
-    - Commit:
-    - Set type
-    - Set methods
-    - CustomSet: set with a key function
-    - Map tests
-    - Set tests
-    - Map transformations
+    x Commit: 2026-03-11 16:30
+    x Set type
+    x Set methods
+    x Map tests
+    x Set tests
+    x Map update functions
+    x Map zips and transforms
+    x Map group functions
 v0.1.4 - Maps
     x Commit: 2026-03-10 16:03
     x Map type
