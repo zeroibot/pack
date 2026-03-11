@@ -4,7 +4,13 @@ v0.1.5 - Sets
     x Set methods
     x Map tests
     x Set tests
-    - Map transformations
+    x Map update functions
+    - Map zips and transforms
+        - Zip, Unzip, Swap, SwapList
+    - Map group functions
+        - GroupByValue, GroupByFunc
+        - GroupByValueList, GroupByFuncList
+        - TallyValues, TallyValuesFunc
 v0.1.4 - Maps
     x Commit: 2026-03-10 16:03
     x Map type

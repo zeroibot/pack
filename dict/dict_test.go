@@ -39,9 +39,10 @@ func TestDict(t *testing.T) {
 	}
 	expEntries := []Entry[string, int]{{"apple", 5}, {"banana", 2}, {"orange", 3}}
 	actualEntries := Entries(m)
-	slices.SortFunc(actualEntries, func(e1, e2 Entry[string, int]) int {
+	sortFn := func(e1, e2 Entry[string, int]) int {
 		return cmp.Compare(e1.Key, e2.Key)
-	})
+	}
+	slices.SortFunc(actualEntries, sortFn)
 	if slices.Equal(actualEntries, expEntries) == false {
 		t.Errorf("Entries() = %v, want %v", actualEntries, expEntries)
 	}
@@ -125,6 +126,25 @@ func TestDict(t *testing.T) {
 		if actual != want {
 			t.Errorf("NoValueFunc = %v, want %v", actual, want)
 		}
+	}
+
+	mf := Filter(m, func(key string, value int) bool { return key != "zebra" && value <= 50 })
+	actualEntries = SortedEntries(mf)
+	if slices.Equal(actualEntries, expEntries) == false {
+		t.Errorf("Filter.Entries = %v, want %v", actualEntries, expEntries)
+	}
+
+	m2 = map[string]int{
+		"cherry": 30,
+		"banana": 10,
+	}
+	expEntries = []Entry[string, int]{
+		{"apple", 5}, {"banana", 10}, {"cherry", 30}, {"orange", 3},
+	}
+	Update(m, m2)
+	actualEntries = SortedEntriesFunc(m, sortFn)
+	if slices.Equal(actualEntries, expEntries) == false {
+		t.Errorf("Update = %v, want %v", actualEntries, expEntries)
 	}
 
 	Clear(m)

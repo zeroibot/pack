@@ -47,6 +47,12 @@ func (m Map[K, V]) Copy() Map[K, V] {
 	return m2
 }
 
+// Update adds the entries of new Map to current Map.
+// If there are overlapping keys, new Map entries overwrite the old Map entries.
+func (m Map[K, V]) Update(newMap Map[K, V]) {
+	maps.Copy(m, newMap)
+}
+
 // Delete removes key from the Map
 func (m Map[K, V]) Delete(key K) {
 	delete(m, key)
@@ -156,4 +162,15 @@ func (m Map[K, V]) GetOrDefault(key K, defaultValue V) V {
 		return value
 	}
 	return defaultValue
+}
+
+// Filter filters the Map, only keeping entries that pass the keep function
+func (m Map[K, V]) Filter(keep func(K, V) bool) Map[K, V] {
+	result := make(Map[K, V], len(m))
+	for k, v := range m {
+		if keep(k, v) {
+			result[k] = v
+		}
+	}
+	return result
 }

@@ -124,9 +124,28 @@ func TestMap(t *testing.T) {
 			t.Errorf("Map.NoValueFunc = %v, want %v", actual, want)
 		}
 	}
+	mf := m.Filter(func(key string, value int) bool { return key != "zebra" && value <= 50 })
+	actualEntries = mf.SortedEntriesFunc(sortFn)
+	if slices.Equal(actualEntries, expEntries) == false {
+		t.Errorf("Map.Filter.Entries = %v, want %v", actualEntries, expEntries)
+	}
+
 	m.Delete("cherry")
 	if m.HasKey("cherry") {
 		t.Errorf("Map.Delete, HasKey = true, want false")
+	}
+
+	m2 = Map[string, int]{
+		"cherry": 30,
+		"banana": 10,
+	}
+	expEntries = []Tuple2[string, int]{
+		{"apple", 5}, {"banana", 10}, {"cherry", 30}, {"orange", 3},
+	}
+	m.Update(m2)
+	actualEntries = m.SortedEntriesFunc(sortFn)
+	if slices.Equal(actualEntries, expEntries) == false {
+		t.Errorf("Map.Update = %v, want %v", actualEntries, expEntries)
 	}
 
 	m.Clear()

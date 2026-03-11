@@ -75,6 +75,24 @@ func UpdateCounterFunc[T any, K comparable](counter Counter[K], items []T, keyFn
 	}
 }
 
+// CounterUpdate updates the old counter with counts from new counter
+func CounterUpdate[T comparable](oldCounter, newCounter Counter[T]) {
+	for key, count := range newCounter {
+		oldCounter[key] += count
+	}
+}
+
+// MergeCounters merges the counts from given counters into one Counter
+func MergeCounters[T comparable](counters ...Counter[T]) Counter[T] {
+	total := make(Counter[T])
+	for _, counter := range counters {
+		for key, count := range counter {
+			total[key] += count
+		}
+	}
+	return total
+}
+
 // NewFlagsFor creates a new Flags map, with each item initialized to given flag
 func NewFlagsFor[T comparable](items []T, flag bool) Flags[T] {
 	flags := make(Flags[T], len(items))

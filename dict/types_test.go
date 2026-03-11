@@ -263,3 +263,53 @@ func TestGetList(t *testing.T) {
 		t.Errorf("GetList(names) = %v, want nil", actual4)
 	}
 }
+
+func TestCounterUpdate(t *testing.T) {
+	c1 := Counter[string]{
+		"apple":  5,
+		"banana": 3,
+	}
+	c2 := Counter[string]{
+		"apricot": 8,
+		"banana":  7,
+		"cherry":  2,
+	}
+	expectedEntries := []Entry[string, int]{
+		{"apple", 5}, {"apricot", 8}, {"banana", 10}, {"cherry", 2},
+	}
+	CounterUpdate(c1, c2)
+	actualEntries := SortedEntries(c1)
+	if slices.Equal(expectedEntries, actualEntries) == false {
+		t.Errorf("CounterUpdate.Entries = %v, want %v", actualEntries, expectedEntries)
+	}
+}
+
+func TestMergeCounters(t *testing.T) {
+	c1 := Counter[string]{
+		"apple":  5,
+		"banana": 3,
+	}
+	c2 := Counter[string]{
+		"apricot": 8,
+		"banana":  7,
+		"cherry":  2,
+	}
+	expectedEntries := []Entry[string, int]{
+		{"apple", 5}, {"apricot", 8}, {"banana", 10}, {"cherry", 2},
+	}
+	c3 := MergeCounters(c1, c2)
+	actualEntries := SortedEntries(c3)
+	if slices.Equal(expectedEntries, actualEntries) == false {
+		t.Errorf("MergeCounters.Entries = %v, want %v", actualEntries, expectedEntries)
+	}
+	expectedEntries1 := []Entry[string, int]{{"apple", 5}, {"banana", 3}}
+	expectedEntries2 := []Entry[string, int]{{"apricot", 8}, {"banana", 7}, {"cherry", 2}}
+	actualEntries1 := SortedEntries(c1)
+	actualEntries2 := SortedEntries(c2)
+	if slices.Equal(expectedEntries1, actualEntries1) == false {
+		t.Errorf("MergeCounters.Entries = %v, want %v", actualEntries1, expectedEntries1)
+	}
+	if slices.Equal(expectedEntries2, actualEntries2) == false {
+		t.Errorf("MergeCounters.Entries = %v, want %v", actualEntries2, expectedEntries2)
+	}
+}

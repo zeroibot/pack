@@ -34,6 +34,12 @@ func Copy[K comparable, V any](items map[K]V) map[K]V {
 	return items2
 }
 
+// Update adds the entries of new Map to current Map.
+// If there are overlapping keys, new Map entries overwrite the old Map entries.
+func Update[K comparable, V any](oldMap, newMap map[K]V) {
+	maps.Copy(oldMap, newMap)
+}
+
 // KeysIter returns an iterator for map keys
 func KeysIter[K comparable, V any](items map[K]V) iter.Seq[K] {
 	return maps.Keys(items)
@@ -132,4 +138,15 @@ func GetOrDefault[K comparable, V any](items map[K]V, key K, defaultValue V) V {
 		return value
 	}
 	return defaultValue
+}
+
+// Filter filters the map, only keeping entries that pass the keep function
+func Filter[K comparable, V any](items map[K]V, keep func(K, V) bool) map[K]V {
+	result := make(map[K]V, len(items))
+	for k, v := range items {
+		if keep(k, v) {
+			result[k] = v
+		}
+	}
+	return result
 }
