@@ -8,7 +8,7 @@ func TestList(t *testing.T) {
 	// TODO: RepeatedItem
 	// TODO: Len, Cap, LastIndex
 	// TODO: IsEmpty, NotEmpty
-	// TODO: Copy, Clear
+	// TODO: Copy
 }
 
 func TestListMethods(t *testing.T) {

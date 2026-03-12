@@ -43,7 +43,7 @@ func (q *Queue[T]) NotEmpty() bool {
 
 // Clear removes all queue items
 func (q *Queue[T]) Clear() {
-	q.items.Clear()
+	q.items = make(List[T], 0)
 }
 
 // Copy creates a new Queue with copied items

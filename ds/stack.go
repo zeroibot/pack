@@ -43,7 +43,7 @@ func (s *Stack[T]) NotEmpty() bool {
 
 // Clear removes all stack items
 func (s *Stack[T]) Clear() {
-	s.items.Clear()
+	s.items = make(List[T], 0)
 }
 
 // Copy creates a new Stack with copied items

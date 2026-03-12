@@ -56,11 +56,6 @@ func NotEmpty[T any](items []T) bool {
 	return len(items) > 0
 }
 
-// Clear removes all list items
-func Clear[T any](items []T) {
-	clear(items)
-}
-
 // Copy creates a new list with copied items
 func Copy[T any](items []T) []T {
 	return append([]T{}, items...)

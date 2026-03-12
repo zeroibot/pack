@@ -41,11 +41,6 @@ func (l List[T]) NotEmpty() bool {
 	return len(l) > 0
 }
 
-// Clear removes all List items
-func (l List[T]) Clear() {
-	clear(l)
-}
-
 // Copy creates a new List with copied items
 func (l List[T]) Copy() List[T] {
 	return append(List[T]{}, l...)
