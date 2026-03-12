@@ -3,6 +3,7 @@ package ds
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -59,6 +60,7 @@ func TestListRandom(t *testing.T) {
 			t.Errorf("List.MustGetRandom() did not panic")
 		}
 	}()
+	// GetRandom and MustGetRandom
 	l1 := NewList[int](3) // empty
 	for range 5 {
 		item := l1.GetRandom()
@@ -78,6 +80,7 @@ func TestListRandom(t *testing.T) {
 			t.Errorf("List.MustGetRandom() = %v, want 1..100", item)
 		}
 	}
+	// Shuffle
 	l2 := List[int]{1, 2, 3, 4, 5, 6, 7}
 	l3 := l2.Copy()
 	l3.Shuffle()
@@ -96,22 +99,66 @@ func TestListCheck(t *testing.T) {
 }
 
 func TestListFn(t *testing.T) {
-	// TODO: MapList
-	// TODO: Filter, FilterIndexed
-	// TODO: Reduce
-	// TODO: Apply
+	// MapList
+	items := List[string]{" ", "A", "B", "C", "D", "E"}
+	indexes := []int{2, 5, 1, 4, 0, 3, 1, 2}
+	result := items.MapList(indexes)
+	output := strings.Join(result, "")
+	if output != "BEAD CAB" {
+		t.Errorf("List.MapList() = %s, want [BEAD CAB]", output)
+	}
+	// Filter
+	numbers := List[int]{1, 2, 3, 4, 5, 6, 7}
+	want := List[int]{2, 4, 6}
+	actual := numbers.Filter(func(x int) bool { return x%2 == 0 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("List.Filter() = %v, want %v", actual, want)
+	}
+	want = List[int]{}
+	actual = numbers.Filter(func(x int) bool { return x > 10 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("List.Filter() = %v, want %v", actual, want)
+	}
+	want = numbers
+	actual = numbers.Filter(func(x int) bool { return x <= 10 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("List.Filter() = %v, want %v", actual, want)
+	}
+	// FilterIndexed
+	want = List[int]{1, 2, 4, 6, 7}
+	actual = numbers.FilterIndexed(func(i, x int) bool { return x%2 == 0 || i%3 == 0 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("List.FilterIndexed() = %v, want %v", actual, want)
+	}
+	// Reduce
+	wantSum := 28
+	actualSum := numbers.Reduce(0, func(result, item int) int {
+		return result + item
+	})
+	if wantSum != actualSum {
+		t.Errorf("List.Reduce() = %d, want %d", actualSum, wantSum)
+	}
+	// Apply
+	want = List[int]{2, 4, 6, 8, 10, 12, 14}
+	actual = numbers.Apply(func(x int) int { return x * 2 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("List.Apply() = %v, want %v", actual, want)
+	}
 }
 
 func TestNumList(t *testing.T) {
+	// ToList
 	n := NumList[int]{1, 2, 3, 4, 5, 6}
 	l := n.ToList()
 	if l.Len() != 6 {
 		t.Errorf("NumList.ToList.Len() = %d, want 5", l.Len())
 	}
+	// Sum
 	actual, want := n.Sum(), 21
 	if actual != want {
 		t.Errorf("NumList.Sum() = %d, want %d", actual, want)
 	}
+	// Product
 	actual, want = n.Product(), 720
 	if actual != want {
 		t.Errorf("NumList.Product() = %d, want %d", actual, want)

@@ -246,7 +246,7 @@ func (l List[T]) FilterIndexed(keep func(int, T) bool) List[T] {
 
 // Reduce applies the reducer to each item to get the final result.
 // The reducer function has the signature (result, item) => result
-func (l List[T]) Reduce(reducer func(T, T) T, initial T) T {
+func (l List[T]) Reduce(initial T, reducer func(T, T) T) T {
 	current := initial
 	for _, item := range l {
 		current = reducer(current, item)

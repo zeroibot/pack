@@ -5,9 +5,9 @@ v0.1.8 - List Method Tests
     x Test List type
     x Test NumList methods
     x Test List random methods
-    - Test List methods
+    x Test List functional methods
     - Test List check methods
-    - Test List functional methods
+    - Test List general methods
 v0.1.7 - Stack and Queue
     x Commit: 2026-03-12 20:58
     x Stack type
