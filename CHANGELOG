@@ -4,8 +4,9 @@ v0.1.6 - Lists
     x List methods
     x Equality functions
     x List check functions
-    - List order functions
+    x List order functions
     - List compare functions
+    - List number functions
     - List functional programming
     - Map-to-struct functions
         - ToObject, ToStruct, FromStruct
