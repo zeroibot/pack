@@ -92,10 +92,74 @@ func TestListRandom(t *testing.T) {
 }
 
 func TestListCheck(t *testing.T) {
-	// TODO: Any, AnyIndexed
-	// TODO: NotAny, NotAnyIndexed
-	// TODO: All, AllIndexed
-	// TODO: CountFunc
+	// Any, NotAny
+	items := List[int]{1, 2, 3, 4, 5, 6}
+	fn1 := func(x int) bool { return x%2 == 0 && x%3 == 0 }
+	fn2 := func(x int) bool { return x > 10 }
+	fn3 := func(x int) bool { return x <= 10 }
+	result := items.Any(fn1)
+	if result != true {
+		t.Errorf("List.Any() = %v, want true", result)
+	}
+	result = items.NotAny(fn1)
+	if result != false {
+		t.Errorf("List.NotAny() = %v, want false", result)
+	}
+	result = items.Any(fn2)
+	if result != false {
+		t.Errorf("List.Any() = %v, want false", result)
+	}
+	result = items.NotAny(fn2)
+	if result != true {
+		t.Errorf("List.NotAny() = %v, want true", result)
+	}
+	// All
+	empty := List[int]{}
+	result = empty.All(fn1)
+	if result != false {
+		t.Errorf("List.All() = %v, want false", result)
+	}
+	result = items.All(fn1)
+	if result != false {
+		t.Errorf("List.All() = %v, want false", result)
+	}
+	result = items.All(fn3)
+	if result != true {
+		t.Errorf("List.All() = %v, want true", result)
+	}
+	// AnyIndexed, NotAnyIndexed
+	fn4 := func(i, x int) bool { return i >= 0 && x%2 == 0 && x%3 == 0 }
+	fn5 := func(i, x int) bool { return i > 10 && x > 10 }
+	fn6 := func(i, x int) bool { return i < 10 && x <= 10 }
+	result = items.AnyIndexed(fn4)
+	if result != true {
+		t.Errorf("List.AnyIndexed() = %v, want true", result)
+	}
+	result = items.NotAnyIndexed(fn4)
+	if result != false {
+		t.Errorf("List.NotAnyIndexed() = %v, want false", result)
+	}
+	result = items.AnyIndexed(fn5)
+	if result != false {
+		t.Errorf("List.AnyIndexed() = %v, want false", result)
+	}
+	result = items.NotAnyIndexed(fn5)
+	if result != true {
+		t.Errorf("List.NotAnyIndexed() = %v, want true", result)
+	}
+	// AllIndexed
+	result = empty.AllIndexed(fn4)
+	if result != false {
+		t.Errorf("List.AllIndexed() = %v, want false", result)
+	}
+	result = items.AllIndexed(fn4)
+	if result != false {
+		t.Errorf("List.AllIndexed() = %v, want false", result)
+	}
+	result = items.AllIndexed(fn6)
+	if result != true {
+		t.Errorf("List.AllIndexed() = %v, want true", result)
+	}
 }
 
 func TestListFn(t *testing.T) {
@@ -107,22 +171,37 @@ func TestListFn(t *testing.T) {
 	if output != "BEAD CAB" {
 		t.Errorf("List.MapList() = %s, want [BEAD CAB]", output)
 	}
-	// Filter
+	// Filter && CountFunc
 	numbers := List[int]{1, 2, 3, 4, 5, 6, 7}
-	want := List[int]{2, 4, 6}
-	actual := numbers.Filter(func(x int) bool { return x%2 == 0 })
+	fn := func(x int) bool { return x%2 == 0 }
+	want, wantCount := List[int]{2, 4, 6}, 3
+	actual := numbers.Filter(fn)
 	if slices.Equal(want, actual) == false {
 		t.Errorf("List.Filter() = %v, want %v", actual, want)
 	}
-	want = List[int]{}
-	actual = numbers.Filter(func(x int) bool { return x > 10 })
+	actualCount := numbers.CountFunc(fn)
+	if actualCount != wantCount {
+		t.Errorf("List.CountFunc() = %v, want %v", actualCount, wantCount)
+	}
+	fn = func(x int) bool { return x > 10 }
+	want, wantCount = List[int]{}, 0
+	actual = numbers.Filter(fn)
 	if slices.Equal(want, actual) == false {
 		t.Errorf("List.Filter() = %v, want %v", actual, want)
 	}
-	want = numbers
-	actual = numbers.Filter(func(x int) bool { return x <= 10 })
+	actualCount = numbers.CountFunc(fn)
+	if actualCount != wantCount {
+		t.Errorf("List.CountFunc() = %v, want %v", actualCount, wantCount)
+	}
+	fn = func(x int) bool { return x <= 10 }
+	want, wantCount = numbers, len(numbers)
+	actual = numbers.Filter(fn)
 	if slices.Equal(want, actual) == false {
 		t.Errorf("List.Filter() = %v, want %v", actual, want)
+	}
+	actualCount = numbers.CountFunc(fn)
+	if actualCount != wantCount {
+		t.Errorf("List.CountFunc() = %v, want %v", actualCount, wantCount)
 	}
 	// FilterIndexed
 	want = List[int]{1, 2, 4, 6, 7}
