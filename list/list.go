@@ -36,6 +36,11 @@ func Len[T any](items []T) int {
 	return len(items)
 }
 
+// LastIndex returns the list last index
+func LastIndex[T any](items []T) int {
+	return len(items) - 1
+}
+
 // Cap returns the list capacity
 func Cap[T any](items []T) int {
 	return cap(items)

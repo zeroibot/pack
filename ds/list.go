@@ -21,6 +21,11 @@ func (l List[T]) Len() int {
 	return len(l)
 }
 
+// LastIndex returns the List last index
+func (l List[T]) LastIndex() int {
+	return len(l) - 1
+}
+
 // Cap returns the List capacity
 func (l List[T]) Cap() int {
 	return cap(l)
