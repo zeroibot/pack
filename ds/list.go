@@ -3,9 +3,13 @@ package ds
 import (
 	"math/rand/v2"
 	"slices"
+
+	"github.com/roidaradal/pack/number"
 )
 
 type List[T any] []T
+
+type NumList[T number.Type] List[T]
 
 // NewList creates an empty List with given capacity
 func NewList[T any](capacity int) List[T] {
@@ -192,4 +196,27 @@ func (l List[T]) AllIndexed(ok func(int, T) bool) bool {
 		}
 	}
 	return true
+}
+
+// ToList type coerces the NumList to List
+func (l NumList[T]) ToList() List[T] {
+	return List[T](l)
+}
+
+// Sum computes the sum of number items
+func (l NumList[T]) Sum() T {
+	var total T = 0
+	for _, x := range l {
+		total += x
+	}
+	return total
+}
+
+// Product computes the product of number items
+func (l NumList[T]) Product() T {
+	var product T = 1
+	for _, x := range l {
+		product *= x
+	}
+	return product
 }

@@ -24,3 +24,8 @@ func TestCheckMethods(t *testing.T) {
 	// TODO: NotAny, NotAnyIndexed
 	// TODO: All, AllIndexed
 }
+
+func TestNumList(t *testing.T) {
+	// TODO: NumList.ToList
+	// TODO: Sum, Product
+}
