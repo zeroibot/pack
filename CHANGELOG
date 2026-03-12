@@ -1,3 +1,12 @@
+v0.1.9 - List Package Tests
+    - Commit:
+v0.1.8 - List Method Tests
+    - Commit:
+    x Test list type
+    - Test NumList methods
+    - Test list methods
+    - Test list check methods
+    - Test list functional methods
 v0.1.7 - Stack and Queue
     x Commit: 2026-03-12 20:58
     x Stack type
