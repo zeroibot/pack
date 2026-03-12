@@ -51,12 +51,45 @@ func (q *Queue[T]) Copy() *Queue[T] {
 	return NewQueueFrom[T](q.items.Copy())
 }
 
-// Enqueue
+// Enqueue adds an item to the back of the queue
+func (q *Queue[T]) Enqueue(item T) {
+	q.items = append(q.items, item)
+}
 
-// Front
+// Front returns an Option that contains the front item.
+// If the queue is empty, the Option contains nil
+func (q *Queue[T]) Front() Option[T] {
+	if q.items.IsEmpty() {
+		return Nil[T]()
+	}
+	return NewOption(new(q.items[0]))
+}
 
-// MustFront
+// MustFront returns the front item, and panics if the queue is empty
+func (q *Queue[T]) MustFront() T {
+	option := q.Front()
+	if option.IsNil() {
+		panic("empty queue")
+	}
+	return option.Value()
+}
 
-// Dequeue
+// Dequeue returns an Option that contains the front item, and removes it from the queue.
+// If the queue is empty, the Option contains nil
+func (q *Queue[T]) Dequeue() Option[T] {
+	option := q.Front()
+	if option.IsNil() {
+		return option
+	}
+	q.items = q.items[1:]
+	return option
+}
 
-// MustDequeue
+// MustDequeue returns the front item and removes it from the queue, and panics if the queue is empty
+func (q *Queue[T]) MustDequeue() T {
+	option := q.Dequeue()
+	if option.IsNil() {
+		panic("empty queue")
+	}
+	return option.Value()
+}
