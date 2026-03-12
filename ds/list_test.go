@@ -26,6 +26,13 @@ func TestCheckMethods(t *testing.T) {
 	// TODO: CountFunc
 }
 
+func TestFnMethods(t *testing.T) {
+	// TODO: MapList
+	// TODO: Filter, FilterIndexed
+	// TODO: Reduce
+	// TODO: Apply
+}
+
 func TestNumList(t *testing.T) {
 	// TODO: NumList.ToList
 	// TODO: Sum, Product

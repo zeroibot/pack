@@ -209,6 +209,60 @@ func (l List[T]) CountFunc(ok func(T) bool) int {
 	return count
 }
 
+// MapList maps the indexes to List items.
+// Can have zero values for invalid indexes
+func (l List[T]) MapList(indexes []int) List[T] {
+	results := make(List[T], len(indexes))
+	numItems := len(l)
+	for i, index := range indexes {
+		if 0 <= index && index < numItems {
+			results[i] = l[index]
+		}
+	}
+	return results
+}
+
+// Filter filters the List by only keeping items that pass the keep function
+func (l List[T]) Filter(keep func(T) bool) List[T] {
+	results := make(List[T], 0, len(l))
+	for _, item := range l {
+		if keep(item) {
+			results = append(results, item)
+		}
+	}
+	return results
+}
+
+// FilterIndexed filters the List by only keeping items that pass the keep function: (index, item)
+func (l List[T]) FilterIndexed(keep func(int, T) bool) List[T] {
+	results := make(List[T], 0, len(l))
+	for i, item := range l {
+		if keep(i, item) {
+			results = append(results, item)
+		}
+	}
+	return results
+}
+
+// Reduce applies the reducer to each item to get the final result.
+// The reducer function has the signature (result, item) => result
+func (l List[T]) Reduce(reducer func(T, T) T, initial T) T {
+	current := initial
+	for _, item := range l {
+		current = reducer(current, item)
+	}
+	return current
+}
+
+// Apply applies the task function to each item
+func (l List[T]) Apply(task func(T) T) List[T] {
+	results := make(List[T], len(l))
+	for i, item := range l {
+		results[i] = task(item)
+	}
+	return results
+}
+
 // ToList type coerces the NumList to List
 func (l NumList[T]) ToList() List[T] {
 	return List[T](l)

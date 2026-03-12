@@ -1,3 +1,9 @@
+v0.1.7 - Stack and Queue
+    - Commit:
+    - Stack type
+    - Stack methods - unsafe methods return Option, Must version panics
+    - Queue type
+    - Queue methods
 v0.1.6 - Lists
     - Commit:
     x List type
@@ -7,7 +13,7 @@ v0.1.6 - Lists
     x List order functions
     x List number functions
     x List compare queries and functions
-    - List functional programming
+    x List functional programming
     - Map-to-struct functions
         - ToObject, ToStruct, FromStruct
         - Inspect, Prune
