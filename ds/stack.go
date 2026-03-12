@@ -21,6 +21,11 @@ func (s *Stack[T]) String() string {
 	return fmt.Sprintf("%v", s.items)
 }
 
+// Items returns the List of stack items
+func (s *Stack[T]) Items() List[T] {
+	return s.items
+}
+
 // Len returns the number of items in the stack
 func (s *Stack[T]) Len() int {
 	return s.items.Len()
@@ -36,9 +41,14 @@ func (s *Stack[T]) NotEmpty() bool {
 	return s.items.NotEmpty()
 }
 
-// Items returns the List of stack items
-func (s *Stack[T]) Items() List[T] {
-	return s.items
+// Clear removes all stack items
+func (s *Stack[T]) Clear() {
+	s.items.Clear()
+}
+
+// Copy creates a new Stack with copied items
+func (s *Stack[T]) Copy() *Stack[T] {
+	return NewStackFrom[T](s.items.Copy())
 }
 
 // Push adds an item to the top of the stack

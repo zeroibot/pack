@@ -2,7 +2,7 @@ v0.1.7 - Stack and Queue
     - Commit:
     x Stack type
     x Stack methods
-    - Queue type
+    x Queue type
     - Queue methods
     - Test stack methods
     - Test queue methods
