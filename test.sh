@@ -1,1 +1,1 @@
-go test -cover ./list
+go test -cover ./dyn

@@ -1,5 +1,12 @@
+v0.2.0 - Dyn Package
+    - Commit:
+    x Dyn functions
+    x Dyn struct functions
+    x Test dyn type functions
+    x Test dyn check functions
+    - Test dyn struct functions
 v0.1.9 - List Package Tests
-    x Commit: 2026-03-13
+    x Commit: 2026-03-13 13:23
     x Test list number functions
     x Test list order functions
     x Test list check functions
