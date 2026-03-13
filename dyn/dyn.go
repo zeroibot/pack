@@ -8,6 +8,9 @@ import (
 
 // AddressOf returns the memory address of given item as string
 func AddressOf(x any) string {
+	if IsNil(x) || !IsPointer(x) {
+		return "0x0" // nil address
+	}
 	return fmt.Sprintf("%p", x)
 }
 
@@ -49,14 +52,14 @@ func NotNil(x any) bool {
 
 // IsEqual checks if the two `any` values are equal
 func IsEqual(x, y any) bool {
-	// Dereference item1 if pointer and not null
-	if IsPointer(x) && NotNil(x) {
-		return IsEqual(MustDeref(x), y)
-	}
-	// Dereference item2 if pointer and not null
-	if IsPointer(y) && NotNil(y) {
-		return IsEqual(x, MustDeref(y))
-	}
+	//// Dereference item1 if pointer and not null
+	//if IsPointer(x) && NotNil(x) {
+	//	return IsEqual(MustDeref(x), y)
+	//}
+	//// Dereference item2 if pointer and not null
+	//if IsPointer(y) && NotNil(y) {
+	//	return IsEqual(x, MustDeref(y))
+	//}
 	return reflect.DeepEqual(x, y)
 }
 
