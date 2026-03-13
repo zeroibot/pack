@@ -47,11 +47,111 @@ func TestList(t *testing.T) {
 }
 
 func TestListMethods(t *testing.T) {
-	// TODO: ToAny
-	// TODO: IndexFunc, AllIndexFunc
-	// TODO: RemoveFunc, RemoveAllFunc
-	// TODO: Get, GetFuncOrDefault
-	// TODO: Last, MustLast
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("List.MustLast() did not panic")
+		}
+	}()
+	// ToAny
+	items := List[int]{1, 2, 3}
+	anyItems := items.ToAny()
+	actualString, wantString := fmt.Sprintf("%v", anyItems), "[1 2 3]"
+	if actualString != wantString {
+		t.Errorf("List.ToAny() = %s, want %s", actualString, wantString)
+	}
+	// IndexFunc
+	items = List[int]{1, 2, 3, 4, 1, 2, 4, 2, 5, 3}
+	wantIndex := 2
+	actualIndex := items.IndexFunc(func(x int) bool { return x == 3 })
+	if wantIndex != actualIndex {
+		t.Errorf("List.IndexFunc() = %d, want %d", actualIndex, wantIndex)
+	}
+	wantIndex = 8
+	actualIndex = items.IndexFunc(func(x int) bool { return x == 5 })
+	if wantIndex != actualIndex {
+		t.Errorf("List.IndexFunc() = %d, want %d", actualIndex, wantIndex)
+	}
+	// AllIndexFunc
+	wantList := List[int]{1, 5, 7}
+	actualList := items.AllIndexFunc(func(x int) bool { return x == 2 })
+	if slices.Equal(actualList, wantList) == false {
+		t.Errorf("List.AllIndexFunc() = %v, wantList %v", actualList, wantList)
+	}
+	wantList = List[int]{1, 3, 5, 6, 7}
+	actualList = items.AllIndexFunc(func(x int) bool { return x%2 == 0 })
+	if slices.Equal(actualList, wantList) == false {
+		t.Errorf("List.AllIndexFunc() = %v, wantList %v", actualList, wantList)
+	}
+	// RemoveFunc
+	items = List[int]{1, 2, 1, 2, 3, 2}
+	items2 := items.Copy()
+	items2, ok := items2.RemoveFunc(func(x int) bool { return x == 2 })
+	wantList = List[int]{1, 1, 2, 3, 2}
+	if !ok || slices.Equal(wantList, items2) == false {
+		t.Errorf("List.RemoveFunc() = %v, %t, wantList %v, true", items2, ok, wantList)
+	}
+	items2, ok = items2.RemoveFunc(func(x int) bool { return x == 4 })
+	if ok || slices.Equal(wantList, items2) == false {
+		t.Errorf("List.RemoveFunc() = %v, %t, wantList %v, false", items2, ok, wantList)
+	}
+	// RemoveAllFunc
+	items2 = items.Copy()
+	items2 = items2.RemoveAllFunc(func(x int) bool { return x == 2 })
+	wantList = List[int]{1, 1, 3}
+	if slices.Equal(wantList, items2) == false {
+		t.Errorf("List.RemoveAllFunc() = %v, wantList %v", items, wantList)
+	}
+	// Get
+	items = List[int]{1, 2, 3}
+	option := items.Get(1)
+	if option.IsNil() || option.Value() != 2 {
+		t.Errorf("List.Get() = %v, want 2", option)
+	}
+	option = items.Get(3)
+	if option.NotNil() {
+		t.Errorf("List.Get() = %v, want nil", option)
+	}
+	option = items.Get(-1)
+	if option.NotNil() {
+		t.Errorf("List.Get() = %v, want nil", option)
+	}
+	// GetFuncOrDefault
+	defaultValue := 69
+	actual := items.GetFuncOrDefault(func(x int) bool { return x == 3 }, defaultValue)
+	if actual != 3 {
+		t.Errorf("List.GetFuncOrDefault() = %d, want 3", actual)
+	}
+	actual = items.GetFuncOrDefault(func(x int) bool { return x == 4 }, defaultValue)
+	if actual != defaultValue {
+		t.Errorf("List.GetFuncOrDefault() = %d, want %d", actual, defaultValue)
+	}
+	// Last
+	option = items.Last(1)
+	if option.IsNil() || option.Value() != 3 {
+		t.Errorf("List.Last() = %v, want 3", option)
+	}
+	option = items.Last(3)
+	if option.IsNil() || option.Value() != 1 {
+		t.Errorf("List.Last() = %v, want 1", option)
+	}
+	option = items.Last(0)
+	if option.NotNil() {
+		t.Errorf("List.Last() = %v, want nil", option)
+	}
+	option = items.Last(4)
+	if option.NotNil() {
+		t.Errorf("List.Last() = %v, want nil", option)
+	}
+	// MustLast
+	actual = items.MustLast(1)
+	if actual != 3 {
+		t.Errorf("List.MustLast() = %d, want 3", actual)
+	}
+	actual = items.MustLast(3)
+	if actual != 1 {
+		t.Errorf("List.MustLast() = %d, want 1", actual)
+	}
+	items.MustLast(4) // should panic
 }
 
 func TestListRandom(t *testing.T) {
