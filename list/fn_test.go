@@ -13,6 +13,15 @@ func TestFn(t *testing.T) {
 }
 
 func TestSumProduct(t *testing.T) {
-	// TODO: Sum
-	// TODO: Product
+	items := []int{1, 2, 3, 4, 5, 6}
+	// Sum
+	actual, want := Sum(items), 21
+	if actual != want {
+		t.Errorf("Sum() = %d, want %d", actual, want)
+	}
+	// Product
+	actual, want = Product(items), 720
+	if actual != want {
+		t.Errorf("Product() = %d, want %d", actual, want)
+	}
 }
