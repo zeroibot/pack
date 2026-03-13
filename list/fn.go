@@ -100,7 +100,7 @@ func FilterIndexed[T any](items []T, keep func(int, T) bool) []T {
 
 // Reduce applies the reducer to each item to get the final result.
 // The reducer function has the signature (result, item) => result
-func Reduce[T any](items []T, reducer func(T, T) T, initial T) T {
+func Reduce[T any](items []T, initial T, reducer func(T, T) T) T {
 	current := initial
 	for _, item := range items {
 		current = reducer(current, item)
