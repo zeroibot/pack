@@ -3,7 +3,7 @@ v0.2.0 - Dyn Package
     x Dyn functions
     x Dyn struct functions
     x Test dyn type functions
-    - Test dyn functions
+    x Test dyn check functions
     - Test dyn struct functions
 v0.1.9 - List Package Tests
     x Commit: 2026-03-13 13:23
