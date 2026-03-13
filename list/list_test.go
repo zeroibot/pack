@@ -73,14 +73,48 @@ func TestList(t *testing.T) {
 	}
 }
 
+func TestListRandom(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("MustGetRandom() did not panic")
+		}
+	}()
+	// GetRandom and MustGetRandom
+	l1 := NewEmpty[int](3) // empty
+	for range 5 {
+		item, ok := GetRandom(l1)
+		if ok || item != 0 {
+			t.Errorf("EmptyList.GetRandom() = %d, %t, want 0, false", item, ok)
+		}
+	}
+	l := InclusiveRange(1, 100)
+	for range 100 {
+		value, ok := GetRandom(l)
+		if !ok || !(1 <= value && value <= 100) {
+			t.Errorf("GetRandom() = %v, want 1..100", value)
+		}
+		value = MustGetRandom(l)
+		if !(1 <= value && value <= 100) {
+			t.Errorf("MustGetRandom() = %v, want 1..100", value)
+		}
+	}
+	// Shuffle
+	l2 := []int{1, 2, 3, 4, 5, 6, 7}
+	l3 := Copy(l2)
+	Shuffle(l3)
+	if slices.Equal(l2, l3) == true {
+		t.Errorf("Shuffle() = %v, want not original %v", l3, l2)
+	}
+
+	MustGetRandom(l1) // should panic (empty list)
+}
+
 func TestListMethods(t *testing.T) {
 	// TODO: ToAny
 	// TODO: IndexFunc, AllIndexFunc
 	// TODO: RemoveFunc, RemoveAllFunc
 	// TODO: GetFuncOrDefault
 	// TODO: Last, MustLast
-	// TODO: GetRandom, MustGetRandom
-	// TODO: Shuffle
 }
 
 func TestListCheck(t *testing.T) {
