@@ -2,6 +2,7 @@ package list
 
 import (
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -61,9 +62,64 @@ func TestFn(t *testing.T) {
 }
 
 func TestFnMap(t *testing.T) {
-	// TODO: Map, MapIndexed
-	// TODO: MapIf, MapIndexedIf
-	// TODO: MapList, MapLookup
+	// Map, MapIndexed
+	type person struct {
+		name string
+		age  int
+	}
+	persons := []person{
+		{"Alice", 20},
+		{"Bob", 30},
+		{"Charlie", 19},
+		{"Dave", 15},
+	}
+	want := []string{"Alice", "Bob", "Charlie", "Dave"}
+	actual := Map(persons, func(x person) string { return x.name })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("Map() = %v, want %v", actual, want)
+	}
+	wantList := []int{20, 30, 19, 15}
+	actualList := Map(persons, func(x person) int { return x.age })
+	if slices.Equal(wantList, actualList) == false {
+		t.Errorf("Map() = %v, want %v", actualList, wantList)
+	}
+	wantList = []int{0, 30, 38, 45}
+	actualList = MapIndexed(persons, func(i int, x person) int { return i * x.age })
+	if slices.Equal(wantList, actualList) == false {
+		t.Errorf("MapIndexed() = %v, want %v", actualList, wantList)
+	}
+	// MapIf, MapIndexedIf
+	want = []string{"Alice", "Bob"}
+	actual = MapIf(persons, func(x person) (string, bool) { return x.name, x.age >= 20 })
+	if slices.Equal(want, actual) == false {
+		t.Errorf("MapIf() = %v, want %v", actual, want)
+	}
+	wantList = []int{30, 15}
+	actualList = MapIf(persons, func(x person) (int, bool) { return x.age, x.age%3 == 0 })
+	if slices.Equal(wantList, actualList) == false {
+		t.Errorf("MapIf() = %v, want %v", actualList, wantList)
+	}
+	wantList = []int{20, 19, 15}
+	actualList = MapIndexedIf(persons, func(i int, x person) (int, bool) { return x.age, i == 0 || x.age < 20 })
+	if slices.Equal(wantList, actualList) == false {
+		t.Errorf("MapIndexedIf() = %v, want %v", actualList, wantList)
+	}
+	// MapList
+	items2 := []string{" ", "A", "B", "C", "D", "E"}
+	indexes := []int{2, 5, 1, 4, 0, 3, 1, 2}
+	result := MapList(indexes, items2)
+	output := strings.Join(result, "")
+	if output != "BEAD CAB" {
+		t.Errorf("MapList() = %s, want [BEAD CAB]", output)
+	}
+	// MapLookup
+	keys := []string{"a", "c"}
+	weight := map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}
+	wantList = []int{1, 3}
+	actualList = MapLookup(keys, weight)
+	if slices.Equal(wantList, actualList) == false {
+		t.Errorf("MapLookup() = %v, want %v", actualList, wantList)
+	}
 }
 
 func TestSumProduct(t *testing.T) {
