@@ -25,7 +25,7 @@ func TestList(t *testing.T) {
 		}
 	}
 	if l1.IsEmpty() != true {
-		t.Errorf("List.Empty = %v, want true", l1.IsEmpty())
+		t.Errorf("List.IsEmpty = %v, want true", l1.IsEmpty())
 	}
 	if l2.NotEmpty() != true {
 		t.Errorf("List.NotEmpty = %v, want true", l2.NotEmpty())
@@ -271,7 +271,7 @@ func TestListFn(t *testing.T) {
 	if output != "BEAD CAB" {
 		t.Errorf("List.MapList() = %s, want [BEAD CAB]", output)
 	}
-	// Filter && CountFunc
+	// Filter, CountFunc
 	numbers := List[int]{1, 2, 3, 4, 5, 6, 7}
 	fn := func(x int) bool { return x%2 == 0 }
 	want, wantCount := List[int]{2, 4, 6}, 3

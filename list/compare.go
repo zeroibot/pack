@@ -109,11 +109,17 @@ func AllSameFunc[T any, K comparable](items []T, keyFn func(T) K) bool {
 
 // AllUnique checks if all list items are unique
 func AllUnique[T comparable](items []T) bool {
+	if len(items) == 0 {
+		return false
+	}
 	return len(Tally(items)) == len(items)
 }
 
 // AllUniqueFunc checks if all list key values are unique
 func AllUniqueFunc[T any, K comparable](items []T, keyFn func(T) K) bool {
+	if len(items) == 0 {
+		return false
+	}
 	return len(TallyFunc(items, keyFn)) == len(items)
 }
 

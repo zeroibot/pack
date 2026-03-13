@@ -1,5 +1,11 @@
 v0.1.9 - List Package Tests
-    - Commit:
+    x Commit: 2026-03-13
+    x Test list number functions
+    x Test list order functions
+    x Test list check functions
+    x Test list functional programming
+    x Test list compare functions
+    x Test list general functions
 v0.1.8 - List Method Tests
     x Commit: 2026-03-13 09:04
     x Test List type
