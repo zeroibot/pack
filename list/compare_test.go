@@ -2,6 +2,7 @@ package list
 
 import (
 	"maps"
+	"reflect"
 	"slices"
 	"testing"
 )
@@ -182,12 +183,61 @@ func TestIndexFunctions(t *testing.T) {
 	}
 }
 
-func TestListCompareMethods(t *testing.T) {
-	// TODO: Tally, TallyFunc
+func TestTallyFunctions(t *testing.T) {
+	// Count
+	chars := []byte{'a', 'b', 'a', 'a', 'c', 'd', 'b', 'c'}
+	countCases := [][2]int{
+		{Count(chars, 'a'), 3},
+		{Count(chars, 'd'), 1},
+		{Count(chars, 'x'), 0},
+	}
+	for _, x := range countCases {
+		actual, want := x[0], x[1]
+		if actual != want {
+			t.Errorf("Count() = %d, want %d", actual, want)
+		}
+	}
+	// GroupByFunc
+	ints := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	want := map[string][]int{
+		"odd":  {1, 3, 5, 7, 9},
+		"even": {2, 4, 6, 8},
+	}
+	oddOrEven := func(x int) string {
+		if x%2 == 0 {
+			return "even"
+		}
+		return "odd"
+	}
+	actual := GroupByFunc(ints, oddOrEven)
+	if reflect.DeepEqual(want, actual) == false {
+		t.Errorf("GroupByFunc() = %v, want %v", actual, want)
+	}
+	// Tally
+	wantTally := map[byte]int{
+		'a': 3,
+		'b': 2,
+		'c': 2,
+		'd': 1,
+	}
+	actualTally := Tally(chars)
+	if maps.Equal(wantTally, actualTally) == false {
+		t.Errorf("Tally() = %v, want %v", actualTally, wantTally)
+	}
+	// TallyFunc
+	wantCounts := map[string]int{
+		"odd":  5,
+		"even": 4,
+	}
+	actualCounts := TallyFunc(ints, oddOrEven)
+	if maps.Equal(wantCounts, actualCounts) == false {
+		t.Errorf("TallyFunc() = %v, want %v", actualCounts, wantCounts)
+	}
+}
+
+func TestUniqueFunctions(t *testing.T) {
 	// TODO: CountUnique, CountUniqueFunc
 	// TODO: AllSame, AllSameFunc
 	// TODO: AllUnique, AllUniqueFunc
 	// TODO: Deduplicate, DeduplicateFunc
-	// TODO: Count
-	// TODO: GroupByFunc
 }
