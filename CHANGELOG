@@ -4,11 +4,8 @@ v0.1.9 - List Package Tests
     x Test list order functions
     x Test list check functions
     x Test list functional programming
-    x Test list map functions
-    - Test list compare queries
-    - Test list compare methods
-    - Test list general methods
-    - Test list basic methods
+    - Test list compare functions
+    - Test list general functions
 v0.1.8 - List Method Tests
     x Commit: 2026-03-13 09:04
     x Test List type
