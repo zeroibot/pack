@@ -1,10 +1,14 @@
+v0.2.1 - Dyn Functions
+    x Commit: 2026-03-14 09:30
+    x Test dyn struct functions
+    x Dyn MustGet functions
+    x Dyn DerefValue and GetStructFieldTag
 v0.2.0 - Dyn Package
-    - Commit:
+    x Commit: 2026-03-13 16:33
     x Dyn functions
     x Dyn struct functions
     x Test dyn type functions
     x Test dyn check functions
-    - Test dyn struct functions
 v0.1.9 - List Package Tests
     x Commit: 2026-03-13 13:23
     x Test list number functions

@@ -2,6 +2,7 @@ package dyn
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -138,4 +139,33 @@ func TestIsEqual(t *testing.T) {
 			t.Errorf("NotEqual(%v, %v) = %t, want %t", x.input1, x.input2, actual, want)
 		}
 	}
+}
+
+func TestDerefValue(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("MustDerefValue() did not panic")
+		}
+	}()
+	type person struct {
+		Name string
+		Age  int
+	}
+	// DerefValue
+	p := person{"John", 20}
+	wantValue := reflect.ValueOf(p)
+	actualValue, ok := DerefValue(&p)
+	if !ok || reflect.DeepEqual(actualValue.Interface(), wantValue.Interface()) == false {
+		t.Errorf("DerefValue() = %v, %t, want %v, true", actualValue, ok, wantValue)
+	}
+	actualValue, ok = DerefValue(p)
+	if ok || actualValue.IsValid() == true {
+		t.Errorf("DerefValue() = %v, %t, want <invalid reflect.Value>, false", actualValue, ok)
+	}
+	// MustDerefValue
+	actualValue = MustDerefValue(&p)
+	if reflect.DeepEqual(actualValue.Interface(), wantValue.Interface()) == false {
+		t.Errorf("MustDerefValue() = %v, want %v", actualValue, wantValue)
+	}
+	MustDerefValue(p) // should panic
 }

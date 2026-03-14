@@ -27,6 +27,21 @@ func MustDeref(x any) any {
 	return reflect.ValueOf(x).Elem().Interface()
 }
 
+// DerefValue dereferences the given pointer, and returns reflect.Value and flag if it is valid
+func DerefValue(x any) (reflect.Value, bool) {
+	if !IsPointer(x) {
+		var zero reflect.Value
+		return zero, false
+	}
+	return MustDerefValue(x), true
+}
+
+// MustDerefValue dereferences the given pointer and returns reflect.Value
+// This panics if item is not a pointer
+func MustDerefValue(x any) reflect.Value {
+	return reflect.ValueOf(x).Elem()
+}
+
 // IsZero checks if given item has zero value
 func IsZero(x any) bool {
 	return reflect.ValueOf(x).IsZero()
