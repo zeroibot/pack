@@ -68,7 +68,7 @@ func TestMap(t *testing.T) {
 		{"grape", true},
 	}
 	for _, x := range keyCases {
-		key, want := x.Values()
+		key, want := x.Unpack()
 		actual := m.NoKey(key)
 		if actual != want {
 			t.Errorf("Map.NoKey(%q) = %v, want %v", key, actual, want)
@@ -79,7 +79,7 @@ func TestMap(t *testing.T) {
 		{"zebra", 0},
 	}
 	for _, x := range getCases {
-		key, want := x.Values()
+		key, want := x.Unpack()
 		actual := m[key]
 		if actual != want {
 			t.Errorf("Map[%q] = %v, want %v", key, actual, want)
@@ -96,7 +96,7 @@ func TestMap(t *testing.T) {
 		{"cherry", defaultValue},
 	}
 	for _, x := range getCases {
-		key, want := x.Values()
+		key, want := x.Unpack()
 		actual := m.GetOrDefault(key, defaultValue)
 		if actual != want {
 			t.Errorf("Map.GetOrDefault(%q, %v) = %v, want %v", key, defaultValue, actual, want)
@@ -112,7 +112,7 @@ func TestMap(t *testing.T) {
 		{func(key string) bool { return key == "zebra" }, true},
 	}
 	for _, x := range keyFnCases {
-		test, want := x.Values()
+		test, want := x.Unpack()
 		actual := m.NoKeyFunc(test)
 		if actual != want {
 			t.Errorf("Map.NoKeyFunc = %v, want %v", actual, want)
@@ -123,7 +123,7 @@ func TestMap(t *testing.T) {
 		{func(value int) bool { return value == 5 }, false},
 	}
 	for _, x := range valueFnCases {
-		test, want := x.Values()
+		test, want := x.Unpack()
 		actual := m.NoValueFunc(test)
 		if actual != want {
 			t.Errorf("Map.NoValueFunc = %v, want %v", actual, want)

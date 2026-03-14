@@ -5,31 +5,32 @@ import (
 
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/dyn"
-	"github.com/roidaradal/pack/str"
 )
 
 type columnValuePair = ds.Tuple2[string, any]
-type columnValueListPair = ds.Tuple2[string, []any]
+type columnValueListPair = ds.Tuple2[string, ds.List[any]]
 
 const (
 	falseCondition string = "false"
 	trueCondition  string = "true"
 )
 
+type operation string
+
 const (
-	opEqual        string = "="
-	opNotEqual     string = "<>"
-	opGreater      string = ">"
-	opGreaterEqual string = ">="
-	opLesser       string = "<"
-	opLessEqual    string = "<="
-	opIn           string = "IN"
-	opNotIn        string = "NOT IN"
-	opAnd          string = "AND"
-	opOr           string = "OR"
-	opPrefix       string = "PREFIX"
-	opSuffix       string = "SUFFIX"
-	opSubstring    string = "SUBSTRING"
+	opEqual        operation = "="
+	opNotEqual     operation = "<>"
+	opGreater      operation = ">"
+	opGreaterEqual operation = ">="
+	opLesser       operation = "<"
+	opLessEqual    operation = "<="
+	opIn           operation = "IN"
+	opNotIn        operation = "NOT IN"
+	opAnd          operation = "AND"
+	opOr           operation = "OR"
+	opPrefix       operation = "PREFIX"
+	opSuffix       operation = "SUFFIX"
+	opSubstring    operation = "SUBSTRING"
 )
 
 // Internal: create new Column-Value pair
@@ -71,7 +72,7 @@ func trueConditionValues() (string, ds.List[any]) {
 
 // Internal: build condition string and query parameter values list (corresponds to ? in the query);
 // Used for solo value conditions
-func soloConditionValues(column, operator string, value any) (string, ds.List[any]) {
+func soloConditionValues(column string, operator operation, value any) (string, ds.List[any]) {
 	isValueNil := dyn.IsNil(value)
 	if operator == opEqual && isValueNil {
 		return fmt.Sprintf("%s IS NULL", column), ds.List[any]{}
@@ -91,10 +92,4 @@ func soloConditionValues(column, operator string, value any) (string, ds.List[an
 		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{substring}
 	}
 	return fmt.Sprintf("%s %s ?", column, operator), ds.List[any]{value}
-}
-
-// Internal: build condition string for value list conditions, adds repeated placeholder ? to end of condition
-func listCondition(column, operator string, numValues int) string {
-	placeholders := str.Repeat(numValues, "?", ", ")
-	return fmt.Sprintf("%s %s (%s)", column, operator, placeholders)
 }

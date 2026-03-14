@@ -5,6 +5,7 @@ v0.2.2 - QueryBuilder Package
     x QB Row functions
     x QB Column-Value constructors
     x QB Condition-Values builders
+    x QB Condition types
 v0.2.1 - Dyn Functions
     x Commit: 2026-03-14 09:30
     x Test dyn struct functions

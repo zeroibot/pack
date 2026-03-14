@@ -19,7 +19,7 @@ func TestList(t *testing.T) {
 		{"LastIndex", l2.LastIndex(), 2},
 	}
 	for _, x := range testCases {
-		name, actual, want := x.Values()
+		name, actual, want := x.Unpack()
 		if actual != want {
 			t.Errorf("List.%s = %d, want %d", name, actual, want)
 		}

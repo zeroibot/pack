@@ -85,7 +85,7 @@ func TestSetFunctions(t *testing.T) {
 		{4, true},
 	}
 	for _, x := range testCases {
-		item, want := x.Values()
+		item, want := x.Unpack()
 		actual := m.Has(item)
 		if actual != want {
 			t.Errorf("Set.Has(%d) = %v, want %v", item, actual, want)
@@ -138,7 +138,7 @@ func TestSetMethods(t *testing.T) {
 		{"Difference", s1.Difference(s4).Items(), List[int]{}},
 	}
 	for _, x := range testCases {
-		name, actual, want := x.Values()
+		name, actual, want := x.Unpack()
 		slices.Sort(actual)
 		if slices.Equal(actual, want) == false {
 			t.Errorf("Set.%s = %v, want %v", name, actual, want)

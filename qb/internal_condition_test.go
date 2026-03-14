@@ -10,5 +10,4 @@ func TestKV(t *testing.T) {
 
 func TestInternalCondition(t *testing.T) {
 	// TODO: soloConditionValues
-	// TODO: listCondition
 }

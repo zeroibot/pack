@@ -13,7 +13,7 @@ func TestRange(t *testing.T) {
 		{r2.String(), "[1, 11)"},
 	}
 	for _, x := range textCases {
-		text, want := x.Values()
+		text, want := x.Unpack()
 		if text != want {
 			t.Errorf("Range.String() = %q, want %q", text, want)
 		}
@@ -53,7 +53,7 @@ func TestRange(t *testing.T) {
 		{99, false},
 	}
 	for _, x := range hasCases {
-		item, want := x.Values()
+		item, want := x.Unpack()
 		actual := r1.Has(item)
 		if actual != want {
 			t.Errorf("Range.Has(%d) = %v, want = %v", item, actual, want)
@@ -70,7 +70,7 @@ func TestRange(t *testing.T) {
 		{67, false},
 	}
 	for _, x := range hasCases {
-		item, want := x.Values()
+		item, want := x.Unpack()
 		actual := r2.Has(item)
 		if actual != want {
 			t.Errorf("Range.Has(%d) = %v, want = %v", item, actual, want)
@@ -83,7 +83,7 @@ func TestRange(t *testing.T) {
 		{r2.Product(), 3628800, "Product"},
 	}
 	for _, x := range testCases {
-		actual, want, name := x.Values()
+		actual, want, name := x.Unpack()
 		if actual != want {
 			t.Errorf("Range.%s() = %d, want = %d", name, actual, want)
 		}
@@ -93,7 +93,7 @@ func TestRange(t *testing.T) {
 		{r2.ToSlice(), []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 	}
 	for _, x := range sliceCases {
-		items, want := x.Values()
+		items, want := x.Unpack()
 		if slices.Equal(items, want) == false {
 			t.Errorf("Range.ToSlice() = %v, want = %v", items, want)
 		}
@@ -108,7 +108,7 @@ func TestReverseRange(t *testing.T) {
 		{r2.String(), "[10, 0)"},
 	}
 	for _, x := range textCases {
-		text, want := x.Values()
+		text, want := x.Unpack()
 		if text != want {
 			t.Errorf("Range.String() = %q, want %q", text, want)
 		}
@@ -151,7 +151,7 @@ func TestReverseRange(t *testing.T) {
 		{99, false},
 	}
 	for _, x := range hasCases {
-		item, want := x.Values()
+		item, want := x.Unpack()
 		actual := r2.Has(item)
 		if actual != want {
 			t.Errorf("Range.Has(%d) = %v, want = %v", item, actual, want)
@@ -164,7 +164,7 @@ func TestReverseRange(t *testing.T) {
 		{r2.Product(), 3628800, "Product"},
 	}
 	for _, x := range testCases {
-		actual, want, name := x.Values()
+		actual, want, name := x.Unpack()
 		if actual != want {
 			t.Errorf("Range.%s() = %d, want = %d", name, actual, want)
 		}
@@ -174,7 +174,7 @@ func TestReverseRange(t *testing.T) {
 		{r2.ToList(), List[int]{10, 9, 8, 7, 6, 5, 4, 3, 2, 1}},
 	}
 	for _, x := range sliceCases {
-		items, want := x.Values()
+		items, want := x.Unpack()
 		if slices.Equal(items, want) == false {
 			t.Errorf("Range.ToList() = %v, want = %v", items, want)
 		}
