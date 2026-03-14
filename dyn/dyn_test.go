@@ -169,3 +169,10 @@ func TestDerefValue(t *testing.T) {
 	}
 	MustDerefValue(p) // should panic
 }
+
+func TestRefValue(t *testing.T) {
+	// TODO: RefValue
+	// TODO: MustRefValue
+	// TODO: AnyValue
+	// TODO: MustAnyValue
+}

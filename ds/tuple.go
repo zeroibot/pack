@@ -45,32 +45,32 @@ func NewTuple4[A, B, C, D any](v1 A, v2 B, v3 C, v4 D) Tuple4[A, B, C, D] {
 	return Tuple4[A, B, C, D]{v1, v2, v3, v4}
 }
 
-// Values returns the unpacked Tuple2 values
-func (t Tuple2[A, B]) Values() (A, B) {
+// Unpack returns the unpacked Tuple2 values
+func (t Tuple2[A, B]) Unpack() (A, B) {
 	return t.V1, t.V2
 }
 
-// Values returns the unpacked Tuple3 values
-func (t Tuple3[A, B, C]) Values() (A, B, C) {
+// Unpack returns the unpacked Tuple3 values
+func (t Tuple3[A, B, C]) Unpack() (A, B, C) {
 	return t.V1, t.V2, t.V3
 }
 
-// Values returns the unpacked Tuple4 values
-func (t Tuple4[A, B, C, D]) Values() (A, B, C, D) {
+// Unpack returns the unpacked Tuple4 values
+func (t Tuple4[A, B, C, D]) Unpack() (A, B, C, D) {
 	return t.V1, t.V2, t.V3, t.V4
 }
 
-// Values returns the unpacked Pair values
-func (p Pair[T]) Values() (T, T) {
+// Unpack returns the unpacked Pair values
+func (p Pair[T]) Unpack() (T, T) {
 	return p[0], p[1]
 }
 
-// Values returns the unpacked Triple values
-func (t Triple[T]) Values() (T, T, T) {
+// Unpack returns the unpacked Triple values
+func (t Triple[T]) Unpack() (T, T, T) {
 	return t[0], t[1], t[2]
 }
 
-// Values returns the unpacked Quad values
-func (q Quad[T]) Values() (T, T, T, T) {
+// Unpack returns the unpacked Quad values
+func (q Quad[T]) Unpack() (T, T, T, T) {
 	return q[0], q[1], q[2], q[3]
 }

@@ -2,6 +2,7 @@ package str
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -33,4 +34,9 @@ func (b *Builder) AddItems(items ...string) {
 // Build builds the string parts, joined by the glue
 func (b *Builder) Build(glue string) string {
 	return strings.Join(b.items, glue)
+}
+
+// Repeat creates a new string by repeating given string and joining by glue
+func Repeat(count int, text, glue string) string {
+	return strings.Join(slices.Repeat([]string{text}, count), glue)
 }

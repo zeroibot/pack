@@ -13,3 +13,7 @@ func TestBuilder(t *testing.T) {
 		t.Errorf("Builder: got %q, want %q", actual, want)
 	}
 }
+
+func TestRepeat(t *testing.T) {
+	// TODO: Repeat
+}
