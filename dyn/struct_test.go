@@ -130,3 +130,55 @@ func TestGetStructField(t *testing.T) {
 		}
 	}
 }
+
+func TestMustGetStructField(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("MustGetStructField() did not panic")
+		}
+	}()
+	type person struct {
+		Name   string
+		Age    int
+		Weight float64
+	}
+	p := person{"John", 20, 55.5}
+	none := MustGetStructField(p, "Name")
+	if none != nil {
+		t.Errorf("MustGetStructField() = %v, want nil", none)
+	}
+	noneString := MustGetStructFieldAsString(p, "Name")
+	if noneString != "<nil>" {
+		t.Errorf("MustGetStructFieldAsString() = %q, want <nil>", noneString)
+	}
+	name := MustGetStructField(&p, "Name")
+	if name != p.Name {
+		t.Errorf("MustGetStructField() = %s, want %s", name, p.Name)
+	}
+	age := MustGetStructField(&p, "Age")
+	if age != p.Age {
+		t.Errorf("MustGetStructField() = %d, want %d", age, p.Age)
+	}
+	ageString := MustGetStructFieldAsString(&p, "Age")
+	if ageString != "20" {
+		t.Errorf("MustGetStructFieldAsString() = %q, want 20", ageString)
+	}
+	weightString := MustGetStructFieldAsString(&p, "Weight")
+	if weightString != "55.5" {
+		t.Errorf("MustGetStructFieldAsString() = %q, want 55.5", weightString)
+	}
+	MustGetStructField(&p, "Job") // should panic
+}
+
+func TestMustGetStructField2(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("MustGetStructField() did not panic")
+		}
+	}()
+	type person struct {
+		password string
+	}
+	p := person{"abc"}
+	MustGetStructField(&p, "password") // should panic
+}

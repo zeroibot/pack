@@ -52,6 +52,19 @@ func GetStructField(structRef any, field string) (any, bool) {
 	return structField.Interface(), true
 }
 
+// MustGetStructField gets item.field from given struct pointer.
+// It returns nil if the given item is not a struct pointer.
+// This panics if the given field is not accessible (not found or private)
+func MustGetStructField(structRef any, field string) any {
+	// Check if struct pointer
+	if !IsStructPointer(structRef) {
+		return nil
+	}
+	// Get struct field
+	item := reflect.ValueOf(structRef).Elem()
+	return item.FieldByName(field).Interface()
+}
+
 // GetStructFieldAs gets item.field from given struct pointer, and type coerces it into T, and returns flag for successful get
 func GetStructFieldAs[T any](structRef any, field string) (T, bool) {
 	structField, ok := GetStructField(structRef, field)
@@ -69,6 +82,14 @@ func GetStructFieldAsString(structRef any, field string) (string, bool) {
 	return fmt.Sprintf("%v", fieldValue), ok
 }
 
+// MustGetStructFieldAsString gets item.field from given struct pointer, and returns field value as string
+// It returns "<nil>" if the given item is not a struct pointer.
+// This panics if the given field is not accessible (not found or private).
+func MustGetStructFieldAsString(structRef any, field string) string {
+	fieldValue := MustGetStructField(structRef, field)
+	return fmt.Sprintf("%v", fieldValue)
+}
+
 // getStructField gets the struct field as reflect.Value from given struct pointer
 func getStructField(structRef any, field string) (reflect.Value, bool) {
 	// Check if struct pointer
@@ -82,24 +103,3 @@ func getStructField(structRef any, field string) (reflect.Value, bool) {
 	structField := item.FieldByName(field)
 	return structField, structField.IsValid()
 }
-
-//// MustGetStructField gets item.field from given struct pointer.
-//// It returns nil if the given item is not a struct pointer or if field is not found
-//func MustGetStructField(structRef any, field string) any {
-//	// Check if struct pointer
-//	if !IsStructPointer(structRef) {
-//		return nil
-//	}
-//	// Get struct field
-//	item := reflect.ValueOf(structRef).Elem()
-//	return item.FieldByName(field).Interface()
-//}
-
-// TODO: MustGetStructFieldAs
-
-//// MustGetStructFieldAsString gets item.field from given struct pointer, and returns field value as string
-//// It returns nil if the given item is not a struct pointer or if field is not found
-//func MustGetStructFieldAsString(structRef any, field string) string {
-//	fieldValue := MustGetStructField(structRef, field)
-//	return fmt.Sprintf("%v", fieldValue)
-//}

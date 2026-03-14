@@ -1,6 +1,7 @@
 v0.2.1 - QueryBuilder Package
     - Commit:
     x Test dyn struct functions
+    x Dyn MustGet functions
 v0.2.0 - Dyn Package
     x Commit: 2026-03-13 16:33
     x Dyn functions
