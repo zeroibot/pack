@@ -16,7 +16,12 @@ func SetStructField(structRef any, field string, value any) bool {
 	if !structField.CanSet() {
 		return false
 	}
-	structField.Set(reflect.ValueOf(value))
+	fieldValue := reflect.ValueOf(value)
+	// Check if correct type
+	if structField.Type() != fieldValue.Type() {
+		return false
+	}
+	structField.Set(fieldValue)
 	return true
 }
 
@@ -40,6 +45,10 @@ func GetStructField(structRef any, field string) (any, bool) {
 	if !ok {
 		return nil, false
 	}
+	// Check if safe to get value
+	if !structField.CanInterface() {
+		return nil, false
+	}
 	return structField.Interface(), true
 }
 
@@ -58,6 +67,20 @@ func GetStructFieldAs[T any](structRef any, field string) (T, bool) {
 func GetStructFieldAsString(structRef any, field string) (string, bool) {
 	fieldValue, ok := GetStructField(structRef, field)
 	return fmt.Sprintf("%v", fieldValue), ok
+}
+
+// getStructField gets the struct field as reflect.Value from given struct pointer
+func getStructField(structRef any, field string) (reflect.Value, bool) {
+	// Check if struct pointer
+	if !IsStructPointer(structRef) {
+		var zero reflect.Value
+		return zero, false
+	}
+	// Dereference struct pointer = struct
+	item := reflect.ValueOf(structRef).Elem()
+	// Check if struct field exists
+	structField := item.FieldByName(field)
+	return structField, structField.IsValid()
 }
 
 //// MustGetStructField gets item.field from given struct pointer.
@@ -80,20 +103,3 @@ func GetStructFieldAsString(structRef any, field string) (string, bool) {
 //	fieldValue := MustGetStructField(structRef, field)
 //	return fmt.Sprintf("%v", fieldValue)
 //}
-
-// getStructField gets the struct field as reflect.Value from given struct pointer
-func getStructField(structRef any, field string) (reflect.Value, bool) {
-	// Check if struct pointer
-	if !IsStructPointer(structRef) {
-		var zero reflect.Value
-		return zero, false
-	}
-	// Dereference struct pointer = struct
-	item := reflect.ValueOf(structRef).Elem()
-	// Check if struct field exists
-	structField := item.FieldByName(field)
-	if structField.IsZero() {
-		return structField, false
-	}
-	return structField, !structField.IsZero()
-}
