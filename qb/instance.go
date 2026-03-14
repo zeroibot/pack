@@ -13,6 +13,7 @@ type Instance struct {
 	typeColumns      ds.Map[string, ds.List[string]]        // {TypeName => []ColumnNames}
 	typeColumnFields ds.Map[string, ds.Map[string, string]] // {TypeName => {ColumnName => FieldName}}
 	typeFieldColumns ds.Map[string, ds.Map[string, string]] // {TypeName => {FieldName => ColumnName}}
+	typeRowCreators  ds.Map[string, createRowFn]            // {TypeName => createRowFn}
 }
 
 // NewInstance creates a new QueryBuilder Instance
@@ -23,6 +24,7 @@ func NewInstance(db dbType) *Instance {
 		typeColumns:      make(ds.Map[string, ds.List[string]]),
 		typeColumnFields: make(ds.Map[string, ds.Map[string, string]]),
 		typeFieldColumns: make(ds.Map[string, ds.Map[string, string]]),
+		typeRowCreators:  make(ds.Map[string, createRowFn]),
 	}
 }
 
@@ -74,5 +76,3 @@ func (i *Instance) Fields(typeName string, fieldRefs ...any) ds.List[string] {
 	}
 	return fieldNames
 }
-
-// GetStructColumnValue

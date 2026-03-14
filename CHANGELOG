@@ -2,6 +2,7 @@ v0.2.2 - QueryBuilder Package
     - Commit:
     x QB Add Type
     x QB Instance methods
+    x QB Row functions
 v0.2.1 - Dyn Functions
     x Commit: 2026-03-14 09:30
     x Test dyn struct functions

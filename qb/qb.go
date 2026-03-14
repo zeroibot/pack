@@ -38,6 +38,6 @@ func AddType[T any](this *Instance, structRef *T) error {
 	this.typeColumns[typeName] = info.columns
 	this.typeColumnFields[typeName] = info.columnFields
 	this.typeFieldColumns[typeName] = info.fieldColumns
-
+	this.typeRowCreators[typeName] = this.newRowCreator(typeName, info.columns)
 	return nil
 }

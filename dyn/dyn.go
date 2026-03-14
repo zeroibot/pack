@@ -48,16 +48,27 @@ func RefValue(value reflect.Value) (any, bool) {
 		return nil, false
 	}
 	ref := value.Addr()
-	if !ref.CanInterface() {
-		return nil, false
-	}
-	return ref.Interface(), true
+	return AnyValue(ref)
 }
 
 // MustRefValue returns an `any` object that holds a reference to given reflect.Value
 // This panics if value is not addressable or if it is private
 func MustRefValue(value reflect.Value) any {
 	return value.Addr().Interface()
+}
+
+// AnyValue returns an `any` object that holds the value of given reflect.Value, and flag if it is valid
+func AnyValue(value reflect.Value) (any, bool) {
+	if !value.CanInterface() {
+		return nil, false
+	}
+	return MustAnyValue(value), true
+}
+
+// MustAnyValue returns an `any` object that holds the value of given reflect.Value
+// This panics if value is private.
+func MustAnyValue(value reflect.Value) any {
+	return value.Interface()
 }
 
 // IsZero checks if given item has zero value

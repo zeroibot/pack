@@ -1,6 +1,8 @@
 package qb
 
 import (
+	"reflect"
+
 	"github.com/roidaradal/pack/conv"
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/dyn"
@@ -95,4 +97,27 @@ func (i *Instance) getFieldColumnName(typeName, fieldName string) string {
 		return ""
 	}
 	return i.typeFieldColumns[typeName][fieldName]
+}
+
+// Internal: common steps for getting the struct field reflect.Value from given struct reference, type name, and column name
+func (i *Instance) getStructColumnField(structRef any, typeName, columnName string) (reflect.Value, bool) {
+	var zero reflect.Value
+	structValue, ok := dyn.DerefValue(structRef)
+	if !ok {
+		return zero, false // invalid struct pointer
+	}
+	fieldName := i.getColumnFieldName(typeName, columnName)
+	if fieldName == "" {
+		return zero, false // field name not found
+	}
+	return structValue.FieldByName(fieldName), true
+}
+
+// Internal: get field value from given struct reference, type name, and column name
+func (i *Instance) getStructColumnValue(structRef any, typeName, columnName string) (any, bool) {
+	structField, ok := i.getStructColumnField(structRef, typeName, columnName)
+	if !ok {
+		return nil, false
+	}
+	return dyn.AnyValue(structField)
 }

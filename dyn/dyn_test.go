@@ -173,4 +173,6 @@ func TestDerefValue(t *testing.T) {
 func TestRefValue(t *testing.T) {
 	// TODO: RefValue
 	// TODO: MustRefValue
+	// TODO: AnyValue
+	// TODO: MustAnyValue
 }
