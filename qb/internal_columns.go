@@ -19,6 +19,7 @@ type columnsInfo struct {
 	columnFields   ds.Map[string, string] // {ColumnName => FieldName}
 	fieldColumns   ds.Map[string, string] // {FieldName => ColumnName}
 	addressColumns ds.Map[string, string] // {FieldAddress => ColumnName}
+	addressFields  ds.Map[string, string] // {FieldAddress => FieldName}
 }
 
 // Internal: given the struct pointer, extract all column and field names
@@ -29,6 +30,7 @@ func (i *Instance) readStructColumns(structRef any) *columnsInfo {
 		columnFields:   make(ds.Map[string, string]),
 		fieldColumns:   make(ds.Map[string, string]),
 		addressColumns: make(ds.Map[string, string]),
+		addressFields:  make(ds.Map[string, string]),
 	})
 
 	// Ensure struct ref is a struct pointer, otherwise the methods below could fail
@@ -53,6 +55,7 @@ func (i *Instance) readStructColumns(structRef any) *columnsInfo {
 			info.columnFields.Update(inner.columnFields)
 			info.fieldColumns.Update(inner.fieldColumns)
 			info.addressColumns.Update(inner.addressColumns)
+			info.addressFields.Update(inner.addressFields)
 		} else {
 			// Normal field
 			columnName, ok := dyn.GetStructFieldTag(structField, columnTag)
@@ -72,6 +75,7 @@ func (i *Instance) readStructColumns(structRef any) *columnsInfo {
 			info.columnFields[columnName] = fieldName
 			info.fieldColumns[fieldName] = columnName
 			info.addressColumns[fieldAddress] = columnName
+			info.addressFields[fieldAddress] = fieldName
 		}
 	}
 	return info

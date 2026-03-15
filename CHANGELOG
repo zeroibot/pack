@@ -1,7 +1,8 @@
-v0.2.3 - QueryBuilder Tests
+v0.2.3 - QueryBuilder Combos
     - Commit:
     x QB Combo types
     x QB Combos
+    x QB Combos Auto-Create Test Function
 v0.2.2 - QueryBuilder Package
     x Commit: 2026-03-14 21:58
     x QB Add Type
