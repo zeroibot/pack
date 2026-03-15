@@ -26,15 +26,15 @@ func (c matchAllCondition) Build() (string, ds.List[any]) {
 
 // Value Condition: uses Column-Value pair (one value)
 type valueCondition struct {
-	pair     ds.Option[columnValuePair]
-	operator operation
+	pair ds.Option[columnValuePair]
+	operator
 }
 
 // newValueCondition creates a new valueCondition
-func newValueCondition[T any](this *Instance, fieldRef *T, value T, operator operation) valueCondition {
+func newValueCondition[T any](this *Instance, fieldRef *T, value T, op operator) valueCondition {
 	return valueCondition{
 		newColumnValue(this, fieldRef, value),
-		operator,
+		op,
 	}
 }
 
@@ -55,12 +55,12 @@ func (c valueCondition) Build() (string, ds.List[any]) {
 // List Condition: uses Column-ValueList pair (multiple values)
 type listCondition struct {
 	pair         ds.Option[columnValueListPair]
-	listOperator operation
-	soloOperator operation
+	listOperator operator
+	soloOperator operator
 }
 
 // newListCondition creates a new listCondition
-func newListCondition[T any](this *Instance, fieldRef *T, values ds.List[T], listOperator, soloOperator operation) listCondition {
+func newListCondition[T any](this *Instance, fieldRef *T, values ds.List[T], listOperator, soloOperator operator) listCondition {
 	return listCondition{
 		newColumnValueList(this, fieldRef, values),
 		listOperator,
@@ -91,32 +91,37 @@ func (c listCondition) Build() (string, ds.List[any]) {
 // Multi Condition: used for joining multiple conditions through AND, OR
 type multiCondition struct {
 	conditions ds.List[Condition]
-	operator   operation
+	operator
 }
 
 // newMultiCondition creates a new multiCondition
-func newMultiCondition(operator operation, conditions ...Condition) multiCondition {
+func newMultiCondition(op operator, conditions ...Condition) multiCondition {
 	return multiCondition{
 		conditions: conditions,
-		operator:   operator,
+		operator:   op,
 	}
 }
 
 // Build multiCondition
 func (c multiCondition) Build() (string, ds.List[any]) {
-	numConditions := c.conditions.Len()
+	return buildMultiCondition(c.operator, c.conditions...)
+}
+
+// Internal: common steps for building the multi-condition
+func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[any]) {
+	numConditions := len(conditions)
 	switch numConditions {
 	case 0:
 		// no conditions = false condition
 		return falseConditionValues()
 	case 1:
 		// one condition = only build that one
-		return c.conditions[0].Build()
+		return conditions[0].Build()
 	default:
 		// multiple conditions
-		conditions := make([]string, 0, numConditions)
+		conditionStrings := make([]string, 0, numConditions)
 		allValues := make(ds.List[any], 0)
-		for _, condition := range c.conditions {
+		for _, condition := range conditions {
 			if condition == nil {
 				continue // skip nil conditions
 			}
@@ -125,12 +130,12 @@ func (c multiCondition) Build() (string, ds.List[any]) {
 				// If any condition fails, return false condition immediately
 				return falseConditionValues()
 			}
-			conditions = append(conditions, conditionString)
+			conditionStrings = append(conditionStrings, conditionString)
 			allValues = append(allValues, values...)
 		}
 		// Join by operator and wrap in parentheses
-		glue := fmt.Sprintf(" %s ", c.operator)
-		condition := fmt.Sprintf("(%s)", strings.Join(conditions, glue))
+		glue := fmt.Sprintf(" %s ", op)
+		condition := fmt.Sprintf("(%s)", strings.Join(conditionStrings, glue))
 		return condition, allValues
 	}
 }

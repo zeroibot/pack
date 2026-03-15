@@ -1,5 +1,6 @@
 # TODO
 
+* Secrets/Configs package: Load .env file
 * Make ds.List comparable by default, then add list compare functions as List methods
 * Create ds.CmpList for non-comparable types, and add a compare function (e.g. maps.Equal, slices.Equal)
 * qb package: QueryBuilder - create Instance that will be used instead of global package variables

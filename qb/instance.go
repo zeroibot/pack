@@ -10,6 +10,7 @@ import (
 type Instance struct {
 	dbType
 	addressColumns   ds.Map[string, string]                 // {FieldAddress => ColumnName}
+	addressFields    ds.Map[string, string]                 // {FieldAddress => FieldName}
 	typeColumns      ds.Map[string, ds.List[string]]        // {TypeName => []ColumnNames}
 	typeColumnFields ds.Map[string, ds.Map[string, string]] // {TypeName => {ColumnName => FieldName}}
 	typeFieldColumns ds.Map[string, ds.Map[string, string]] // {TypeName => {FieldName => ColumnName}}
@@ -21,6 +22,7 @@ func NewInstance(db dbType) *Instance {
 	return &Instance{
 		dbType:           db,
 		addressColumns:   make(ds.Map[string, string]),
+		addressFields:    make(ds.Map[string, string]),
 		typeColumns:      make(ds.Map[string, ds.List[string]]),
 		typeColumnFields: make(ds.Map[string, ds.Map[string, string]]),
 		typeFieldColumns: make(ds.Map[string, ds.Map[string, string]]),

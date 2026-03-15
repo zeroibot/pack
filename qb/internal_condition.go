@@ -15,22 +15,22 @@ const (
 	trueCondition  string = "true"
 )
 
-type operation string
+type operator string
 
 const (
-	opEqual        operation = "="
-	opNotEqual     operation = "<>"
-	opGreater      operation = ">"
-	opGreaterEqual operation = ">="
-	opLesser       operation = "<"
-	opLesserEqual  operation = "<="
-	opIn           operation = "IN"
-	opNotIn        operation = "NOT IN"
-	opAnd          operation = "AND"
-	opOr           operation = "OR"
-	opPrefix       operation = "PREFIX"
-	opSuffix       operation = "SUFFIX"
-	opSubstring    operation = "SUBSTRING"
+	opEqual        operator = "="
+	opNotEqual     operator = "<>"
+	opGreater      operator = ">"
+	opGreaterEqual operator = ">="
+	opLesser       operator = "<"
+	opLesserEqual  operator = "<="
+	opIn           operator = "IN"
+	opNotIn        operator = "NOT IN"
+	opAnd          operator = "AND"
+	opOr           operator = "OR"
+	opPrefix       operator = "PREFIX"
+	opSuffix       operator = "SUFFIX"
+	opSubstring    operator = "SUBSTRING"
 )
 
 // Internal: create new Column-Value pair
@@ -72,24 +72,24 @@ func trueConditionValues() (string, ds.List[any]) {
 
 // Internal: build condition string and query parameter values list (corresponds to ? in the query);
 // Used for solo value conditions
-func soloConditionValues(column string, operator operation, value any) (string, ds.List[any]) {
+func soloConditionValues(column string, op operator, value any) (string, ds.List[any]) {
 	isValueNil := dyn.IsNil(value)
-	if operator == opEqual && isValueNil {
+	if op == opEqual && isValueNil {
 		return fmt.Sprintf("%s IS NULL", column), ds.List[any]{}
-	} else if operator == opNotEqual && isValueNil {
+	} else if op == opNotEqual && isValueNil {
 		return fmt.Sprintf("%s IS NOT NULL", column), ds.List[any]{}
-	} else if operator == opPrefix {
+	} else if op == opPrefix {
 		// <column> LIKE 'prefix%'
 		prefix := fmt.Sprintf("%v%%", value)
 		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{prefix}
-	} else if operator == opSuffix {
+	} else if op == opSuffix {
 		// <column> LIKE '%suffix'
 		suffix := fmt.Sprintf("%%%v", value)
 		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{suffix}
-	} else if operator == opSubstring {
+	} else if op == opSubstring {
 		// <column> LIKE '%substring%'
 		substring := fmt.Sprintf("%%%v%%", value)
 		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{substring}
 	}
-	return fmt.Sprintf("%s %s ?", column, operator), ds.List[any]{value}
+	return fmt.Sprintf("%s %s ?", column, op), ds.List[any]{value}
 }
