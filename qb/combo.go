@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/roidaradal/pack/ds"
+	"github.com/roidaradal/pack/list"
 )
 
 // DualCondition interface holds a Condition Builder and a struct Tester
@@ -130,13 +131,21 @@ func NotInTest[T any, V comparable](this *Instance, fieldRef *V, values ds.List[
 }
 
 // AndTest creates an And Combo
-func AndTest[T any](test testFn[T], conditions ...Condition) DualCondition[T] {
-	condition := newMultiCondition(opAnd, conditions...)
-	return newMultiCombo(condition, test)
+func AndTest[T any](conditions ...DualCondition[T]) DualCondition[T] {
+	test := func(item T) bool {
+		return list.All(conditions, func(c DualCondition[T]) bool {
+			return c.Test(item)
+		})
+	}
+	return newMultiCombo(conditions, opAnd, test)
 }
 
 // OrTest creates an Or Combo
-func OrTest[T any](test testFn[T], conditions ...Condition) DualCondition[T] {
-	condition := newMultiCondition(opOr, conditions...)
-	return newMultiCombo(condition, test)
+func OrTest[T any](conditions ...DualCondition[T]) DualCondition[T] {
+	test := func(item T) bool {
+		return list.Any(conditions, func(c DualCondition[T]) bool {
+			return c.Test(item)
+		})
+	}
+	return newMultiCombo(conditions, opOr, test)
 }

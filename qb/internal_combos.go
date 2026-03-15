@@ -1,5 +1,9 @@
 package qb
 
+import (
+	"github.com/roidaradal/pack/ds"
+)
+
 type testFn[T any] func(T) bool
 
 // Internal: create the test for combos
@@ -64,13 +68,23 @@ func (c listCombo[T]) Test(item T) bool {
 
 // Multi Combo: uses multiCondition
 type multiCombo[T any] struct {
-	multiCondition
+	conditions ds.List[DualCondition[T]]
+	operator
 	test testFn[T]
 }
 
 // newMultiCombo creates a new multiCombo
-func newMultiCombo[T any](condition multiCondition, test testFn[T]) multiCombo[T] {
-	return multiCombo[T]{condition, test}
+func newMultiCombo[T any](conditions ds.List[DualCondition[T]], op operator, test testFn[T]) multiCombo[T] {
+	return multiCombo[T]{conditions, op, test}
+}
+
+// Build multiCombo
+func (c multiCombo[T]) Build() (string, ds.List[any]) {
+	conditions := make([]Condition, len(c.conditions))
+	for _, condition := range c.conditions {
+		conditions = append(conditions, condition)
+	}
+	return buildMultiCondition(c.operator, conditions...)
 }
 
 func (c multiCombo[T]) Test(item T) bool {

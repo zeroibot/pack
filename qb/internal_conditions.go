@@ -104,19 +104,24 @@ func newMultiCondition(op operator, conditions ...Condition) multiCondition {
 
 // Build multiCondition
 func (c multiCondition) Build() (string, ds.List[any]) {
-	numConditions := c.conditions.Len()
+	return buildMultiCondition(c.operator, c.conditions...)
+}
+
+// Internal: common steps for building the multi-condition
+func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[any]) {
+	numConditions := len(conditions)
 	switch numConditions {
 	case 0:
 		// no conditions = false condition
 		return falseConditionValues()
 	case 1:
 		// one condition = only build that one
-		return c.conditions[0].Build()
+		return conditions[0].Build()
 	default:
 		// multiple conditions
-		conditions := make([]string, 0, numConditions)
+		conditionStrings := make([]string, 0, numConditions)
 		allValues := make(ds.List[any], 0)
-		for _, condition := range c.conditions {
+		for _, condition := range conditions {
 			if condition == nil {
 				continue // skip nil conditions
 			}
@@ -125,12 +130,12 @@ func (c multiCondition) Build() (string, ds.List[any]) {
 				// If any condition fails, return false condition immediately
 				return falseConditionValues()
 			}
-			conditions = append(conditions, conditionString)
+			conditionStrings = append(conditionStrings, conditionString)
 			allValues = append(allValues, values...)
 		}
 		// Join by operator and wrap in parentheses
-		glue := fmt.Sprintf(" %s ", c.operator)
-		condition := fmt.Sprintf("(%s)", strings.Join(conditions, glue))
+		glue := fmt.Sprintf(" %s ", op)
+		condition := fmt.Sprintf("(%s)", strings.Join(conditionStrings, glue))
 		return condition, allValues
 	}
 }
