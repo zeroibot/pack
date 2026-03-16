@@ -3,6 +3,7 @@ v0.2.5 - QueryBuilder Condition Tests
     x QB Mock Scanner test
     x QB condition type tests
     x QB combo type tests
+    x Add ds.Result type
     - QB conditions tests
     - QB combos tests
 v0.2.4 - QueryBuilder Internal Tests

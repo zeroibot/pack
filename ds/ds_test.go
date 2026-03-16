@@ -1,6 +1,10 @@
 package ds
 
-import "testing"
+import (
+	"errors"
+	"fmt"
+	"testing"
+)
 
 func TestOption(t *testing.T) {
 	value1 := 1
@@ -51,6 +55,59 @@ func TestOption(t *testing.T) {
 		text, want = opt.String(), "<nil>"
 		if text != want {
 			t.Errorf("Option.String() = %v, want = %v", text, want)
+		}
+	}
+}
+
+func TestResult(t *testing.T) {
+	// NewResult, Error
+	errNotEven := fmt.Errorf("not an even number")
+	res1 := NewResult[int](5, nil)
+	res2 := Error[int](errNotEven)
+	res3 := NewResult[int](67, nil)
+
+	// IsError, NotError, Error
+	testCases1 := []Tuple3[Result[int], bool, error]{
+		{res1, false, nil},
+		{res2, true, errNotEven},
+		{res3, false, nil},
+	}
+	for _, x := range testCases1 {
+		result, want, wantErr := x.Unpack()
+		actual := result.IsError()
+		if actual != want {
+			t.Errorf("Result.IsError() = %t, want %t", actual, want)
+		}
+		want = !want
+		actual = result.NotError()
+		if actual != want {
+			t.Errorf("Result.NotError() = %t, want %t", actual, want)
+		}
+		actualErr := result.Error()
+		if errors.Is(actualErr, wantErr) == false {
+			t.Errorf("Result.Error() = %v, want = %v", actualErr, wantErr)
+		}
+	}
+
+	// Get, Value, String
+	testCases2 := []Tuple4[Result[int], int, bool, string]{
+		{res1, 5, true, "5"},
+		{res2, 0, false, fmt.Sprintf("error: %s", errNotEven.Error())},
+		{res3, 67, true, "67"},
+	}
+	for _, x := range testCases2 {
+		result, wantValue, wantOk, wantString := x.Unpack()
+		actualValue, actualOk := result.Get()
+		if actualValue != wantValue || actualOk != wantOk {
+			t.Errorf("Result.Get() = %v, %t, want %v, %t", actualValue, actualOk, wantValue, wantOk)
+		}
+		actualValue = result.Value()
+		if actualValue != wantValue {
+			t.Errorf("Result.Value() = %v, want = %v", actualValue, wantValue)
+		}
+		actualString := result.String()
+		if actualString != wantString {
+			t.Errorf("Result.String() = %v, want = %v", actualString, wantString)
 		}
 	}
 }
