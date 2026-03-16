@@ -1,7 +1,6 @@
 package qb
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -29,13 +28,22 @@ func TestAddType(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddType error: %s", err.Error())
 	}
-	fmt.Println(this.addressColumns)
-	fmt.Println(this.typeColumns)
-	fmt.Println(this.typeColumnFields)
-	fmt.Println(this.typeFieldColumns)
-	// TODO: Finish this test
+	// Note: checking of result details are checked in the individual methods
 }
 
 func TestPrepareColumn(t *testing.T) {
-	// TODO: DbType.PrepareColumn
+	db1 := MySQL
+	db2 := dbType{"other"}
+	testCases := [][2]string{
+		{"`name`", db1.prepareColumn("name")},
+		{"`age`", db1.prepareColumn("age")},
+		{"name", db2.prepareColumn("name")},
+		{"age", db2.prepareColumn("age")},
+	}
+	for _, x := range testCases {
+		want, actual := x[0], x[1]
+		if want != actual {
+			t.Errorf("dbType.prepareColumn() = %q, want %q", actual, want)
+		}
+	}
 }

@@ -1,6 +1,7 @@
-v0.2.4 - QueryBuilder Tests
+v0.2.4 - QueryBuilder Internal Tests
     - Commit:
     x Additional str and dyn tests
+    x QB Rows test
 v0.2.3 - QueryBuilder Combos
     x Commit: 2026-03-15 15:04
     x QB Combo types
