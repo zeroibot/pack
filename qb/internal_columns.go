@@ -22,6 +22,13 @@ type columnsInfo struct {
 	addressFields  ds.Map[string, string] // {FieldAddress => FieldName}
 }
 
+// IsEmpty checks if the contents of columnsInfo are all empty
+func (i *columnsInfo) IsEmpty() bool {
+	ok1 := i.columns.IsEmpty() && i.columnFields.IsEmpty() && i.fieldColumns.IsEmpty()
+	ok2 := i.addressColumns.IsEmpty() && i.addressFields.IsEmpty()
+	return ok1 && ok2
+}
+
 // Internal: given the struct pointer, extract all column and field names
 // Uses recursion for embedded struct fields.
 func (i *Instance) readStructColumns(structRef any) *columnsInfo {

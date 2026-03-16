@@ -4,6 +4,8 @@ v0.2.4 - QueryBuilder Internal Tests
     x QB Rows test
     x QB internal rows and fields test
     x QB Instance tests
+    x QB internal columns tests
+    - Remove column preparation
     - QB internal condition tests
     - QB Mock Scanner test
 v0.2.3 - QueryBuilder Combos

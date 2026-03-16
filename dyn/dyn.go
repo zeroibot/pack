@@ -29,7 +29,7 @@ func MustDeref(x any) any {
 
 // DerefValue dereferences the given pointer, and returns reflect.Value and flag if it is valid
 func DerefValue(x any) (reflect.Value, bool) {
-	if !IsPointer(x) {
+	if IsNil(x) || !IsPointer(x) {
 		var zero reflect.Value
 		return zero, false
 	}
