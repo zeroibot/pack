@@ -36,6 +36,7 @@ func TestRowFunctions(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddType() error = %v", err)
 	}
+	// ToRow
 	empty := dict.Object{}
 	userObj := dict.Object{"`Name`": "john", "`Password`": "123456", "`Age`": 25}
 	testCases := [][2]dict.Object{

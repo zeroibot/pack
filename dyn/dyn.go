@@ -44,7 +44,7 @@ func MustDerefValue(x any) reflect.Value {
 
 // RefValue returns an `any` object that holds a reference to given reflect.Value, and flag if it is valid
 func RefValue(value reflect.Value) (any, bool) {
-	if !value.CanAddr() {
+	if !value.IsValid() || !value.CanAddr() {
 		return nil, false
 	}
 	ref := value.Addr()
@@ -59,7 +59,7 @@ func MustRefValue(value reflect.Value) any {
 
 // AnyValue returns an `any` object that holds the value of given reflect.Value, and flag if it is valid
 func AnyValue(value reflect.Value) (any, bool) {
-	if !value.CanInterface() {
+	if !value.IsValid() || !value.CanInterface() {
 		return nil, false
 	}
 	return MustAnyValue(value), true
