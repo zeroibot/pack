@@ -12,7 +12,7 @@ import (
 type missingCondition struct{}
 
 // BuildCondition to 'WHERE false'
-func (c missingCondition) BuildCondition() (string, ds.List[any]) {
+func (c missingCondition) BuildCondition() (string, []any) {
 	return falseConditionValues()
 }
 
@@ -20,7 +20,7 @@ func (c missingCondition) BuildCondition() (string, ds.List[any]) {
 type matchAllCondition struct{}
 
 // BuildCondition to 'WHERE true'
-func (c matchAllCondition) BuildCondition() (string, ds.List[any]) {
+func (c matchAllCondition) BuildCondition() (string, []any) {
 	return trueConditionValues()
 }
 
@@ -38,7 +38,7 @@ func newValueCondition[T any](this *Instance, fieldRef *T, value T, op operator)
 	}
 }
 
-func (c valueCondition) BuildCondition() (string, ds.List[any]) {
+func (c valueCondition) BuildCondition() (string, []any) {
 	if c.pair.IsNil() {
 		// no pair = false condition
 		return falseConditionValues()
@@ -67,7 +67,7 @@ func newListCondition[T any](this *Instance, fieldRef *T, values ds.List[T], lis
 	}
 }
 
-func (c listCondition) BuildCondition() (string, ds.List[any]) {
+func (c listCondition) BuildCondition() (string, []any) {
 	if c.pair.IsNil() {
 		// no pair = false condition
 		return falseConditionValues()
@@ -100,12 +100,12 @@ func newMultiCondition(op operator, conditions ...Condition) multiCondition {
 	}
 }
 
-func (c multiCondition) BuildCondition() (string, ds.List[any]) {
+func (c multiCondition) BuildCondition() (string, []any) {
 	return buildMultiCondition(c.operator, c.conditions...)
 }
 
 // Internal: common steps for building the multi-condition
-func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[any]) {
+func buildMultiCondition(op operator, conditions ...Condition) (string, []any) {
 	numConditions := len(conditions)
 	switch numConditions {
 	case 0:
@@ -117,7 +117,7 @@ func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[
 	default:
 		// multiple conditions
 		conditionStrings := make([]string, 0, numConditions)
-		allValues := make(ds.List[any], 0)
+		allValues := make([]any, 0)
 		for _, condition := range conditions {
 			if condition == nil {
 				continue // skip nil conditions

@@ -2,8 +2,6 @@ package qb
 
 import (
 	"fmt"
-
-	"github.com/roidaradal/pack/ds"
 )
 
 type DeleteQuery[T any] struct {
@@ -18,7 +16,7 @@ func NewDeleteQuery[T any](this *Instance, table string) *DeleteQuery[T] {
 }
 
 // BuildQuery returns the query string and parameter values
-func (q DeleteQuery[T]) BuildQuery() (string, ds.List[any]) {
+func (q DeleteQuery[T]) BuildQuery() (string, []any) {
 	condition, values, err := q.conditionQuery.preBuildCheck()
 	if err != nil {
 		return emptyQueryValues()

@@ -3,8 +3,6 @@ package qb
 import (
 	"slices"
 	"testing"
-
-	"github.com/roidaradal/pack/ds"
 )
 
 func TestConditions(t *testing.T) {
@@ -18,7 +16,7 @@ func TestConditions(t *testing.T) {
 	type testCase struct {
 		cond       Condition
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 	}
 	this := NewInstance(MySQL)
 	p := &Person{}
@@ -42,20 +40,20 @@ func TestConditions(t *testing.T) {
 	condOr := OrCondition(condLesserEqual, condIn)
 
 	testCases := []testCase{
-		{condNone, "true", ds.List[any]{}},
-		{condEqual, "`Name` = ?", ds.List[any]{"John"}},
-		{condNotEqual, "`Job` <> ?", ds.List[any]{"manager"}},
-		{condPrefix, "`Job` LIKE ?", ds.List[any]{"assistant%"}},
-		{condSuffix, "`Address` LIKE ?", ds.List[any]{"%City"}},
-		{condSubstring, "`Address` LIKE ?", ds.List[any]{"%Tower%"}},
-		{condGreater, "`Score` > ?", ds.List[any]{75}},
-		{condGreaterEqual, "`Age` >= ?", ds.List[any]{20}},
-		{condLesser, "`Age` < ?", ds.List[any]{60}},
-		{condLesserEqual, "`Score` <= ?", ds.List[any]{50}},
-		{condIn, "`Job` IN (?, ?, ?)", ds.List[any]{"dev", "qa", "intern"}},
-		{condNotIn, "`Score` NOT IN (?, ?)", ds.List[any]{67, 69}},
-		{condAnd, "(`Name` = ? AND `Score` > ?)", ds.List[any]{"John", 75}},
-		{condOr, "(`Score` <= ? OR `Job` IN (?, ?, ?))", ds.List[any]{50, "dev", "qa", "intern"}},
+		{condNone, "true", []any{}},
+		{condEqual, "`Name` = ?", []any{"John"}},
+		{condNotEqual, "`Job` <> ?", []any{"manager"}},
+		{condPrefix, "`Job` LIKE ?", []any{"assistant%"}},
+		{condSuffix, "`Address` LIKE ?", []any{"%City"}},
+		{condSubstring, "`Address` LIKE ?", []any{"%Tower%"}},
+		{condGreater, "`Score` > ?", []any{75}},
+		{condGreaterEqual, "`Age` >= ?", []any{20}},
+		{condLesser, "`Age` < ?", []any{60}},
+		{condLesserEqual, "`Score` <= ?", []any{50}},
+		{condIn, "`Job` IN (?, ?, ?)", []any{"dev", "qa", "intern"}},
+		{condNotIn, "`Score` NOT IN (?, ?)", []any{67, 69}},
+		{condAnd, "(`Name` = ? AND `Score` > ?)", []any{"John", 75}},
+		{condOr, "(`Score` <= ? OR `Job` IN (?, ?, ?))", []any{50, "dev", "qa", "intern"}},
 	}
 	for _, x := range testCases {
 		actualCond, actualValues := x.cond.BuildCondition()

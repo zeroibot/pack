@@ -78,7 +78,7 @@ func newMultiCombo[T any](conditions ds.List[DualCondition[T]], op operator, tes
 	return multiCombo[T]{conditions, op, test}
 }
 
-func (c multiCombo[T]) BuildCondition() (string, ds.List[any]) {
+func (c multiCombo[T]) BuildCondition() (string, []any) {
 	conditions := make([]Condition, len(c.conditions))
 	for _, condition := range c.conditions {
 		conditions = append(conditions, condition)

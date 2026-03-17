@@ -67,8 +67,8 @@ func TestKVCondition(t *testing.T) {
 		actual ds.Option[columnValueListPair]
 	}
 	testCases2 := []testCase2{
-		{false, columnValueListPair{V1: "`Name`", V2: ds.List[any]{"John", "Jane"}}, newColumnValueList(this, &p.Name, ds.List[string]{"John", "Jane"})},
-		{false, columnValueListPair{V1: "`Job`", V2: ds.List[any]{"dev", "qa"}}, newColumnValueList(this, &p.Job, ds.List[string]{"dev", "qa"})},
+		{false, columnValueListPair{V1: "`Name`", V2: []any{"John", "Jane"}}, newColumnValueList(this, &p.Name, ds.List[string]{"John", "Jane"})},
+		{false, columnValueListPair{V1: "`Job`", V2: []any{"dev", "qa"}}, newColumnValueList(this, &p.Job, ds.List[string]{"dev", "qa"})},
 		{true, empty2, newColumnValueList(this, &p.secret, ds.List[string]{"123", "456"})},
 		{true, empty2, newColumnValueList(this, &p.Details, ds.List[string]{"abc", "def"})},
 	}
@@ -79,7 +79,7 @@ func TestKVCondition(t *testing.T) {
 	}
 
 	// falseConditionValues
-	emptyValues := ds.List[any]{}
+	emptyValues := make([]any, 0)
 	wantValues := emptyValues
 	actualCond, actualValues := falseConditionValues()
 	if actualCond != "false" || slices.Equal(actualValues, wantValues) == false {
@@ -103,19 +103,19 @@ func TestKVCondition(t *testing.T) {
 
 	type testCase3 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		kv         columnValuePair
 		op         operator
 	}
 	testCases3 := []testCase3{
-		{"`Name` = ?", ds.List[any]{"John"}, kv1, opEqual},
-		{"`Age` > ?", ds.List[any]{20}, kv2, opGreater},
-		{"`Lvl` <> ?", ds.List[any]{5}, kv3, opNotEqual},
+		{"`Name` = ?", []any{"John"}, kv1, opEqual},
+		{"`Age` > ?", []any{20}, kv2, opGreater},
+		{"`Lvl` <> ?", []any{5}, kv3, opNotEqual},
 		{"`IP` IS NULL", emptyValues, kv4, opEqual},
 		{"`IP` IS NOT NULL", emptyValues, kv4, opNotEqual},
-		{"`Name` LIKE ?", ds.List[any]{"John%"}, kv1, opPrefix},
-		{"`Name` LIKE ?", ds.List[any]{"%John"}, kv1, opSuffix},
-		{"`Job` LIKE ?", ds.List[any]{"%Dev%"}, kv5, opSubstring},
+		{"`Name` LIKE ?", []any{"John%"}, kv1, opPrefix},
+		{"`Name` LIKE ?", []any{"%John"}, kv1, opSuffix},
+		{"`Job` LIKE ?", []any{"%Dev%"}, kv5, opSubstring},
 	}
 	for _, x := range testCases3 {
 		cond, values := soloConditionValues(x.kv.V1, x.op, x.kv.V2)

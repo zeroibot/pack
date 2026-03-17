@@ -20,7 +20,7 @@ func TestInternalConditions(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddType error: %v", err)
 	}
-	emptyValues := ds.List[any]{}
+	emptyValues := make([]any, 0)
 	// missingCondition.BuildCondition()
 	cond1 := missingCondition{}
 	wantCond := "false"
@@ -52,12 +52,12 @@ func TestInternalConditions(t *testing.T) {
 	}
 	type testCase1 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		valueCond  valueCondition
 	}
 	testCases1 := []testCase1{
-		{"`Name` <> ?", ds.List[any]{"John"}, valueCond1},
-		{"`age` > ?", ds.List[any]{20}, valueCond2},
+		{"`Name` <> ?", []any{"John"}, valueCond1},
+		{"`age` > ?", []any{20}, valueCond2},
 		{"false", emptyValues, valueCond3},
 		{"false", emptyValues, valueCond4},
 	}
@@ -82,18 +82,18 @@ func TestInternalConditions(t *testing.T) {
 	// listCondition.BuildCondition()
 	type testCase2 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		listCond   listCondition
 	}
 	listCond6 := listCondition{
-		pair:         ds.NewOption(new(columnValueListPair{V1: "", V2: ds.List[any]{1, 2, 3}})),
+		pair:         ds.NewOption(new(columnValueListPair{V1: "", V2: []any{1, 2, 3}})),
 		listOperator: opIn,
 		soloOperator: opEqual,
 	}
 	testCases2 := []testCase2{
-		{"`age` IN (?, ?, ?)", ds.List[any]{18, 19, 20}, listCond1},
-		{"`Job` NOT IN (?, ?)", ds.List[any]{"dev", "qa"}, listCond2},
-		{"`Name` = ?", ds.List[any]{"John"}, listCond3},
+		{"`age` IN (?, ?, ?)", []any{18, 19, 20}, listCond1},
+		{"`Job` NOT IN (?, ?)", []any{"dev", "qa"}, listCond2},
+		{"`Name` = ?", []any{"John"}, listCond3},
 		{"false", emptyValues, listCond4},
 		{"false", emptyValues, listCond5},
 		{"false", emptyValues, listCond6},
@@ -114,15 +114,15 @@ func TestInternalConditions(t *testing.T) {
 	// multiCondition.BuildCondition()
 	type testCase3 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		multiCond  multiCondition
 	}
 	testCases3 := []testCase3{
-		{"(`Name` <> ? AND `age` > ?)", ds.List[any]{"John", 20}, multiCond1},
-		{"(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", ds.List[any]{18, 19, 20, "dev", "qa"}, multiCond2},
-		{"`Name` <> ?", ds.List[any]{"John"}, multiCond3},
+		{"(`Name` <> ? AND `age` > ?)", []any{"John", 20}, multiCond1},
+		{"(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", []any{18, 19, 20, "dev", "qa"}, multiCond2},
+		{"`Name` <> ?", []any{"John"}, multiCond3},
 		{"false", emptyValues, multiCond4},
-		{"((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", ds.List[any]{"John", 20, 18, 19, 20, "dev", "qa"}, multiCond5},
+		{"((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", []any{"John", 20, 18, 19, 20, "dev", "qa"}, multiCond5},
 		{"false", emptyValues, multiCond6},
 	}
 	for _, x := range testCases3 {

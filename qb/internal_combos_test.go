@@ -80,7 +80,7 @@ func TestInternalCombos(t *testing.T) {
 	}
 	// multiCombo.BuildCondition
 	wantCond := "(`Name` = ? OR `Job` IN (?, ?))"
-	wantValues := ds.List[any]{"Jill", "dev", "qa"}
+	wantValues := []any{"Jill", "dev", "qa"}
 	actualCond, actualValues := multiCombo1.BuildCondition()
 	if actualCond != wantCond || slices.Equal(wantValues, actualValues) == false {
 		t.Errorf("multiCombo.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, wantValues)

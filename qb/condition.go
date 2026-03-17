@@ -9,7 +9,7 @@ import (
 // Condition interface unifies all Condition objects:
 // BuildCondition() method outputs the condition string and parameter values
 type Condition interface {
-	BuildCondition() (string, ds.List[any]) // Return (condition string, parameter values)
+	BuildCondition() (string, []any) // Return (condition string, parameter values)
 }
 
 // EmptyCondition creates a matchAllCondition

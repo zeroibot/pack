@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/dyn"
 )
 
@@ -16,7 +15,7 @@ var (
 // Query interface unifies all Query types:
 // BuildQuery() method outputs the query string and parameter values
 type Query interface {
-	BuildQuery() (string, ds.List[any]) // Return (query string, parameter values)
+	BuildQuery() (string, []any) // Return (query string, parameter values)
 }
 
 // baseQuery is an abstract Query with a table name.
@@ -65,7 +64,7 @@ func (q *baseQuery) preBuildCheck() error {
 }
 
 // preBuildCheck checks if the table is set and builds the Condition
-func (q *conditionQuery[T]) preBuildCheck() (string, ds.List[any], error) {
+func (q *conditionQuery[T]) preBuildCheck() (string, []any, error) {
 	err := q.baseQuery.preBuildCheck()
 	condition, values := q.condition.BuildCondition()
 	return condition, values, err
@@ -96,6 +95,6 @@ func ToString(q Query) string {
 }
 
 // emptyQueryValues returns an empty query and empty list of values
-func emptyQueryValues() (string, ds.List[any]) {
-	return "", ds.List[any]{}
+func emptyQueryValues() (string, []any) {
+	return "", []any{}
 }
