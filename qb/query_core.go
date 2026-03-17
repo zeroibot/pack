@@ -140,3 +140,11 @@ func (q *orderedLimit) mustLimitString() string {
 	}
 	return q.fullString()
 }
+
+// tryAppend tries to append the given string at the end if it is not blank
+func tryAppend(query string, suffix string) string {
+	if suffix != "" {
+		return fmt.Sprintf("%s %s", query, suffix)
+	}
+	return query
+}
