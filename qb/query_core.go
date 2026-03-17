@@ -53,6 +53,11 @@ func (q *conditionQuery[T]) initializeOptional(this *Instance, table string) {
 	q.condition = matchAllCombo[T]{}
 }
 
+// Test uses the test function of the DualCondition
+func (q *conditionQuery[T]) Test(item T) bool {
+	return q.condition.Test(item)
+}
+
 // Where sets the Query Condition
 func (q *conditionQuery[T]) Where(condition DualCondition[T]) {
 	q.condition = condition

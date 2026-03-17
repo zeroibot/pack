@@ -17,58 +17,58 @@ func EmptyCondition() Condition {
 	return matchAllCondition{}
 }
 
-// EqualCondition creates an Equal Condition
-func EqualCondition[T comparable](this *Instance, fieldRef *T, value T) Condition {
+// EqualTo creates an Equal Condition
+func EqualTo[T comparable](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opEqual)
 }
 
-// NotEqualCondition creates a NotEqual Condition
-func NotEqualCondition[T comparable](this *Instance, fieldRef *T, value T) Condition {
+// NotEqualTo creates a NotEqual Condition
+func NotEqualTo[T comparable](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opNotEqual)
 }
 
-// PrefixCondition creates a Prefix Condition
-func PrefixCondition(this *Instance, fieldRef *string, value string) Condition {
+// HasPrefix creates a Prefix Condition
+func HasPrefix(this *Instance, fieldRef *string, value string) Condition {
 	return newValueCondition(this, fieldRef, value, opPrefix)
 }
 
-// SuffixCondition creates a Suffix Condition
-func SuffixCondition(this *Instance, fieldRef *string, value string) Condition {
+// HasSuffix creates a Suffix Condition
+func HasSuffix(this *Instance, fieldRef *string, value string) Condition {
 	return newValueCondition(this, fieldRef, value, opSuffix)
 }
 
-// SubstringCondition creates a Substring Condition
-func SubstringCondition(this *Instance, fieldRef *string, value string) Condition {
+// HasSubstring creates a Substring Condition
+func HasSubstring(this *Instance, fieldRef *string, value string) Condition {
 	return newValueCondition(this, fieldRef, value, opSubstring)
 }
 
-// GreaterCondition creates a GreaterThan Condition
-func GreaterCondition[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
+// GreaterThan creates a GreaterThan Condition
+func GreaterThan[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opGreater)
 }
 
-// GreaterEqualCondition creates a GreaterThanOrEqual Condition
-func GreaterEqualCondition[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
+// GreaterEqualTo creates a GreaterThanOrEqual Condition
+func GreaterEqualTo[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opGreaterEqual)
 }
 
-// LesserCondition creates a LesserThan Condition
-func LesserCondition[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
+// LesserThan creates a LesserThan Condition
+func LesserThan[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opLesser)
 }
 
-// LesserEqualCondition creates a LesserThanOrEqual Condition
-func LesserEqualCondition[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
+// LesserEqualTo creates a LesserThanOrEqual Condition
+func LesserEqualTo[T cmp.Ordered](this *Instance, fieldRef *T, value T) Condition {
 	return newValueCondition(this, fieldRef, value, opLesserEqual)
 }
 
-// InCondition creates an In Condition
-func InCondition[T comparable](this *Instance, fieldRef *T, values ds.List[T]) Condition {
+// InValues creates an In Condition
+func InValues[T comparable](this *Instance, fieldRef *T, values ds.List[T]) Condition {
 	return newListCondition(this, fieldRef, values, opIn, opEqual)
 }
 
-// NotInCondition creates a NotIn Condition
-func NotInCondition[T comparable](this *Instance, fieldRef *T, values ds.List[T]) Condition {
+// NotInValues creates a NotIn Condition
+func NotInValues[T comparable](this *Instance, fieldRef *T, values ds.List[T]) Condition {
 	return newListCondition(this, fieldRef, values, opNotIn, opNotEqual)
 }
 
