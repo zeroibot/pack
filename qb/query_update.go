@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/dict"
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/dyn"
 )
@@ -40,16 +41,19 @@ func Update[T, V any](this *Instance, q *UpdateQuery[T], fieldRef *V, value V) {
 	q.updates = append(q.updates, pairOption)
 }
 
-// Update adds a column=value update to the UpdateQuery
+// Update adds a column=value update to the UpdateQuery.
+// Note: We lose type-checking of value here, so must be sure that field=value are of the same type.
 func (q *UpdateQuery[T]) Update(this *Instance, fieldName string, value any) {
 	pairOption := newFieldColumnValue(this, q.typeName, fieldName, value)
 	q.updates = append(q.updates, pairOption)
 }
 
 // Updates adds column=value updates to the UpdateQuery
+// Note: We lose type-checking of value here, so must be sure that field=value are of the same type.
 func (q *UpdateQuery[T]) Updates(this *Instance, updates FieldUpdates) {
-	for fieldName, update := range updates {
-		_, newValue := update.Unpack()
+	fieldNames := dict.SortedKeys(updates)
+	for _, fieldName := range fieldNames {
+		_, newValue := updates[fieldName].Unpack()
 		q.Update(this, fieldName, newValue)
 	}
 }
