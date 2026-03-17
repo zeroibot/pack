@@ -11,16 +11,16 @@ import (
 // Missing Condition: the default for UPDATE, DELETE to ensure condition is set.
 type missingCondition struct{}
 
-// Build missingCondition to 'WHERE false'
-func (c missingCondition) Build() (string, ds.List[any]) {
+// BuildCondition to 'WHERE false'
+func (c missingCondition) BuildCondition() (string, ds.List[any]) {
 	return falseConditionValues()
 }
 
 // MatchAll Condition: default for SELECT (no condition).
 type matchAllCondition struct{}
 
-// Build matchAllCondition to 'WHERE true'
-func (c matchAllCondition) Build() (string, ds.List[any]) {
+// BuildCondition to 'WHERE true'
+func (c matchAllCondition) BuildCondition() (string, ds.List[any]) {
 	return trueConditionValues()
 }
 
@@ -38,8 +38,7 @@ func newValueCondition[T any](this *Instance, fieldRef *T, value T, op operator)
 	}
 }
 
-// Build valueCondition
-func (c valueCondition) Build() (string, ds.List[any]) {
+func (c valueCondition) BuildCondition() (string, ds.List[any]) {
 	if c.pair.IsNil() {
 		// no pair = false condition
 		return falseConditionValues()
@@ -68,8 +67,7 @@ func newListCondition[T any](this *Instance, fieldRef *T, values ds.List[T], lis
 	}
 }
 
-// Build listCondition
-func (c listCondition) Build() (string, ds.List[any]) {
+func (c listCondition) BuildCondition() (string, ds.List[any]) {
 	if c.pair.IsNil() {
 		// no pair = false condition
 		return falseConditionValues()
@@ -102,8 +100,7 @@ func newMultiCondition(op operator, conditions ...Condition) multiCondition {
 	}
 }
 
-// Build multiCondition
-func (c multiCondition) Build() (string, ds.List[any]) {
+func (c multiCondition) BuildCondition() (string, ds.List[any]) {
 	return buildMultiCondition(c.operator, c.conditions...)
 }
 
@@ -116,7 +113,7 @@ func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[
 		return falseConditionValues()
 	case 1:
 		// one condition = only build that one
-		return conditions[0].Build()
+		return conditions[0].BuildCondition()
 	default:
 		// multiple conditions
 		conditionStrings := make([]string, 0, numConditions)
@@ -125,7 +122,7 @@ func buildMultiCondition(op operator, conditions ...Condition) (string, ds.List[
 			if condition == nil {
 				continue // skip nil conditions
 			}
-			conditionString, values := condition.Build()
+			conditionString, values := condition.BuildCondition()
 			if conditionString == falseCondition {
 				// If any condition fails, return false condition immediately
 				return falseConditionValues()

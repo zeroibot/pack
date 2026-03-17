@@ -1,6 +1,7 @@
-v0.2.6 - Query Core
+v0.2.6 - Execute Queries
     - Commit:
     x Use slices.Sorted in Maps
+    x Abstract Query types
 v0.2.5 - QueryBuilder Condition Tests
     x Commit: 2026-03-17 08:54
     x QB Mock Scanner test

@@ -58,9 +58,9 @@ func TestConditions(t *testing.T) {
 		{condOr, "(`Score` <= ? OR `Job` IN (?, ?, ?))", ds.List[any]{50, "dev", "qa", "intern"}},
 	}
 	for _, x := range testCases {
-		actualCond, actualValues := x.cond.Build()
+		actualCond, actualValues := x.cond.BuildCondition()
 		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("Condition.Build() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
+			t.Errorf("Condition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
 		}
 	}
 }
