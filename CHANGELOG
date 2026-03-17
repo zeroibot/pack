@@ -2,6 +2,7 @@ v0.2.7 - Update Query
     - Commit:
     x Add limitQuery
     x Embed limitQuery to DeleteQuery
+    x Combine QB files
 v0.2.6 - Delete Query
     x Commit: 2026-03-17 13:39
     x Use slices.Sorted in Maps
