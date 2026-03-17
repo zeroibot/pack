@@ -102,9 +102,7 @@ func (m Map[K, V]) Keys() List[K] {
 
 // SortedKeysFunc returns the Map keys in sorted order, using sortFn
 func (m Map[K, V]) SortedKeysFunc(sortFn func(K, K) int) List[K] {
-	keys := m.Keys()
-	slices.SortFunc(keys, sortFn)
-	return keys
+	return slices.SortedFunc(m.KeysIter(), sortFn)
 }
 
 // Values returns the Map values, in arbitrary order
@@ -114,9 +112,7 @@ func (m Map[K, V]) Values() List[V] {
 
 // SortedValuesFunc returns the Map values in sorted order, using SortFn
 func (m Map[K, V]) SortedValuesFunc(sortFn func(V, V) int) List[V] {
-	values := m.Values()
-	slices.SortFunc(values, sortFn)
-	return values
+	return slices.SortedFunc(m.ValuesIter(), sortFn)
 }
 
 // Entries returns the Map entries, in arbitrary order

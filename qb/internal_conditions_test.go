@@ -20,20 +20,20 @@ func TestInternalConditions(t *testing.T) {
 	if err != nil {
 		t.Errorf("AddType error: %v", err)
 	}
-	emptyValues := ds.List[any]{}
-	// missingCondition.Build()
+	emptyValues := make([]any, 0)
+	// missingCondition.BuildCondition()
 	cond1 := missingCondition{}
 	wantCond := "false"
-	actualCond, actualValues := cond1.Build()
+	actualCond, actualValues := cond1.BuildCondition()
 	if actualCond != wantCond || slices.Equal(actualValues, emptyValues) == false {
-		t.Errorf("missingCondition.Build() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
+		t.Errorf("missingCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
 	}
-	// matchAllCondition.Build()
+	// matchAllCondition.BuildCondition()
 	cond2 := matchAllCondition{}
 	wantCond = "true"
-	actualCond, actualValues = cond2.Build()
+	actualCond, actualValues = cond2.BuildCondition()
 	if actualCond != wantCond || slices.Equal(actualValues, emptyValues) == false {
-		t.Errorf("matchAllCondition.Build() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
+		t.Errorf("matchAllCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
 	}
 	// newValueCondition
 	valueCond1 := newValueCondition(this, &p.Name, "John", opNotEqual)
@@ -45,26 +45,26 @@ func TestInternalConditions(t *testing.T) {
 			t.Errorf("newValueCondition() = %v, want nil = %t", valueCond.pair, isNils[i])
 		}
 	}
-	// valueCondition.Build()
+	// valueCondition.BuildCondition()
 	valueCond4 := valueCondition{
 		pair:     ds.NewOption(new(columnValuePair{V1: "", V2: 0})),
 		operator: opEqual,
 	}
 	type testCase1 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		valueCond  valueCondition
 	}
 	testCases1 := []testCase1{
-		{"`Name` <> ?", ds.List[any]{"John"}, valueCond1},
-		{"`age` > ?", ds.List[any]{20}, valueCond2},
+		{"`Name` <> ?", []any{"John"}, valueCond1},
+		{"`age` > ?", []any{20}, valueCond2},
 		{"false", emptyValues, valueCond3},
 		{"false", emptyValues, valueCond4},
 	}
 	for _, x := range testCases1 {
-		actualCond, actualValues = x.valueCond.Build()
+		actualCond, actualValues = x.valueCond.BuildCondition()
 		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("valueCondition.Build() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
+			t.Errorf("valueCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
 		}
 	}
 	// newListCondition
@@ -79,29 +79,29 @@ func TestInternalConditions(t *testing.T) {
 			t.Errorf("newListCondition() = %v, want nil = %t", listCond.pair, isNils[i])
 		}
 	}
-	// listCondition.Build()
+	// listCondition.BuildCondition()
 	type testCase2 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		listCond   listCondition
 	}
 	listCond6 := listCondition{
-		pair:         ds.NewOption(new(columnValueListPair{V1: "", V2: ds.List[any]{1, 2, 3}})),
+		pair:         ds.NewOption(new(columnValueListPair{V1: "", V2: []any{1, 2, 3}})),
 		listOperator: opIn,
 		soloOperator: opEqual,
 	}
 	testCases2 := []testCase2{
-		{"`age` IN (?, ?, ?)", ds.List[any]{18, 19, 20}, listCond1},
-		{"`Job` NOT IN (?, ?)", ds.List[any]{"dev", "qa"}, listCond2},
-		{"`Name` = ?", ds.List[any]{"John"}, listCond3},
+		{"`age` IN (?, ?, ?)", []any{18, 19, 20}, listCond1},
+		{"`Job` NOT IN (?, ?)", []any{"dev", "qa"}, listCond2},
+		{"`Name` = ?", []any{"John"}, listCond3},
 		{"false", emptyValues, listCond4},
 		{"false", emptyValues, listCond5},
 		{"false", emptyValues, listCond6},
 	}
 	for _, x := range testCases2 {
-		actualCond, actualValues = x.listCond.Build()
+		actualCond, actualValues = x.listCond.BuildCondition()
 		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("listCondition.Build() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
+			t.Errorf("listCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
 		}
 	}
 	// newMultiCondition
@@ -111,24 +111,24 @@ func TestInternalConditions(t *testing.T) {
 	multiCond4 := newMultiCondition(opAnd)
 	multiCond5 := newMultiCondition(opOr, multiCond1, multiCond2, nil)
 	multiCond6 := newMultiCondition(opOr, valueCond2, multiCond4)
-	// multiCondition.Build()
+	// multiCondition.BuildCondition()
 	type testCase3 struct {
 		wantCond   string
-		wantValues ds.List[any]
+		wantValues []any
 		multiCond  multiCondition
 	}
 	testCases3 := []testCase3{
-		{"(`Name` <> ? AND `age` > ?)", ds.List[any]{"John", 20}, multiCond1},
-		{"(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", ds.List[any]{18, 19, 20, "dev", "qa"}, multiCond2},
-		{"`Name` <> ?", ds.List[any]{"John"}, multiCond3},
+		{"(`Name` <> ? AND `age` > ?)", []any{"John", 20}, multiCond1},
+		{"(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", []any{18, 19, 20, "dev", "qa"}, multiCond2},
+		{"`Name` <> ?", []any{"John"}, multiCond3},
 		{"false", emptyValues, multiCond4},
-		{"((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", ds.List[any]{"John", 20, 18, 19, 20, "dev", "qa"}, multiCond5},
+		{"((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", []any{"John", 20, 18, 19, 20, "dev", "qa"}, multiCond5},
 		{"false", emptyValues, multiCond6},
 	}
 	for _, x := range testCases3 {
-		actualCond, actualValues = x.multiCond.Build()
+		actualCond, actualValues = x.multiCond.BuildCondition()
 		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("multiCondition.Build() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
+			t.Errorf("multiCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
 		}
 	}
 }

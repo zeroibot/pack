@@ -8,7 +8,7 @@ import (
 )
 
 type columnValuePair = ds.Tuple2[string, any]
-type columnValueListPair = ds.Tuple2[string, ds.List[any]]
+type columnValueListPair = ds.Tuple2[string, []any]
 
 const (
 	falseCondition string = "false"
@@ -39,7 +39,7 @@ func newColumnValue[T any](this *Instance, fieldRef *T, value T) ds.Option[colum
 	if column == "" {
 		return ds.Nil[columnValuePair]()
 	}
-	column = this.dbType.prepareColumn(column)
+	column = this.dbType.prepareIdentifier(column)
 	return ds.NewOption(&columnValuePair{V1: column, V2: value})
 }
 
@@ -49,7 +49,7 @@ func newColumnValueList[T any](this *Instance, fieldRef *T, values ds.List[T]) d
 	if column == "" {
 		return ds.Nil[columnValueListPair]()
 	}
-	column = this.dbType.prepareColumn(column)
+	column = this.dbType.prepareIdentifier(column)
 	return ds.NewOption(&columnValueListPair{V1: column, V2: values.ToAny()})
 }
 
@@ -59,40 +59,40 @@ func newFieldColumnValue(this *Instance, typeName, fieldName string, value any) 
 	if column == "" {
 		return ds.Nil[columnValuePair]()
 	}
-	column = this.dbType.prepareColumn(column)
+	column = this.dbType.prepareIdentifier(column)
 	return ds.NewOption(&columnValuePair{V1: column, V2: value})
 }
 
 // Common: return 'false' as condition, empty list of values
-func falseConditionValues() (string, ds.List[any]) {
-	return falseCondition, ds.List[any]{}
+func falseConditionValues() (string, []any) {
+	return falseCondition, []any{}
 }
 
 // Common: return 'true' as condition, empty list of values
-func trueConditionValues() (string, ds.List[any]) {
-	return trueCondition, ds.List[any]{}
+func trueConditionValues() (string, []any) {
+	return trueCondition, []any{}
 }
 
 // Internal: build condition string and query parameter values list (corresponds to ? in the query);
 // Used for solo value conditions
-func soloConditionValues(column string, op operator, value any) (string, ds.List[any]) {
+func soloConditionValues(column string, op operator, value any) (string, []any) {
 	isValueNil := dyn.IsNil(value)
 	if op == opEqual && isValueNil {
-		return fmt.Sprintf("%s IS NULL", column), ds.List[any]{}
+		return fmt.Sprintf("%s IS NULL", column), []any{}
 	} else if op == opNotEqual && isValueNil {
-		return fmt.Sprintf("%s IS NOT NULL", column), ds.List[any]{}
+		return fmt.Sprintf("%s IS NOT NULL", column), []any{}
 	} else if op == opPrefix {
 		// <column> LIKE 'prefix%'
 		prefix := fmt.Sprintf("%v%%", value)
-		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{prefix}
+		return fmt.Sprintf("%s LIKE ?", column), []any{prefix}
 	} else if op == opSuffix {
 		// <column> LIKE '%suffix'
 		suffix := fmt.Sprintf("%%%v", value)
-		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{suffix}
+		return fmt.Sprintf("%s LIKE ?", column), []any{suffix}
 	} else if op == opSubstring {
 		// <column> LIKE '%substring%'
 		substring := fmt.Sprintf("%%%v%%", value)
-		return fmt.Sprintf("%s LIKE ?", column), ds.List[any]{substring}
+		return fmt.Sprintf("%s LIKE ?", column), []any{substring}
 	}
-	return fmt.Sprintf("%s %s ?", column, op), ds.List[any]{value}
+	return fmt.Sprintf("%s %s ?", column, op), []any{value}
 }

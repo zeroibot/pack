@@ -31,19 +31,19 @@ func TestAddType(t *testing.T) {
 	// Note: checking of result details are checked in the individual methods
 }
 
-func TestPrepareColumn(t *testing.T) {
+func TestPrepareIdentifier(t *testing.T) {
 	db1 := MySQL
 	db2 := dbType{"other"}
 	testCases := [][2]string{
-		{"`name`", db1.prepareColumn("name")},
-		{"`age`", db1.prepareColumn("age")},
-		{"name", db2.prepareColumn("name")},
-		{"age", db2.prepareColumn("age")},
+		{"`name`", db1.prepareIdentifier("name")},
+		{"`age`", db1.prepareIdentifier("age")},
+		{"name", db2.prepareIdentifier("name")},
+		{"age", db2.prepareIdentifier("age")},
 	}
 	for _, x := range testCases {
 		want, actual := x[0], x[1]
 		if want != actual {
-			t.Errorf("dbType.prepareColumn() = %q, want %q", actual, want)
+			t.Errorf("dbType.prepareIdentifier() = %q, want %q", actual, want)
 		}
 	}
 }

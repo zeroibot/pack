@@ -7,30 +7,22 @@ import (
 
 // SortedKeys returns the map keys in sorted order
 func SortedKeys[K cmp.Ordered, V any](items map[K]V) []K {
-	keys := Keys(items)
-	slices.Sort(keys)
-	return keys
+	return slices.Sorted(KeysIter(items))
 }
 
 // SortedKeysFunc returns the map keys in sorted order, using the sortFn
 func SortedKeysFunc[K comparable, V any](items map[K]V, sortFn func(K, K) int) []K {
-	keys := Keys(items)
-	slices.SortFunc(keys, sortFn)
-	return keys
+	return slices.SortedFunc(KeysIter(items), sortFn)
 }
 
 // SortedValues returns the map values in sorted order
 func SortedValues[K comparable, V cmp.Ordered](items map[K]V) []V {
-	values := Values(items)
-	slices.Sort(values)
-	return values
+	return slices.Sorted(ValuesIter(items))
 }
 
 // SortedValuesFunc returns the map values in sorted order, using the sortFn
 func SortedValuesFunc[K comparable, V any](items map[K]V, sortFn func(V, V) int) []V {
-	values := Values(items)
-	slices.SortFunc(values, sortFn)
-	return values
+	return slices.SortedFunc(ValuesIter(items), sortFn)
 }
 
 // SortedEntries returns the map entries in sorted key order

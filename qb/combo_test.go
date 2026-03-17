@@ -34,20 +34,20 @@ func TestCombos(t *testing.T) {
 		{"Jack", "N/A", 18, "intern", 50},
 	}
 
-	condNone := NoConditionTest[Person]()
-	condEqual := EqualTest[Person](this, &p.Name, "John")
-	condNotEqual := NotEqualTest[Person](this, &p.Job, "manager")
-	condPrefix := PrefixTest[Person](this, &p.Job, "assistant")
-	condSuffix := SuffixTest[Person](this, &p.Address, "City")
-	condSubstring := SubstringTest[Person](this, &p.Address, "Tower")
-	condGreater := GreaterTest[Person](this, &p.Score, 75)
-	condGreaterEqual := GreaterEqualTest[Person](this, &p.Age, 20)
-	condLesser := LesserTest[Person](this, &p.Age, 60)
-	condLesserEqual := LesserEqualTest[Person](this, &p.Score, 50)
-	condIn := InTest[Person](this, &p.Job, []string{"dev", "qa", "intern"})
-	condNotIn := NotInTest[Person](this, &p.Score, []int{67, 69})
-	condAnd := AndTest[Person](condEqual, condGreater)
-	condOr := OrTest[Person](condLesserEqual, condIn)
+	condNone := NoCondition[Person]()
+	condEqual := Equal[Person](this, &p.Name, "John")
+	condNotEqual := NotEqual[Person](this, &p.Job, "manager")
+	condPrefix := Prefix[Person](this, &p.Job, "assistant")
+	condSuffix := Suffix[Person](this, &p.Address, "City")
+	condSubstring := Substring[Person](this, &p.Address, "Tower")
+	condGreater := Greater[Person](this, &p.Score, 75)
+	condGreaterEqual := GreaterEqual[Person](this, &p.Age, 20)
+	condLesser := Lesser[Person](this, &p.Age, 60)
+	condLesserEqual := LesserEqual[Person](this, &p.Score, 50)
+	condIn := In[Person](this, &p.Job, []string{"dev", "qa", "intern"})
+	condNotIn := NotIn[Person](this, &p.Score, []int{67, 69})
+	condAnd := And[Person](condEqual, condGreater)
+	condOr := Or[Person](condLesserEqual, condIn)
 
 	testCases := []testCase{
 		{condNone, []bool{true, true, true, true, true}},

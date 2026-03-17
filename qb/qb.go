@@ -16,13 +16,13 @@ var (
 	MySQL = dbType{"mysql"}
 )
 
-// prepareColumn wraps the column name depending on the database type
-func (db dbType) prepareColumn(column string) string {
+// prepareIdentifier wraps the identifier depending on the database type
+func (db dbType) prepareIdentifier(identifier string) string {
 	switch db.name {
 	case MySQL.name:
-		return str.Wrap(column, "``")
+		return str.Wrap(identifier, "``")
 	default:
-		return column
+		return identifier
 	}
 }
 

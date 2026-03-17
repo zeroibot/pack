@@ -15,13 +15,13 @@ type DualCondition[T any] interface {
 	Test(T) bool
 }
 
-// NoConditionTest creates a matchAllCombo
-func NoConditionTest[T any]() DualCondition[T] {
+// NoCondition creates a matchAllCombo
+func NoCondition[T any]() DualCondition[T] {
 	return matchAllCombo[T]{}
 }
 
-// EqualTest creates an Equal Combo
-func EqualTest[T any, V comparable](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// Equal creates an Equal Combo
+func Equal[T any, V comparable](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue == value
@@ -30,8 +30,8 @@ func EqualTest[T any, V comparable](this *Instance, fieldRef *V, value V) DualCo
 	return newValueCombo(condition, test)
 }
 
-// NotEqualTest creates a NotEqual Combo
-func NotEqualTest[T any, V comparable](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// NotEqual creates a NotEqual Combo
+func NotEqual[T any, V comparable](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue != value
@@ -40,8 +40,8 @@ func NotEqualTest[T any, V comparable](this *Instance, fieldRef *V, value V) Dua
 	return newValueCombo(condition, test)
 }
 
-// PrefixTest creates a Prefix Combo
-func PrefixTest[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
+// Prefix creates a Prefix Combo
+func Prefix[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue string) bool {
 		return strings.HasPrefix(fieldValue, value)
@@ -50,8 +50,8 @@ func PrefixTest[T any](this *Instance, fieldRef *string, value string) DualCondi
 	return newValueCombo(condition, test)
 }
 
-// SuffixTest creates a Suffix Combo
-func SuffixTest[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
+// Suffix creates a Suffix Combo
+func Suffix[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue string) bool {
 		return strings.HasSuffix(fieldValue, value)
@@ -60,8 +60,8 @@ func SuffixTest[T any](this *Instance, fieldRef *string, value string) DualCondi
 	return newValueCombo(condition, test)
 }
 
-// SubstringTest creates a Substring Combo
-func SubstringTest[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
+// Substring creates a Substring Combo
+func Substring[T any](this *Instance, fieldRef *string, value string) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue string) bool {
 		return strings.Contains(fieldValue, value)
@@ -70,8 +70,8 @@ func SubstringTest[T any](this *Instance, fieldRef *string, value string) DualCo
 	return newValueCombo(condition, test)
 }
 
-// GreaterTest creates a GreaterThan Combo
-func GreaterTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// Greater creates a GreaterThan Combo
+func Greater[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue > value
@@ -80,8 +80,8 @@ func GreaterTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) Dua
 	return newValueCombo(condition, test)
 }
 
-// GreaterEqualTest creates a GreaterThanOrEqual Combo
-func GreaterEqualTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// GreaterEqual creates a GreaterThanOrEqual Combo
+func GreaterEqual[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue >= value
@@ -90,8 +90,8 @@ func GreaterEqualTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V
 	return newValueCombo(condition, test)
 }
 
-// LesserTest creates a LesserThan Combo
-func LesserTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// Lesser creates a LesserThan Combo
+func Lesser[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue < value
@@ -100,8 +100,8 @@ func LesserTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) Dual
 	return newValueCombo(condition, test)
 }
 
-// LesserEqualTest creates a LesserThanOrEqual Combo
-func LesserEqualTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
+// LesserEqual creates a LesserThanOrEqual Combo
+func LesserEqual[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return fieldValue <= value
@@ -110,8 +110,8 @@ func LesserEqualTest[T any, V cmp.Ordered](this *Instance, fieldRef *V, value V)
 	return newValueCombo(condition, test)
 }
 
-// InTest creates an In Combo
-func InTest[T any, V comparable](this *Instance, fieldRef *V, values ds.List[V]) DualCondition[T] {
+// In creates an In Combo
+func In[T any, V comparable](this *Instance, fieldRef *V, values ds.List[V]) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return slices.Contains(values, fieldValue)
@@ -120,8 +120,8 @@ func InTest[T any, V comparable](this *Instance, fieldRef *V, values ds.List[V])
 	return newListCombo(condition, test)
 }
 
-// NotInTest creates a NotIn Combo
-func NotInTest[T any, V comparable](this *Instance, fieldRef *V, values ds.List[V]) DualCondition[T] {
+// NotIn creates a NotIn Combo
+func NotIn[T any, V comparable](this *Instance, fieldRef *V, values ds.List[V]) DualCondition[T] {
 	fieldName := this.getFieldName(fieldRef)
 	test := createFieldValueTest[T](fieldName, func(fieldValue V) bool {
 		return !slices.Contains(values, fieldValue)
@@ -130,8 +130,8 @@ func NotInTest[T any, V comparable](this *Instance, fieldRef *V, values ds.List[
 	return newListCombo(condition, test)
 }
 
-// AndTest creates an And Combo
-func AndTest[T any](conditions ...DualCondition[T]) DualCondition[T] {
+// And creates an And Combo
+func And[T any](conditions ...DualCondition[T]) DualCondition[T] {
 	test := func(item T) bool {
 		return list.All(conditions, func(c DualCondition[T]) bool {
 			return c.Test(item)
@@ -140,8 +140,8 @@ func AndTest[T any](conditions ...DualCondition[T]) DualCondition[T] {
 	return newMultiCombo(conditions, opAnd, test)
 }
 
-// OrTest creates an Or Combo
-func OrTest[T any](conditions ...DualCondition[T]) DualCondition[T] {
+// Or creates an Or Combo
+func Or[T any](conditions ...DualCondition[T]) DualCondition[T] {
 	test := func(item T) bool {
 		return list.Any(conditions, func(c DualCondition[T]) bool {
 			return c.Test(item)
