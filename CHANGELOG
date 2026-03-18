@@ -1,3 +1,9 @@
+v0.2.8 - Tst Package
+    - Commit:
+    x Tst package
+    - Convert conv tests
+    - Convert str tests
+    - Convert lang tests
 v0.2.7 - Update Query
     x Commit: 2026-03-17 20:47
     x Add limitQuery
