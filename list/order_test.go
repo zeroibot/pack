@@ -1,50 +1,44 @@
 package list
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/roidaradal/tst"
+)
 
 func TestOrderFunctions(t *testing.T) {
-	type testCase struct {
-		name   string
-		want   bool
-		actual bool
-	}
+	type testCase = tst.P2W1[[]int, int, bool]
 	items := InclusiveRange(1, 10)
-	testCases := []testCase{
-		{"AllGreater", true, AllGreater(items, 0)},
-		{"AllGreater", false, AllGreater(items, 5)},
-		{"AllGreaterEqual", true, AllGreaterEqual(items, 1)},
-		{"AllGreaterEqual", false, AllGreaterEqual(items, 20)},
-		{"AllLesser", true, AllLesser(items, 20)},
-		{"AllLesser", false, AllLesser(items, 10)},
-		{"AllLesserEqual", true, AllLesserEqual(items, 10)},
-		{"AllLesserEqual", false, AllLesserEqual(items, 7)},
-	}
-	for _, x := range testCases {
-		if x.want != x.actual {
-			t.Errorf("%s: want %t, got %t", x.name, x.want, x.actual)
-		}
-	}
+
+	testCases := []testCase{{items, 0, true}, {items, 5, false}}
+	tst.AllP2W1(t, testCases, "AllGreater", AllGreater, tst.AssertEqual)
+	testCases = []testCase{{items, 1, true}, {items, 20, false}}
+	tst.AllP2W1(t, testCases, "AllGreaterEqual", AllGreaterEqual, tst.AssertEqual)
+	testCases = []testCase{{items, 20, true}, {items, 10, false}}
+	tst.AllP2W1(t, testCases, "AllLesser", AllLesser, tst.AssertEqual)
+	testCases = []testCase{{items, 10, true}, {items, 7, false}}
+	tst.AllP2W1(t, testCases, "AllLesserEqual", AllLesserEqual, tst.AssertEqual)
 }
 
 func TestArgMinMax(t *testing.T) {
-	// Empty List
 	var empty []int
-	actual := ArgMin(empty)
-	if actual != -1 {
-		t.Errorf("ArgMin() = %d, want -1", actual)
+	items1 := []int{2, 1, 3, 5, 4, 4, 3}
+	items2 := []int{1, 2, 3, 4}
+	items3 := []int{4, 3, 2, 1}
+
+	testCases := []tst.P1W1[[]int, int]{
+		{empty, -1},
+		{items1, 1},
+		{items2, 0},
+		{items3, 3},
 	}
-	actual = ArgMax(empty)
-	if actual != -1 {
-		t.Errorf("ArgMax() = %d, want -1", actual)
+	tst.AllP1W1(t, testCases, "ArgMin", ArgMin, tst.AssertEqual)
+
+	testCases = []tst.P1W1[[]int, int]{
+		{empty, -1},
+		{items1, 3},
+		{items2, 3},
+		{items3, 0},
 	}
-	// ArgMin, ArgMax
-	items := []int{2, 1, 3, 5, 4, 4, 3}
-	actual, want := ArgMin(items), 1
-	if actual != want {
-		t.Errorf("ArgMin() = %d, want %d", actual, want)
-	}
-	actual, want = ArgMax(items), 3
-	if actual != want {
-		t.Errorf("ArgMax() = %d, want %d", actual, want)
-	}
+	tst.AllP1W1(t, testCases, "ArgMax", ArgMax, tst.AssertEqual)
 }
