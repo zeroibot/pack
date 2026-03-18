@@ -1,11 +1,13 @@
 v0.2.10 - Convert QueryBuilder Tests
     - Commit:
     - Convert qb tests
-v0.2.9 - Convert Data Structures Tests
+v0.2.10 - Convert Data Structures Tests
     - Commit:
-    - Convert list tests
-    - Convert dict tests
     - Convert ds tests
+v0.2.9 - Convert List and Dict Tests
+    - Commit:
+    x Convert list tests
+    - Convert dict tests
 v0.2.8 - Tst Package
     x Commit: 2026-03-18 14:26
     x Tst package

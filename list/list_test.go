@@ -4,274 +4,184 @@ import (
 	"fmt"
 	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestList(t *testing.T) {
-	type testCase struct {
-		name         string
-		actual, want int
-	}
 	// Range, InclusiveRange
-	r1 := Range(1, 5)
-	r2 := InclusiveRange(1, 5)
-	want1 := []int{1, 2, 3, 4}
-	want2 := []int{1, 2, 3, 4, 5}
-	if slices.Equal(r1, want1) == false {
-		t.Errorf("Range() = %v, want %v", r1, want1)
+	pairs := [][2][]int{
+		{Range(1, 5), []int{1, 2, 3, 4}},
+		{InclusiveRange(1, 5), []int{1, 2, 3, 4, 5}},
 	}
-	if slices.Equal(r2, want2) == false {
-		t.Errorf("InclusiveRange() = %v, want %v", r2, want2)
-	}
+	tst.All(t, pairs, "Range", tst.AssertListEqual)
+
 	// RepeatedItem
-	r1 = RepeatedItem(5, 3)
-	r2 = RepeatedItem(3, 5)
-	want1 = []int{5, 5, 5}
-	want2 = []int{3, 3, 3, 3, 3}
-	if slices.Equal(r1, want1) == false {
-		t.Errorf("RepeatedItem() = %v, want %v", r1, want1)
+	testCases1 := []tst.P2W1[int, int, []int]{
+		{5, 3, []int{5, 5, 5}},
+		{3, 5, []int{3, 3, 3, 3, 3}},
 	}
-	if slices.Equal(r2, want2) == false {
-		t.Errorf("RepeatedItem() = %v, want %v", r2, want2)
-	}
+	tst.AllP2W1(t, testCases1, "RepeatedItem", RepeatedItem, tst.AssertListEqual)
+
 	// NewEmpty, Len, Cap, LastIndex
-	l1 := NewEmpty[int](5)
+	l1 := NewEmpty[string](5)
 	l2 := []string{"a", "b", "c"}
-	testCases := []testCase{
-		{"Len", Len(l1), 0},
-		{"Cap", Cap(l1), 5},
-		{"LastIndex", LastIndex(l1), -1},
-		{"Len", Len(l2), 3},
-		{"Cap", Cap(l2), 3},
-		{"LastIndex", LastIndex(l2), 2},
-	}
-	for _, x := range testCases {
-		if x.actual != x.want {
-			t.Errorf("%s() = %d, want %d", x.name, x.actual, x.want)
-		}
-	}
+	testCases2 := []tst.P1W1[[]string, int]{{l1, 0}, {l2, 3}}
+	tst.AllP1W1(t, testCases2, "Len", Len, tst.AssertEqual)
+	testCases2 = []tst.P1W1[[]string, int]{{l1, 5}, {l2, 3}}
+	tst.AllP1W1(t, testCases2, "Cap", Cap, tst.AssertEqual)
+	testCases2 = []tst.P1W1[[]string, int]{{l1, -1}, {l2, 2}}
+	tst.AllP1W1(t, testCases2, "LastIndex", LastIndex, tst.AssertEqual)
+
 	// IsEmpty, NotEmpty
-	if IsEmpty(l1) != true {
-		t.Errorf("IsEmpty() = %v, want true", IsEmpty(l1))
-	}
-	if NotEmpty(l2) != true {
-		t.Errorf("NotEmpty() = %v, want true", NotEmpty(l2))
-	}
+	tst.AssertEqual(t, "IsEmpty", IsEmpty(l1), true)
+	tst.AssertEqual(t, "NotEmpty", NotEmpty(l2), true)
+
 	// Copy
 	l3 := Copy(l2)
-	if slices.Equal(l2, l3) == false {
-		t.Errorf("Copy() = %v, want %v", l3, l2)
-	}
+	tst.AssertListEqual(t, "Copy", l3, l2)
+
+	// String
 	l2[0] = "x"
 	l3[1] = "r"
-	actual, want := fmt.Sprintf("%v", l2), "[x b c]"
-	if actual != want {
-		t.Errorf("List.String() = %s, want %s", actual, want)
-	}
-	actual, want = fmt.Sprintf("%v", l3), "[a r c]"
-	if actual != want {
-		t.Errorf("List.String() = %s, want %s", actual, want)
-	}
+	tst.AssertEqual(t, "List.String", fmt.Sprintf("%v", l2), "[x b c]")
+	tst.AssertEqual(t, "List.String", fmt.Sprintf("%v", l3), "[a r c]")
 }
 
 func TestListRandom(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("MustGetRandom() did not panic")
-		}
-	}()
 	// GetRandom and MustGetRandom
 	l1 := NewEmpty[int](3) // empty
 	for range 5 {
 		item, ok := GetRandom(l1)
-		if ok || item != 0 {
-			t.Errorf("EmptyList.GetRandom() = %d, %t, want 0, false", item, ok)
-		}
+		tst.AssertEqualAnd(t, "EmptyList.GetRandom", item, 0, ok, false)
 	}
 	l := InclusiveRange(1, 100)
 	for range 100 {
 		value, ok := GetRandom(l)
-		if !ok || !(1 <= value && value <= 100) {
-			t.Errorf("GetRandom() = %v, want 1..100", value)
-		}
+		tst.AssertTrue(t, "GetRandom", ok && 1 <= value && value <= 100)
 		value = MustGetRandom(l)
-		if !(1 <= value && value <= 100) {
-			t.Errorf("MustGetRandom() = %v, want 1..100", value)
-		}
+		tst.AssertTrue(t, "MustGetRandom", 1 <= value && value <= 100)
 	}
+
 	// Shuffle
 	l2 := []int{1, 2, 3, 4, 5, 6, 7}
 	l3 := Copy(l2)
 	Shuffle(l3)
-	if slices.Equal(l2, l3) == true {
-		t.Errorf("Shuffle() = %v, want not original %v", l3, l2)
-	}
+	tst.AssertFalse(t, "Shuffle", slices.Equal(l2, l3))
 
+	defer tst.AssertPanic(t, "MustGetRandom")
 	MustGetRandom(l1) // should panic (empty list)
 }
 
 func TestListMethods(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("MustLast() did not panic")
-		}
-	}()
 	// ToAny
 	items := []int{1, 2, 3}
 	anyItems := ToAny(items)
 	actualString, wantString := fmt.Sprintf("%v", anyItems), "[1 2 3]"
-	if actualString != wantString {
-		t.Errorf("ToAny() = %s, want %s", actualString, wantString)
-	}
+	tst.AssertEqual(t, "ToAny", actualString, wantString)
+
 	// IndexFunc
 	items = []int{1, 2, 3, 4, 1, 2, 4, 2, 5, 3}
-	wantIndex := 2
-	actualIndex := IndexFunc(items, func(x int) bool { return x == 3 })
-	if wantIndex != actualIndex {
-		t.Errorf("IndexFunc() = %d, want %d", actualIndex, wantIndex)
+	testCases1 := []tst.P2W1[[]int, func(int) bool, int]{
+		{items, func(x int) bool { return x == 3 }, 2},
+		{items, func(x int) bool { return x == 5 }, 8},
 	}
-	wantIndex = 8
-	actualIndex = IndexFunc(items, func(x int) bool { return x == 5 })
-	if wantIndex != actualIndex {
-		t.Errorf("IndexFunc() = %d, want %d", actualIndex, wantIndex)
-	}
+	tst.AllP2W1(t, testCases1, "IndexFunc", IndexFunc, tst.AssertEqual)
+
 	// AllIndexFunc
-	wantList := []int{1, 5, 7}
-	actualList := AllIndexFunc(items, func(x int) bool { return x == 2 })
-	if slices.Equal(actualList, wantList) == false {
-		t.Errorf("AllIndexFunc() = %v, wantList %v", actualList, wantList)
+	testCases2 := []tst.P2W1[[]int, func(int) bool, []int]{
+		{items, func(x int) bool { return x == 2 }, []int{1, 5, 7}},
+		{items, func(x int) bool { return x%2 == 0 }, []int{1, 3, 5, 6, 7}},
 	}
-	wantList = []int{1, 3, 5, 6, 7}
-	actualList = AllIndexFunc(items, func(x int) bool { return x%2 == 0 })
-	if slices.Equal(actualList, wantList) == false {
-		t.Errorf("AllIndexFunc() = %v, wantList %v", actualList, wantList)
-	}
+	tst.AllP2W1(t, testCases2, "AllIndexFunc", AllIndexFunc, tst.AssertListEqual)
+
 	// RemoveFunc
 	items = []int{1, 2, 1, 2, 3, 2}
 	items2 := Copy(items)
+	wantList := []int{1, 1, 2, 3, 2}
 	items2, ok := RemoveFunc(items2, func(x int) bool { return x == 2 })
-	wantList = []int{1, 1, 2, 3, 2}
-	if !ok || slices.Equal(wantList, items2) == false {
-		t.Errorf("RemoveFunc() = %v, %t, wantList %v, true", items2, ok, wantList)
-	}
+	tst.AssertListEqualAnd(t, "RemoveFunc", items2, wantList, ok, true)
 	items2, ok = RemoveFunc(items2, func(x int) bool { return x == 4 })
-	if ok || slices.Equal(wantList, items2) == false {
-		t.Errorf("RemoveFunc() = %v, %t, wantList %v, false", items2, ok, wantList)
-	}
+	tst.AssertListEqualAnd(t, "RemoveFunc", items2, wantList, ok, false)
+
 	// RemoveAllFunc
 	items2 = Copy(items)
 	items2 = RemoveAllFunc(items2, func(x int) bool { return x == 2 })
-	wantList = []int{1, 1, 3}
-	if slices.Equal(wantList, items2) == false {
-		t.Errorf("RemoveAllFunc() = %v, wantList %v", items, wantList)
-	}
+	tst.AssertListEqual(t, "RemoveAllFunc", items2, []int{1, 1, 3})
+
 	// GetFuncOrDefault
 	items = []int{1, 2, 3}
 	defaultValue := 69
 	actual := GetFuncOrDefault(items, func(x int) bool { return x == 3 }, defaultValue)
-	if actual != 3 {
-		t.Errorf("GetFuncOrDefault() = %d, want 3", actual)
-	}
+	tst.AssertEqual(t, "GetFuncOrDefault", actual, 3)
 	actual = GetFuncOrDefault(items, func(x int) bool { return x == 4 }, defaultValue)
-	if actual != defaultValue {
-		t.Errorf("GetFuncOrDefault() = %d, want %d", actual, defaultValue)
-	}
+	tst.AssertEqual(t, "GetFuncOrDefault", actual, defaultValue)
+
 	// Last
 	items = []int{1, 2, 3}
-	item, ok := Last(items, 1)
-	if !ok || item != 3 {
-		t.Errorf("Last() = %d, %t, want 3, true", item, ok)
+	testCases3 := []tst.P2W2[[]int, int, int, bool]{
+		{items, 1, 3, true},
+		{items, 3, 1, true},
+		{items, 0, 0, false},
+		{items, 4, 0, false},
 	}
-	item, ok = Last(items, 3)
-	if !ok || item != 1 {
-		t.Errorf("Last() = %d, %t, want 1, true", item, ok)
-	}
-	item, ok = Last(items, 0)
-	if ok || item != 0 {
-		t.Errorf("Last() = %d, %t, want 0, false", item, ok)
-	}
-	item, ok = Last(items, 4)
-	if ok || item != 0 {
-		t.Errorf("Last() = %d, %t, want 0, false", item, ok)
-	}
+	tst.AllP2W2(t, testCases3, "Last", Last, tst.AssertEqual[int], tst.AssertEqual[bool])
+
 	// MustLast
-	actual = MustLast(items, 1)
-	if actual != 3 {
-		t.Errorf("MustLast() = %d, want 3", actual)
+	testCases4 := []tst.P2W1[[]int, int, int]{
+		{items, 1, 3},
+		{items, 3, 1},
+		{items, 2, 2},
 	}
-	actual = MustLast(items, 3)
-	if actual != 1 {
-		t.Errorf("MustLast() = %d, want 1", actual)
-	}
+	tst.AllP2W1(t, testCases4, "MustLast", MustLast, tst.AssertEqual)
+
+	defer tst.AssertPanic(t, "MustLast")
 	MustLast(items, 4) // should panic
 }
 
 func TestListCheck(t *testing.T) {
-	// Any, NotAny
+	var empty []int
 	items := []int{1, 2, 3, 4, 5, 6}
 	fn1 := func(x int) bool { return x%2 == 0 && x%3 == 0 }
 	fn2 := func(x int) bool { return x > 10 }
 	fn3 := func(x int) bool { return x <= 10 }
-	result := Any(items, fn1)
-	if result != true {
-		t.Errorf("Any() = %v, want true", result)
+
+	// Any, NotAny
+	type testCase = tst.P2W1[[]int, func(int) bool, bool]
+	testCases := []testCase{
+		{items, fn1, true}, {items, fn2, false},
 	}
-	result = NotAny(items, fn1)
-	if result != false {
-		t.Errorf("NotAny() = %v, want false", result)
-	}
-	result = Any(items, fn2)
-	if result != false {
-		t.Errorf("Any() = %v, want false", result)
-	}
-	result = NotAny(items, fn2)
-	if result != true {
-		t.Errorf("NotAny() = %v, want true", result)
-	}
+	tst.AllP2W1(t, testCases, "Any", Any, tst.AssertEqual)
+
+	testCases = tst.Convert(testCases, func(tc testCase) testCase {
+		return testCase{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
+	})
+	tst.AllP2W1(t, testCases, "NotAny", NotAny, tst.AssertEqual)
+
 	// All
-	var empty []int
-	result = All(empty, fn1)
-	if result != false {
-		t.Errorf("All() = %v, want false", result)
+	testCases = []testCase{
+		{empty, fn1, false}, {items, fn1, false}, {items, fn3, true},
 	}
-	result = All(items, fn1)
-	if result != false {
-		t.Errorf("All() = %v, want false", result)
-	}
-	result = All(items, fn3)
-	if result != true {
-		t.Errorf("All() = %v, want true", result)
-	}
+	tst.AllP2W1(t, testCases, "All", All, tst.AssertEqual)
+
 	// AnyIndexed, NotAnyIndexed
+	type testCase2 = tst.P2W1[[]int, func(int, int) bool, bool]
 	fn4 := func(i, x int) bool { return i >= 0 && x%2 == 0 && x%3 == 0 }
 	fn5 := func(i, x int) bool { return i > 10 && x > 10 }
 	fn6 := func(i, x int) bool { return i < 10 && x <= 10 }
-	result = AnyIndexed(items, fn4)
-	if result != true {
-		t.Errorf("AnyIndexed() = %v, want true", result)
+
+	testCases2 := []testCase2{
+		{items, fn4, true}, {items, fn5, false},
 	}
-	result = NotAnyIndexed(items, fn4)
-	if result != false {
-		t.Errorf("NotAnyIndexed() = %v, want false", result)
-	}
-	result = AnyIndexed(items, fn5)
-	if result != false {
-		t.Errorf("AnyIndexed() = %v, want false", result)
-	}
-	result = NotAnyIndexed(items, fn5)
-	if result != true {
-		t.Errorf("NotAnyIndexed() = %v, want true", result)
-	}
+	tst.AllP2W1(t, testCases2, "AnyIndexed", AnyIndexed, tst.AssertEqual)
+	testCases2 = tst.Convert(testCases2, func(tc testCase2) testCase2 {
+		return testCase2{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
+	})
+	tst.AllP2W1(t, testCases2, "NotAnyIndexed", NotAnyIndexed, tst.AssertEqual)
+
 	// AllIndexed
-	result = AllIndexed(empty, fn4)
-	if result != false {
-		t.Errorf("AllIndexed() = %v, want false", result)
+	testCases2 = []testCase2{
+		{empty, fn4, false}, {items, fn4, false}, {items, fn6, true},
 	}
-	result = AllIndexed(items, fn4)
-	if result != false {
-		t.Errorf("AllIndexed() = %v, want false", result)
-	}
-	result = AllIndexed(items, fn6)
-	if result != true {
-		t.Errorf("AllIndexed() = %v, want true", result)
-	}
+	tst.AllP2W1(t, testCases2, "AllIndexed", AllIndexed, tst.AssertEqual)
 }
