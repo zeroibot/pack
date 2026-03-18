@@ -4,7 +4,7 @@ v0.2.8 - Tst Package
     x Convert conv tests
     x Convert lang tests
     x Convert number tests
-    - Convert str tests
+    x Convert str tests
     - Convert dyn tests
     - Convert dict tests
     - Convert list tests

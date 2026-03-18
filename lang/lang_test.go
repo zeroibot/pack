@@ -7,23 +7,13 @@ import (
 )
 
 func TestTernary(t *testing.T) {
-	type testCase struct {
-		condition  bool
-		valueTrue  int
-		valueFalse int
-		want       int
-	}
-	testCases := []testCase{
+	testCases := []tst.P3W1[bool, int, int, int]{
 		{true, 1, 0, 1},
 		{false, 1, 0, 0},
 		{true, 0, 1, 0},
 		{false, 0, 1, 1},
 	}
-	testFn := func(x testCase) (int, int) {
-		actual := Ternary(x.condition, x.valueTrue, x.valueFalse)
-		return actual, x.want
-	}
-	tst.AllCompare1(t, testCases, "Ternary", testFn, tst.AssertEqual)
+	tst.AllP3W1(t, testCases, "Ternary", Ternary, tst.AssertEqual)
 }
 
 func TestRef(t *testing.T) {
