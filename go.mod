@@ -2,4 +2,4 @@ module github.com/roidaradal/pack
 
 go 1.26.0
 
-require github.com/roidaradal/tst v0.1.3 // indirect
+require github.com/roidaradal/tst v0.1.4 // indirect

@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestPointers(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("MustDeref() did not panic")
-		}
-	}()
 	// AddressOf
 	x, y, z := 5, 5, 6
 	xp, yp, zp := new(x), new(y), new(z)
@@ -48,6 +45,8 @@ func TestPointers(t *testing.T) {
 	if value != z {
 		t.Errorf("MustDeref() = %v, want %v", value, z)
 	}
+
+	defer tst.AssertPanic(t, "MustDeref")
 	MustDeref(z) // should panic
 }
 

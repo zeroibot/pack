@@ -3,14 +3,11 @@ package dyn
 import (
 	"reflect"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestSetStructField(t *testing.T) {
-	defer func() {
-		if err := recover(); err == nil {
-			t.Errorf("MustSetStructField() did not panic")
-		}
-	}()
 	type person struct {
 		Name     string
 		Age      int
@@ -77,6 +74,8 @@ func TestSetStructField(t *testing.T) {
 			t.Errorf("MustSetStructField PostTest failed")
 		}
 	}
+
+	defer tst.AssertPanic(t, "MustSetStructField")
 	MustSetStructField(&p, "password", "unknown") // should panic
 }
 
