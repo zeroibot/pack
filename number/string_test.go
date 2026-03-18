@@ -1,20 +1,13 @@
 package number
 
-import "testing"
+import (
+	"testing"
 
-type testCase[T, V any] struct {
-	input T
-	want  V
-}
-
-type placesCase[F Float] struct {
-	input  F
-	places uint
-	want   string
-}
+	"github.com/roidaradal/tst"
+)
 
 func TestCommaString(t *testing.T) {
-	testCases := []testCase[int, string]{
+	testCases := []tst.P1W1[int, string]{
 		{123456789, "123,456,789"},
 		{1234567890, "1,234,567,890"},
 		{23456789, "23,456,789"},
@@ -28,16 +21,11 @@ func TestCommaString(t *testing.T) {
 		{-12345, "-12,345"},
 		{-1234, "-1,234"},
 	}
-	for _, x := range testCases {
-		actual := CommaString(x.input)
-		if actual != x.want {
-			t.Errorf("CommaString(%v) = %v, want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "CommaString", CommaString, tst.AssertEqual)
 }
 
 func TestCommaDecimalString(t *testing.T) {
-	testCases := []placesCase[float64]{
+	testCases := []tst.P2W1[float64, uint, string]{
 		{1333.14, 1, "1,333.1"},
 		{123.14, 2, "123.14"},
 		{123456.14, 0, "123,456"},
@@ -49,16 +37,11 @@ func TestCommaDecimalString(t *testing.T) {
 		{999.95, 1, "1,000.0"},
 		{-34567.23, 3, "-34,567.230"},
 	}
-	for _, x := range testCases {
-		actual := CommaDecimalString(x.input, x.places)
-		if actual != x.want {
-			t.Errorf("CommaDecimalString(%v, %d) = %s, want %s", x.input, x.places, actual, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "CommaDecimalString", CommaDecimalString, tst.AssertEqual)
 }
 
 func TestDecimalString(t *testing.T) {
-	testCases := []placesCase[float64]{
+	testCases := []tst.P2W1[float64, uint, string]{
 		{3.14, 1, "3.1"},
 		{3.14, 2, "3.14"},
 		{3.14, 0, "3"},
@@ -69,16 +52,11 @@ func TestDecimalString(t *testing.T) {
 		{3.95, 0, "4"},
 		{3.95, 1, "4.0"},
 	}
-	for _, x := range testCases {
-		actual := DecimalString(x.input, x.places)
-		if actual != x.want {
-			t.Errorf("DecimalString(%v, %d) = %s, want %s", x.input, x.places, actual, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "DecimalString", DecimalString, tst.AssertEqual)
 }
 
 func TestParseInt(t *testing.T) {
-	testCases := []testCase[string, int]{
+	testCases := []tst.P1W1[string, int]{
 		{"0", 0},
 		{"1", 1},
 		{"-1", -1},
@@ -86,16 +64,11 @@ func TestParseInt(t *testing.T) {
 		{"1A", 0},
 		{"number", 0},
 	}
-	for _, x := range testCases {
-		actual := ParseInt(x.input)
-		if actual != x.want {
-			t.Errorf("ParseInt(%v) = %v, want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "ParseInt", ParseInt, tst.AssertEqual)
 }
 
 func TestParseUint(t *testing.T) {
-	testCases := []testCase[string, uint]{
+	testCases := []tst.P1W1[string, uint]{
 		{"0", 0},
 		{"1", 1},
 		{"-1", 0},
@@ -104,16 +77,11 @@ func TestParseUint(t *testing.T) {
 		{"1A", 0},
 		{"number", 0},
 	}
-	for _, x := range testCases {
-		actual := ParseUint(x.input)
-		if actual != x.want {
-			t.Errorf("ParseUint(%v) = %v, want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "ParseUint", ParseUint, tst.AssertEqual)
 }
 
 func TestParseFloat(t *testing.T) {
-	testCases := []testCase[string, float64]{
+	testCases := []tst.P1W1[string, float64]{
 		{"0", 0},
 		{"1", 1},
 		{"-1", -1},
@@ -124,10 +92,5 @@ func TestParseFloat(t *testing.T) {
 		{"1.69", 1.69},
 		{"-3.33", -3.33},
 	}
-	for _, x := range testCases {
-		actual := ParseFloat(x.input)
-		if actual != x.want {
-			t.Errorf("ParseFloat(%v) = %v, want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "ParseFloat", ParseFloat, tst.AssertEqual)
 }

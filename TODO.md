@@ -1,8 +1,5 @@
 # TODO
 
-* Add assert package for testing - replace repetitive testing code so far 
-  * Case2, Case3, Case4, etc. that will be used instead of defining testCase structs inside each test function 
-  * assert.Eq, assert.NotEq, assert.EqList, assert.EqMap
 * Secrets/Configs package: Load .env file
 * Make ds.List comparable by default, then add list compare functions as List methods
 * Create ds.CmpList for non-comparable types, and add a compare function (e.g. maps.Equal, slices.Equal)

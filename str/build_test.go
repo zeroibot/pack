@@ -1,6 +1,10 @@
 package str
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/roidaradal/tst"
+)
 
 func TestBuilder(t *testing.T) {
 	b := NewBuilder()
@@ -9,28 +13,16 @@ func TestBuilder(t *testing.T) {
 	b.AddFmt("%d,%d", 5, 6)
 	actual := b.Build(",")
 	want := "1,2,3,4,5,6"
-	if actual != want {
-		t.Errorf("Builder: got %q, want %q", actual, want)
-	}
+	tst.AssertEqual(t, "Builder", actual, want)
 }
 
 func TestRepeat(t *testing.T) {
-	type testCase struct {
-		want       string
-		count      int
-		text, glue string
+	testCases := []tst.P3W1[int, string, string, string]{
+		{5, "a", "", "aaaaa"},
+		{3, "ab", "-", "ab-ab-ab"},
+		{0, "a", "x", ""},
+		{2, "b", ",", "b,b"},
+		{1, "x", "x", "x"},
 	}
-	testCases := []testCase{
-		{"aaaaa", 5, "a", ""},
-		{"ab-ab-ab", 3, "ab", "-"},
-		{"", 0, "a", "x"},
-		{"b,b", 2, "b", ","},
-		{"x", 1, "x", "x"},
-	}
-	for _, x := range testCases {
-		actual := Repeat(x.count, x.text, x.glue)
-		if actual != x.want {
-			t.Errorf("Repeat: got %q, want %q", actual, x.want)
-		}
-	}
+	tst.AllP3W1(t, testCases, "Repeat", Repeat, tst.AssertEqual)
 }

@@ -1,17 +1,13 @@
 package conv
 
 import (
-	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
-type testCase[T, V any] struct {
-	input T
-	want  V
-}
-
 func TestAnyToString(t *testing.T) {
-	testCases := []testCase[any, string]{
+	testCases := []tst.P1W1[any, string]{
 		{true, "true"},
 		{false, "false"},
 		{1, "1"},
@@ -20,72 +16,43 @@ func TestAnyToString(t *testing.T) {
 		{1.25, "1.25"},
 		{nil, "<nil>"},
 	}
-	for _, x := range testCases {
-		actual := AnyToString(x.input)
-		if actual != x.want {
-			t.Errorf("AnyToString(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "AnyToString", AnyToString, tst.AssertEqual)
 }
 
 func TestAnyToStringList(t *testing.T) {
-	type testCase[T any] struct {
-		items []T
-		want  []string
-	}
-	testCases := []testCase[int]{
+	testCases := []tst.P1W1[[]int, []string]{
 		{[]int{1, 2, 3}, []string{"1", "2", "3"}},
 		{[]int{4, 5, 6, 7}, []string{"4", "5", "6", "7"}},
 	}
-	for _, x := range testCases {
-		actual := AnyToStringList(x.items)
-		if !slices.Equal(actual, x.want) {
-			t.Errorf("AnyToStringList(%v) = %v; want %v", x.items, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "AnyToStringList", AnyToStringList, tst.AssertListEqual)
 }
 
 func TestBoolToInt(t *testing.T) {
-	testCases := []testCase[bool, int]{
+	testCases := []tst.P1W1[bool, int]{
 		{true, 1},
 		{false, 0},
 	}
-	for _, x := range testCases {
-		actual := BoolToInt(x.input)
-		if actual != x.want {
-			t.Errorf("BoolToInt(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "BoolToInt", BoolToInt, tst.AssertEqual)
 }
 
 func TestBoolToFloat(t *testing.T) {
-	testCases := []testCase[bool, uint]{
+	testCases := []tst.P1W1[bool, uint]{
 		{true, 1},
 		{false, 0},
 	}
-	for _, x := range testCases {
-		actual := BoolToUint(x.input)
-		if actual != x.want {
-			t.Errorf("BoolToUint(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "BoolToUint", BoolToUint, tst.AssertEqual)
 }
 
 func TestBoolToString(t *testing.T) {
-	testCases := []testCase[bool, string]{
+	testCases := []tst.P1W1[bool, string]{
 		{true, "true"},
 		{false, "false"},
 	}
-	for _, x := range testCases {
-		actual := BoolToString(x.input)
-		if actual != x.want {
-			t.Errorf("BoolToString(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "BoolToString", BoolToString, tst.AssertEqual)
 }
 
 func TestFloatToInt(t *testing.T) {
-	testCases1 := []testCase[float32, int]{
+	testCases1 := []tst.P1W1[float32, int]{
 		{-6.77, -6},
 		{-1.33, -1},
 		{-0.99, 0},
@@ -97,7 +64,7 @@ func TestFloatToInt(t *testing.T) {
 		{4.99, 4},
 		{5.0, 5},
 	}
-	testCases2 := []testCase[float64, int]{
+	testCases2 := []tst.P1W1[float64, int]{
 		{-6.77, -6},
 		{-1.33, -1},
 		{-0.99, 0},
@@ -109,22 +76,12 @@ func TestFloatToInt(t *testing.T) {
 		{4.99, 4},
 		{5.0, 5},
 	}
-	for _, x := range testCases1 {
-		actual := FloatToInt(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToInt(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := FloatToInt(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToInt(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "FloatToInt", FloatToInt, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "FloatToInt", FloatToInt, tst.AssertEqual)
 }
 
 func TestFloatToUint(t *testing.T) {
-	testCases1 := []testCase[float32, uint]{
+	testCases1 := []tst.P1W1[float32, uint]{
 		{-6.77, 0},
 		{-1.33, 0},
 		{-0.99, 0},
@@ -136,7 +93,7 @@ func TestFloatToUint(t *testing.T) {
 		{4.99, 4},
 		{5.0, 5},
 	}
-	testCases2 := []testCase[float64, uint]{
+	testCases2 := []tst.P1W1[float64, uint]{
 		{-6.77, 0},
 		{-1.33, 0},
 		{-0.99, 0},
@@ -148,23 +105,13 @@ func TestFloatToUint(t *testing.T) {
 		{4.99, 4},
 		{5.0, 5},
 	}
-	for _, x := range testCases1 {
-		actual := FloatToUint(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToUint(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := FloatToUint(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToUint(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "FloatToUint", FloatToUint, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "FloatToUint", FloatToUint, tst.AssertEqual)
 }
 
 func TestFloatToString(t *testing.T) {
 	// Note: fmt.Sprintf uses 6 decimal places by default
-	testCases1 := []testCase[float32, string]{
+	testCases1 := []tst.P1W1[float32, string]{
 		{-6.77, "-6.770000"},
 		{-1.33, "-1.330000"},
 		{-0.9999, "-0.999900"},
@@ -176,7 +123,7 @@ func TestFloatToString(t *testing.T) {
 		{4.99, "4.990000"},
 		{5.0, "5.000000"},
 	}
-	testCases2 := []testCase[float64, string]{
+	testCases2 := []tst.P1W1[float64, string]{
 		{-6.77, "-6.770000"},
 		{-1.33, "-1.330000"},
 		{-0.9999, "-0.999900"},
@@ -188,128 +135,77 @@ func TestFloatToString(t *testing.T) {
 		{4.99, "4.990000"},
 		{5.0, "5.000000"},
 	}
-
-	for _, x := range testCases1 {
-		actual := FloatToString(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToString(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := FloatToString(x.input)
-		if actual != x.want {
-			t.Errorf("FloatToString(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "FloatToString", FloatToString, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "FloatToString", FloatToString, tst.AssertEqual)
 }
 
 func TestIntToBool(t *testing.T) {
-	testCases1 := []testCase[int, bool]{
+	testCases1 := []tst.P1W1[int, bool]{
 		{-5, true},
 		{0, false},
 		{1, true},
 		{999, true},
 	}
-	testCases2 := []testCase[uint, bool]{
+	testCases2 := []tst.P1W1[uint, bool]{
 		{0, false},
 		{1, true},
 		{5, true},
 		{999, true},
 	}
-	for _, x := range testCases1 {
-		actual := IntToBool(x.input)
-		if actual != x.want {
-			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := IntToBool(x.input)
-		if actual != x.want {
-			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "IntToBool", IntToBool, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "IntToBool", IntToBool, tst.AssertEqual)
 }
 
 func TestIntToFloat(t *testing.T) {
-	testCases1 := []testCase[int, float64]{
+	testCases1 := []tst.P1W1[int, float64]{
 		{-5, -5.0},
 		{0, 0.0},
 		{1, 1.0},
 		{999, 999.0},
 	}
-	testCases2 := []testCase[uint, float64]{
+	testCases2 := []tst.P1W1[uint, float64]{
 		{0, 0.0},
 		{1, 1.0},
 		{5, 5.0},
 		{999, 999.0},
 	}
-	for _, x := range testCases1 {
-		actual := IntToFloat(x.input)
-		if actual != x.want {
-			t.Errorf("IntToFloat(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := IntToFloat(x.input)
-		if actual != x.want {
-			t.Errorf("IntToFloat(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "IntToFloat", IntToFloat, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "IntToFloat", IntToFloat, tst.AssertEqual)
 }
 
 func TestIntToString(t *testing.T) {
-	testCases1 := []testCase[int, string]{
+	testCases1 := []tst.P1W1[int, string]{
 		{-5, "-5"},
 		{0, "0"},
 		{1, "1"},
 		{999, "999"},
 	}
-	testCases2 := []testCase[uint, string]{
+	testCases2 := []tst.P1W1[uint, string]{
 		{0, "0"},
 		{1, "1"},
 		{5, "5"},
 		{999, "999"},
 	}
-	for _, x := range testCases1 {
-		actual := IntToString(x.input)
-		if actual != x.want {
-			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
-	for _, x := range testCases2 {
-		actual := IntToString(x.input)
-		if actual != x.want {
-			t.Errorf("IntToBool(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases1, "IntToString", IntToString, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "IntToString", IntToString, tst.AssertEqual)
 }
 
 func TestIntToUint(t *testing.T) {
-	testCases := []testCase[int, uint]{
+	testCases := []tst.P1W1[int, uint]{
 		{1, 1},
 		{67, 67},
 		{0, 0},
 		{-5, 0},
 		{-100, 0},
 	}
-	for _, x := range testCases {
-		actual := IntToUint(x.input)
-		if actual != x.want {
-			t.Errorf("IntToUint(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "IntToUint", IntToUint, tst.AssertEqual)
 }
 
 func TestUintToInt(t *testing.T) {
-	testCases := []testCase[uint, int]{
+	testCases := []tst.P1W1[uint, int]{
 		{1, 1},
 		{67, 67},
 		{0, 0},
 	}
-	for _, x := range testCases {
-		actual := UintToInt(x.input)
-		if actual != x.want {
-			t.Errorf("IntToUint(%v) = %v; want %v", x.input, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "UintToInt", UintToInt, tst.AssertEqual)
 }

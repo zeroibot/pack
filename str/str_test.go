@@ -1,102 +1,63 @@
 package str
 
-import "testing"
+import (
+	"testing"
 
-type testCase[T any] struct {
-	text string
-	want T
-}
+	"github.com/roidaradal/pack/list"
+	"github.com/roidaradal/tst"
+)
 
 func TestLen(t *testing.T) {
-	testCases := []testCase[int]{
+	testCases := []tst.P1W1[string, int]{
 		{"", 0},
 		{"abc", 3},
 		{"12345", 5},
 		{"X", 1},
 		{"XY", 2},
 	}
-	for _, x := range testCases {
-		actual := Len(x.text)
-		if x.want != actual {
-			t.Errorf("Len(%q) = %d, want %d", x.text, actual, x.want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "Len", Len, tst.AssertEqual)
 }
 
 func TestIsEmpty(t *testing.T) {
-	testCases := []testCase[bool]{
+	type testCase = tst.P1W1[string, bool]
+	testCases1 := []testCase{
 		{"", true},
 		{"123", false},
 		{"a", false},
 	}
-	for _, x := range testCases {
-		actual := IsEmpty(x.text)
-		if x.want != actual {
-			t.Errorf("IsEmpty(%q) = %v, want %v", x.text, actual, x.want)
-		}
-		opposite := NotEmpty(x.text)
-		if !x.want != opposite {
-			t.Errorf("NotEmpty(%q) = %v, want %v", x.text, opposite, x.want)
-		}
-	}
+	testCases2 := list.Map(testCases1, func(tc testCase) testCase {
+		return testCase{P1: tc.P1, W1: !tc.W1}
+	})
+	tst.AllP1W1(t, testCases1, "IsEmpty", IsEmpty, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "NotEmpty", NotEmpty, tst.AssertEqual)
 }
 
 func TestGuard(t *testing.T) {
-	type testCase struct {
-		text  string
-		guard string
-		want  string
-	}
-	testCases := []testCase{
+	testCases := []tst.P2W1[string, string, string]{
 		{"", "default", "default"},
 		{"abc", "default", "abc"},
 		{"", "unknown", "unknown"},
 		{"def", "unknown", "def"},
 	}
-	for _, x := range testCases {
-		actual := Guard(x.text, x.guard)
-		if x.want != actual {
-			t.Errorf("Guard(%q, %q) = %q, want %q", x.text, x.guard, actual, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "Guard", Guard, tst.AssertEqual)
 }
 
 func TestWrap(t *testing.T) {
-	type testCase struct {
-		text    string
-		wrapper string
-		want    string
-	}
-	testCases := []testCase{
+	testCases := []tst.P2W1[string, string, string]{
 		{"hello", "()", "(hello)"},
 		{"hello", "(", "(hello"},
 		{"world", "<>", "<world>"},
 		{"column", "``", "`column`"},
 		{"default", "", "default"},
 	}
-	for _, x := range testCases {
-		actual := Wrap(x.text, x.wrapper)
-		if x.want != actual {
-			t.Errorf("Wrap(%q, %q) = %q, want %q", x.text, x.wrapper, actual, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "Wrap", Wrap, tst.AssertEqual)
 }
 
 func TestWrapList(t *testing.T) {
-	type testCase struct {
-		items   []string
-		wrapper string
-		want    string
-	}
-	testCases := []testCase{
+	testCases := []tst.P2W1[[]string, string, string]{
 		{[]string{"a", "b", "c"}, "[]", "[a, b, c]"},
 		{[]string{"a => 1", "b => 2"}, "{}", "{a => 1, b => 2}"},
 		{[]string{"1", "2", "3"}, "", "1, 2, 3"},
 	}
-	for _, x := range testCases {
-		actual := WrapList(x.items, x.wrapper)
-		if x.want != actual {
-			t.Errorf("WrapList(%v, %q) = %q, want %q", x.items, x.wrapper, actual, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "WrapList", WrapList, tst.AssertEqual)
 }

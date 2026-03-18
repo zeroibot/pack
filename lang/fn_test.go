@@ -1,110 +1,74 @@
 package lang
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/roidaradal/tst"
+)
 
 func TestIdentity(t *testing.T) {
-	fn1 := Identity[int]
-	actual, want := fn1(5), 5
-	if actual != want {
-		t.Errorf("Identity(%d) = %d, want %d", want, actual, want)
-	}
-	fn2 := Identity[string]
-	actual2, want2 := fn2("a"), "a"
-	if actual2 != want2 {
-		t.Errorf("Identity(%q) = %q, want %q", want2, actual2, want2)
-	}
+	tst.AssertEqual(t, "Identity", Identity[int](5), 5)
+	tst.AssertEqual(t, "Identity", Identity[string]("a"), "a")
 }
 
 func TestIsEqual(t *testing.T) {
-	fn1 := IsEqual(5)
-	fn2 := IsEqual("a")
-	testCases := [][2]bool{
-		{fn1(5), true},
-		{fn2("a"), true},
-		{fn1(6), false},
-		{fn2("b"), false},
+	testCases1 := []tst.P1W1[int, bool]{
+		{5, true},
+		{6, false},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("IsEqual = %v, want %v", actual, want)
-		}
+	testCases2 := []tst.P1W1[string, bool]{
+		{"a", true},
+		{"b", false},
 	}
+	tst.AllP1W1(t, testCases1, "IsEqual", IsEqual(5), tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "IsEqual", IsEqual("a"), tst.AssertEqual)
 }
 
 func TestNotEqual(t *testing.T) {
-	fn1 := NotEqual(5)
-	fn2 := NotEqual("a")
-	testCases := [][2]bool{
-		{fn1(5), false},
-		{fn2("a"), false},
-		{fn1(6), true},
-		{fn2("b"), true},
+	testCases1 := []tst.P1W1[int, bool]{
+		{5, false},
+		{6, true},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("NotEqual = %v, want %v", actual, want)
-		}
+	testCases2 := []tst.P1W1[string, bool]{
+		{"a", false},
+		{"b", true},
 	}
+	tst.AllP1W1(t, testCases1, "NotEqual", NotEqual(5), tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "NotEqual", NotEqual("a"), tst.AssertEqual)
 }
 
 func TestIsGreater(t *testing.T) {
-	fn := IsGreater(5)
-	testCases := [][2]bool{
-		{fn(4), false},
-		{fn(5), false},
-		{fn(6), true},
+	testCases := []tst.P1W1[int, bool]{
+		{4, false},
+		{5, false},
+		{6, true},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("IsGreater = %v, want %v", actual, want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "IsGreater", IsGreater(5), tst.AssertEqual)
 }
 
 func TestIsGreaterEqual(t *testing.T) {
-	fn := IsGreaterEqual(5)
-	testCases := [][2]bool{
-		{fn(4), false},
-		{fn(5), true},
-		{fn(6), true},
+	testCases := []tst.P1W1[int, bool]{
+		{4, false},
+		{5, true},
+		{6, true},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("IsGreaterEqual = %v, want %v", actual, want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "IsGreaterEqual", IsGreaterEqual(5), tst.AssertEqual)
 }
 
 func TestIsLesser(t *testing.T) {
-	fn := IsLesser(5)
-	testCases := [][2]bool{
-		{fn(4), true},
-		{fn(5), false},
-		{fn(6), false},
+	testCases := []tst.P1W1[int, bool]{
+		{4, true},
+		{5, false},
+		{6, false},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("IsGreater = %v, want %v", actual, want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "IsLesser", IsLesser(5), tst.AssertEqual)
 }
 
 func TestIsLesserEqual(t *testing.T) {
-	fn := IsLesserEqual(5)
-	testCases := [][2]bool{
-		{fn(4), true},
-		{fn(5), true},
-		{fn(6), false},
+	testCases := []tst.P1W1[int, bool]{
+		{4, true},
+		{5, true},
+		{6, false},
 	}
-	for _, x := range testCases {
-		actual, want := x[0], x[1]
-		if actual != want {
-			t.Errorf("IsGreater = %v, want %v", actual, want)
-		}
-	}
+	tst.AllP1W1(t, testCases, "IsLesserEqual", IsLesserEqual(5), tst.AssertEqual)
 }

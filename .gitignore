@@ -1,5 +1,6 @@
 .idea/
 main.go
-*.txt
+go.sum
 coverage.out
+*.txt
 *.sh

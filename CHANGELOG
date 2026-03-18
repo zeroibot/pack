@@ -1,3 +1,17 @@
+v0.2.9 - Convert Tests
+    - Commit:
+    - Convert dict tests
+    - Convert list tests
+    - Convert ds tests
+    - Convert qb tests
+v0.2.8 - Tst Package
+    x Commit: 2026-03-18 14:26
+    x Tst package
+    x Convert conv tests
+    x Convert lang tests
+    x Convert number tests
+    x Convert str tests
+    x Convert dyn tests
 v0.2.7 - Update Query
     x Commit: 2026-03-17 20:47
     x Add limitQuery
