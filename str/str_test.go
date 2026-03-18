@@ -3,7 +3,6 @@ package str
 import (
 	"testing"
 
-	"github.com/roidaradal/pack/list"
 	"github.com/roidaradal/tst"
 )
 
@@ -25,7 +24,7 @@ func TestIsEmpty(t *testing.T) {
 		{"123", false},
 		{"a", false},
 	}
-	testCases2 := list.Map(testCases1, func(tc testCase) testCase {
+	testCases2 := tst.Convert(testCases1, func(tc testCase) testCase {
 		return testCase{P1: tc.P1, W1: !tc.W1}
 	})
 	tst.AllP1W1(t, testCases1, "IsEmpty", IsEmpty, tst.AssertEqual)
