@@ -2,8 +2,9 @@ package dict
 
 import (
 	"cmp"
-	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestSortedKeys(t *testing.T) {
@@ -15,10 +16,7 @@ func TestSortedKeys(t *testing.T) {
 		"Dan":     5,
 	}
 	want := []string{"Alice", "Bob", "Charlie", "Dan", "Tom"}
-	actual := SortedKeys(m)
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedKeys = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedKeys", SortedKeys(m), want)
 }
 
 func TestSortedKeysFunc(t *testing.T) {
@@ -31,9 +29,7 @@ func TestSortedKeysFunc(t *testing.T) {
 	}
 	want := []string{"Bob", "Alice", "Denzel", "Charlie", "Emmanuel"}
 	actual := SortedKeysFunc(m, func(k1, k2 string) int { return cmp.Compare(len(k1), len(k2)) })
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedKeysFunc = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedKeysFunc", actual, want)
 }
 
 func TestSortedValues(t *testing.T) {
@@ -45,10 +41,7 @@ func TestSortedValues(t *testing.T) {
 		"Dan":     5,
 	}
 	want := []int{1, 2, 3, 4, 5}
-	actual := SortedValues(m)
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedValues = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedValues", SortedValues(m), want)
 }
 
 func TestSortedValuesFunc(t *testing.T) {
@@ -61,9 +54,7 @@ func TestSortedValuesFunc(t *testing.T) {
 	}
 	want := []int{5, 4, 3, 2, 1}
 	actual := SortedValuesFunc(m, func(v1, v2 int) int { return cmp.Compare(v2, v1) })
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedValuesFunc = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedValuesFunc", actual, want)
 }
 
 func TestSortedEntries(t *testing.T) {
@@ -81,10 +72,7 @@ func TestSortedEntries(t *testing.T) {
 		{"Dan", 5},
 		{"Tom", 4},
 	}
-	actual := SortedEntries(m)
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedEntries = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedEntries", SortedEntries(m), want)
 }
 
 func TestSortedEntriesFunc(t *testing.T) {
@@ -107,9 +95,7 @@ func TestSortedEntriesFunc(t *testing.T) {
 		score2 := len(e2.Key) * e2.Value
 		return cmp.Compare(score2, score1)
 	})
-	if slices.Equal(actual, want) == false {
-		t.Errorf("SortedEntriesFunc = %v, want %v", actual, want)
-	}
+	tst.AssertListEqual(t, "SortedEntriesFunc", actual, want)
 }
 
 func TestSortValueLists(t *testing.T) {
@@ -120,14 +106,8 @@ func TestSortValueLists(t *testing.T) {
 	want1 := []int{82, 87, 90, 93, 95}
 	want2 := []int{69, 78, 81, 88, 98}
 	SortValueLists(m)
-	actual1 := m["section1"]
-	actual2 := m["section2"]
-	if slices.Equal(actual1, want1) == false {
-		t.Errorf("SortValueLists = %v, want %v", actual1, want1)
-	}
-	if slices.Equal(actual2, want2) == false {
-		t.Errorf("SortValueLists = %v, want %v", actual2, want2)
-	}
+	tst.AssertListEqual(t, "SortValueLists", m["section1"], want1)
+	tst.AssertListEqual(t, "SortValueLists", m["section2"], want2)
 }
 
 func TestSortValueListsFunc(t *testing.T) {
@@ -138,13 +118,6 @@ func TestSortValueListsFunc(t *testing.T) {
 	want1 := []int{95, 93, 90, 87, 82}
 	want2 := []int{98, 88, 81, 78, 69}
 	SortValueListsFunc(m, func(x1, x2 int) int { return cmp.Compare(x2, x1) })
-	actual1 := m["section1"]
-	actual2 := m["section2"]
-	if slices.Equal(actual1, want1) == false {
-		t.Errorf("SortValueListsFunc = %v, want %v", actual1, want1)
-	}
-	if slices.Equal(actual2, want2) == false {
-		t.Errorf("SortValueListsFunc = %v, want %v", actual2, want2)
-	}
-
+	tst.AssertListEqual(t, "SortValueListsFunc", m["section1"], want1)
+	tst.AssertListEqual(t, "SortValueListsFunc", m["section2"], want2)
 }
