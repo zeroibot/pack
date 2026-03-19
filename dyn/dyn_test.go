@@ -74,9 +74,7 @@ func TestIsNil(t *testing.T) {
 		{ptrInt, true}, {zeroCh, true}, {zeroFn, true}, {zeroErr, true},
 	}
 	tst.AllP1W1(t, testCases2, "IsNil", IsNil, tst.AssertEqual)
-	testCases2 = tst.Convert(testCases2, func(tc testCase) testCase {
-		return testCase{P1: tc.P1, W1: !tc.W1}
-	})
+	testCases2 = tst.FlipP1W1(testCases2)
 	tst.AllP1W1(t, testCases2, "NotNil", NotNil, tst.AssertEqual)
 }
 
@@ -103,9 +101,7 @@ func TestIsEqual(t *testing.T) {
 		{map1, &map2, true}, {&map2, &map3, false},
 	}
 	tst.AllP2W1(t, testCases, "IsEqual", IsEqual, tst.AssertEqual)
-	testCases = tst.Convert(testCases, func(tc testCase) testCase {
-		return testCase{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
-	})
+	testCases = tst.FlipP2W1(testCases)
 	tst.AllP2W1(t, testCases, "NotEqual", NotEqual, tst.AssertEqual)
 }
 

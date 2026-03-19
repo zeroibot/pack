@@ -3,20 +3,16 @@ package ds
 import (
 	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestNewSet(t *testing.T) {
-	type testCase[T any] struct {
-		name           string
-		actual1, want1 int
-		actual2, want2 bool
-		actual3, want3 bool
-		actual4, want4 List[T]
-	}
 	type person struct {
 		name  string
 		score int
 	}
+	// NewSet, NewSetFrom, NewSetFunc
 	set1 := NewSet[int]()
 	items := []int{1, 2, 3, 1, 2, 4, 5, 1, 3}
 	set2 := NewSetFrom(items)
@@ -27,48 +23,24 @@ func TestNewSet(t *testing.T) {
 		{"Gus", 4},
 	}
 	set3 := NewSetFunc(persons, func(p person) int { return p.score })
-	testCases := []testCase[int]{
-		{
-			"NewSet",
-			set1.Len(), 0,
-			set1.IsEmpty(), true,
-			set1.NotEmpty(), false,
-			set1.Items(), List[int]{},
-		},
-		{
-			"NewSetFrom",
-			set2.Len(), 5,
-			set2.IsEmpty(), false,
-			set2.NotEmpty(), true,
-			set2.Items(), List[int]{1, 2, 3, 4, 5},
-		},
-		{
-			"NewSetFunc",
-			set3.Len(), 3,
-			set3.IsEmpty(), false,
-			set3.NotEmpty(), true,
-			set3.Items(), List[int]{3, 4, 5},
-		},
+	// Len, IsEmpty, NotEmpty, Items
+	type testCase = tst.P1W1[Set[int], bool]
+	lenCases := []tst.P1W1[Set[int], int]{{set1, 0}, {set2, 5}, {set3, 3}}
+	emptyCases := []testCase{{set1, true}, {set2, false}, {set3, false}}
+	notEmptyCases := tst.FlipP1W1(emptyCases)
+	itemCases := []tst.P1W1[Set[int], List[int]]{
+		{set1, List[int]{}}, {set2, List[int]{1, 2, 3, 4, 5}}, {set3, List[int]{3, 4, 5}},
 	}
-	for _, x := range testCases {
-		if x.actual1 != x.want1 {
-			t.Errorf("%s.Len = %d, want %d", x.name, x.actual1, x.want1)
-		}
-		if x.actual2 != x.want2 {
-			t.Errorf("%s.NotEmpty = %v, want %v", x.name, x.actual2, x.want2)
-		}
-		if x.actual3 != x.want3 {
-			t.Errorf("%s.IsEmpty = %v, want %v", x.name, x.actual3, x.want3)
-		}
-		slices.Sort(x.actual4)
-		if slices.Equal(x.actual4, x.want4) == false {
-			t.Errorf("%s.Items = %v, want %v", x.name, x.actual4, x.want4)
-		}
+	tst.AllP1W1(t, lenCases, "Set.Len", Set[int].Len, tst.AssertEqual)
+	tst.AllP1W1(t, emptyCases, "Set.IsEmpty", Set[int].IsEmpty, tst.AssertEqual)
+	tst.AllP1W1(t, notEmptyCases, "Set.NotEmpty", Set[int].NotEmpty, tst.AssertEqual)
+	for _, x := range itemCases {
+		set, want := x.P1, x.W1
+		actual := set.Items()
+		slices.Sort(actual)
+		tst.AssertListEqual(t, "Set.Items", actual, want)
 	}
-	actual, want := set1.String(), "{}"
-	if actual != want {
-		t.Errorf("Set.String = %q, want %q", actual, want)
-	}
+	tst.AssertEqual(t, "Set.String", set1.String(), "{}")
 }
 
 func TestSetFunctions(t *testing.T) {
@@ -77,50 +49,29 @@ func TestSetFunctions(t *testing.T) {
 	m.Add(1, 2, 3)
 	m.Add(2, 3, 4)
 	// Has and HasNo
-	testCases := []Tuple2[int, bool]{
-		{1, true},
-		{0, false},
-		{3, true},
-		{5, false},
-		{4, true},
+	type testCase = tst.P2W1[Set[int], int, bool]
+	testCases := []testCase{
+		{m, 1, true}, {m, 0, false}, {m, 3, true},
+		{m, 5, false}, {m, 4, true},
 	}
-	for _, x := range testCases {
-		item, want := x.Unpack()
-		actual := m.Has(item)
-		if actual != want {
-			t.Errorf("Set.Has(%d) = %v, want %v", item, actual, want)
-		}
-		want = !want
-		actual = m.HasNo(item)
-		if actual != want {
-			t.Errorf("Set.HasNo(%d) = %v, want %v", item, actual, want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "Set.Has", Set[int].Has, tst.AssertEqual)
+	testCases = tst.FlipP2W1(testCases)
+	tst.AllP2W1(t, testCases, "Set.HasNo", Set[int].HasNo, tst.AssertEqual)
 	// Add and Delete
 	m.Add(5)
-	if m.Has(5) != true {
-		t.Errorf("Set.Add.Has(%d) = %v, want true", 5, m.Has(5))
-	}
+	tst.AssertEqual(t, "Set.Add.Has", m.Has(5), true)
 	m.Delete(5)
-	if m.HasNo(5) != true {
-		t.Errorf("Set.Delete.HasNo(%d) = %v, want true", 5, m.HasNo(5))
-	}
+	tst.AssertEqual(t, "Set.Delete.HasNo", m.HasNo(5), true)
 
 	// Copy and Clear
 	mc := m.Copy()
 	copyItems := mc.Items()
 	slices.Sort(copyItems)
-	want := []int{1, 2, 3, 4}
-	if slices.Equal(copyItems, want) == false {
-		t.Errorf("Set.Copy.Items = %v, want %v", copyItems, want)
-	}
+	tst.AssertListEqual(t, "Set.Copy.Items", copyItems, []int{1, 2, 3, 4})
+
 	mc.Clear()
-	if mc.Len() != 0 {
-		t.Errorf("Set.Clear.Len = %d, want 0", mc.Len())
-	}
-	if m.Len() != 4 {
-		t.Errorf("Set.Len = %d, want 4", m.Len())
-	}
+	tst.AssertEqual(t, "Set.Clear.Len", mc.Len(), 0)
+	tst.AssertEqual(t, "Set.Len", m.Len(), 4)
 }
 
 func TestSetMethods(t *testing.T) {
@@ -140,25 +91,10 @@ func TestSetMethods(t *testing.T) {
 	for _, x := range testCases {
 		name, actual, want := x.Unpack()
 		slices.Sort(actual)
-		if slices.Equal(actual, want) == false {
-			t.Errorf("Set.%s = %v, want %v", name, actual, want)
-		}
+		tst.AssertListEqual(t, name, actual, want)
 	}
-
-	actual := s1.HasIntersection(s2)
-	if actual != true {
-		t.Errorf("Set.HasIntersection = %v, want true", actual)
-	}
-	actual = s1.HasNoIntersection(s3)
-	if actual != true {
-		t.Errorf("Set.HasNoIntersection = %v, want true", actual)
-	}
-	actual = s1.HasDifference(s2)
-	if actual != true {
-		t.Errorf("Set.HasDifference = %v, want true", actual)
-	}
-	actual = s1.HasNoDifference(s4)
-	if actual != true {
-		t.Errorf("Set.HasNoDifference = %v, want true", actual)
-	}
+	tst.AssertTrue(t, "HasIntersection", s1.HasIntersection(s2))
+	tst.AssertTrue(t, "HasNoIntersection", s1.HasNoIntersection(s3))
+	tst.AssertTrue(t, "HasDifference", s1.HasDifference(s2))
+	tst.AssertTrue(t, "HasNoDifference", s1.HasNoDifference(s4))
 }

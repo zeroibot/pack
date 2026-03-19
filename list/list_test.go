@@ -153,9 +153,7 @@ func TestListCheck(t *testing.T) {
 	}
 	tst.AllP2W1(t, testCases, "Any", Any, tst.AssertEqual)
 
-	testCases = tst.Convert(testCases, func(tc testCase) testCase {
-		return testCase{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
-	})
+	testCases = tst.FlipP2W1(testCases)
 	tst.AllP2W1(t, testCases, "NotAny", NotAny, tst.AssertEqual)
 
 	// All
@@ -174,9 +172,7 @@ func TestListCheck(t *testing.T) {
 		{items, fn4, true}, {items, fn5, false},
 	}
 	tst.AllP2W1(t, testCases2, "AnyIndexed", AnyIndexed, tst.AssertEqual)
-	testCases2 = tst.Convert(testCases2, func(tc testCase2) testCase2 {
-		return testCase2{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
-	})
+	testCases2 = tst.FlipP2W1(testCases2)
 	tst.AllP2W1(t, testCases2, "NotAnyIndexed", NotAnyIndexed, tst.AssertEqual)
 
 	// AllIndexed

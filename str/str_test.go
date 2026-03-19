@@ -24,9 +24,7 @@ func TestIsEmpty(t *testing.T) {
 		{"123", false},
 		{"a", false},
 	}
-	testCases2 := tst.Convert(testCases1, func(tc testCase) testCase {
-		return testCase{P1: tc.P1, W1: !tc.W1}
-	})
+	testCases2 := tst.FlipP1W1(testCases1)
 	tst.AllP1W1(t, testCases1, "IsEmpty", IsEmpty, tst.AssertEqual)
 	tst.AllP1W1(t, testCases2, "NotEmpty", NotEmpty, tst.AssertEqual)
 }
