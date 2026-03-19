@@ -119,9 +119,7 @@ func TestDerefValue(t *testing.T) {
 		t.Errorf("DerefValue() = %v, %t, want %v, true", actualValue, ok, wantValue)
 	}
 	actualValue, ok = DerefValue(p)
-	if ok || actualValue.IsValid() == true {
-		t.Errorf("DerefValue() = %v, %t, want <invalid reflect.Value>, false", actualValue, ok)
-	}
+	tst.AssertEqual2(t, "DerefValue", actualValue.IsValid(), false, ok, false)
 
 	// MustDerefValue
 	actualValue = MustDerefValue(&p)
