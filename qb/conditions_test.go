@@ -1,10 +1,10 @@
 package qb
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/roidaradal/pack/list"
+	"github.com/roidaradal/tst"
 )
 
 func TestConditions(t *testing.T) {
@@ -15,17 +15,9 @@ func TestConditions(t *testing.T) {
 		Job     string
 		Score   int
 	}
-	type testCase struct {
-		cond       Condition
-		wantCond   string
-		wantValues []any
-	}
-	this := NewInstance(MySQL)
 	p := &Person{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType error: %v", err)
-	}
+	this := testPrelude(t, p)
+
 	condNone := EmptyCondition()
 	condEqual := EqualTo(this, &p.Name, "John")
 	condNotEqual := NotEqualTo(this, &p.Job, "manager")
@@ -41,7 +33,7 @@ func TestConditions(t *testing.T) {
 	condAnd := AndCondition(condEqual, condGreater)
 	condOr := OrCondition(condLesserEqual, condIn)
 
-	testCases := []testCase{
+	testCases := []tst.P1W2[Condition, string, []any]{
 		{condNone, "true", []any{}},
 		{condEqual, "`Name` = ?", []any{"John"}},
 		{condNotEqual, "`Job` <> ?", []any{"manager"}},
@@ -57,12 +49,7 @@ func TestConditions(t *testing.T) {
 		{condAnd, "(`Name` = ? AND `Score` > ?)", []any{"John", 75}},
 		{condOr, "(`Score` <= ? OR `Job` IN (?, ?, ?))", []any{50, "dev", "qa", "intern"}},
 	}
-	for _, x := range testCases {
-		actualCond, actualValues := x.cond.BuildCondition()
-		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("Condition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
-		}
-	}
+	tst.AllP1W2(t, testCases, "Condition.BuildCondition", Condition.BuildCondition, tst.AssertEqual, tst.AssertListEqual)
 }
 
 func TestCombos(t *testing.T) {
@@ -73,16 +60,8 @@ func TestCombos(t *testing.T) {
 		Job     string
 		Score   int
 	}
-	type testCase struct {
-		cond      DualCondition[Person]
-		wantBools []bool
-	}
-	this := NewInstance(MySQL)
 	p := &Person{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType error: %v", err)
-	}
+	this := testPrelude(t, p)
 
 	persons := []Person{
 		{"John", "Astra Tower, Gotham City", 30, "manager", 95},
@@ -107,7 +86,7 @@ func TestCombos(t *testing.T) {
 	condAnd := And[Person](condEqual, condGreater)
 	condOr := Or[Person](condLesserEqual, condIn)
 
-	testCases := []testCase{
+	testCases := []tst.P1W1[DualCondition[Person], []bool]{
 		{condNone, []bool{true, true, true, true, true}},
 		{condEqual, []bool{true, false, false, false, false}},
 		{condNotEqual, []bool{false, true, true, true, true}},
@@ -123,10 +102,6 @@ func TestCombos(t *testing.T) {
 		{condAnd, []bool{true, false, false, false, false}},
 		{condOr, []bool{false, false, true, true, true}},
 	}
-	for _, x := range testCases {
-		actualBools := list.Map(persons, x.cond.Test)
-		if slices.Equal(actualBools, x.wantBools) == false {
-			t.Errorf("Combo.Test() = %v, want %v", actualBools, x.wantBools)
-		}
-	}
+	checkTestResults := func(condition DualCondition[Person]) []bool { return list.Map(persons, condition.Test) }
+	tst.AllP1W1(t, testCases, "Combo.Test", checkTestResults, tst.AssertListEqual)
 }

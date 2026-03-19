@@ -16,6 +16,7 @@ func TestQueryCore(t *testing.T) {
 	table := "users"
 	u := new(User)
 	this := testPrelude(t, u)
+	// Note: use testCase struct here because of the error checking
 	type testCase struct {
 		q          *conditionQuery[User]
 		wantCond   string

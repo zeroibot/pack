@@ -22,6 +22,7 @@ func TestKVCondition(t *testing.T) {
 	emptyValues := make([]any, 0)
 	this := testPrelude(t, p)
 	// newColumnValue
+	// Note: use testCase1 struct here because newColumnValue accepts generic type T
 	type testCase1 struct {
 		isNil  bool
 		want   columnValuePair
@@ -53,12 +54,13 @@ func TestKVCondition(t *testing.T) {
 	}
 
 	// newColumnValueList
-	var empty2 columnValueListPair
+	// Note: use testCase1 struct here because newColumnValueList accepts generic type T
 	type testCase2 struct {
 		isNil  bool
 		want   columnValueListPair
 		actual ds.Option[columnValueListPair]
 	}
+	var empty2 columnValueListPair
 	testCases2 := []testCase2{
 		{false, columnValueListPair{V1: "`Name`", V2: []any{"John", "Jane"}}, newColumnValueList(this, &p.Name, ds.List[string]{"John", "Jane"})},
 		{false, columnValueListPair{V1: "`Job`", V2: []any{"dev", "qa"}}, newColumnValueList(this, &p.Job, ds.List[string]{"dev", "qa"})},
@@ -134,11 +136,6 @@ func TestInternalConditions(t *testing.T) {
 	valueCond4 := valueCondition{
 		pair:     ds.NewOption(new(columnValuePair{V1: "", V2: 0})),
 		operator: opEqual,
-	}
-	type testCase1 struct {
-		wantCond   string
-		wantValues []any
-		valueCond  valueCondition
 	}
 	testCases1 := []tst.P1W2[valueCondition, string, []any]{
 		{valueCond1, "`Name` <> ?", []any{"John"}},
