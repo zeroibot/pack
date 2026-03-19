@@ -2,34 +2,11 @@ package qb
 
 import (
 	"fmt"
-	"maps"
-	"reflect"
-	"slices"
 	"testing"
 
 	"github.com/roidaradal/pack/dict"
-	"github.com/roidaradal/pack/dyn"
+	"github.com/roidaradal/tst"
 )
-
-type mockScanner struct {
-	items []any
-}
-
-func (m mockScanner) Scan(fieldRefs ...any) (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic encountered: %v", r)
-		}
-	}()
-	if len(fieldRefs) != len(m.items) {
-		return fmt.Errorf("expected %d fieldRefs, got %d", len(m.items), len(fieldRefs))
-	}
-	for i, fieldRef := range fieldRefs {
-		fieldValue := dyn.MustDerefValue(fieldRef)
-		fieldValue.Set(reflect.ValueOf(m.items[i]))
-	}
-	return err
-}
 
 func TestAddType(t *testing.T) {
 	type User struct {
@@ -43,70 +20,36 @@ func TestAddType(t *testing.T) {
 		Level   int
 	}
 	this := NewInstance(MySQL)
-	err := AddType(this, new(5))
-	if err == nil {
-		t.Errorf("AddType(5) should return error")
-	}
-	err = AddType(this, &User{})
-	if err != nil {
-		t.Errorf("AddType error: %s", err.Error())
-	}
-	err = AddType(this, &School{})
-	if err != nil {
-		t.Errorf("AddType error: %s", err.Error())
-	}
+	tst.AssertError(t, "AddType", AddType(this, new(5)))
+	tst.AssertNoError(t, "AddType", AddType(this, new(User)))
+	tst.AssertNoError(t, "AddType", AddType(this, new(School)))
 	// Note: checking of result details are checked in the individual methods
 }
 
 func TestPrepareIdentifier(t *testing.T) {
 	db1 := MySQL
 	db2 := dbType{"other"}
-	testCases := [][2]string{
-		{"`name`", db1.prepareIdentifier("name")},
-		{"`age`", db1.prepareIdentifier("age")},
-		{"name", db2.prepareIdentifier("name")},
-		{"age", db2.prepareIdentifier("age")},
+	testCases := []tst.P2W1[dbType, string, string]{
+		{db1, "name", "`name`"}, {db1, "age", "`age`"},
+		{db2, "name", "name"}, {db2, "age", "age"},
 	}
-	for _, x := range testCases {
-		want, actual := x[0], x[1]
-		if want != actual {
-			t.Errorf("dbType.prepareIdentifier() = %q, want %q", actual, want)
-		}
-	}
+	tst.AllP2W1(t, testCases, "dbType.prepareIdentifier", dbType.prepareIdentifier, tst.AssertEqual)
 }
 
 func TestNewInstance(t *testing.T) {
-	type testCase struct {
-		name string
-		flag bool
-	}
-	// Manual Instance
 	this1 := &Instance{}
 	this2 := NewInstance(MySQL)
-	tests := []testCase{
-		{"addressColumns", this1.addressColumns == nil},
-		{"addressFields", this1.addressFields == nil},
-		{"typeColumns", this1.typeColumns == nil},
-		{"typeColumnFields", this1.typeColumnFields == nil},
-		{"typeFieldColumns", this1.typeFieldColumns == nil},
-		{"typeRowCreators", this1.typeRowCreators == nil},
-		{"addressColumns", this2.addressColumns != nil},
-		{"addressFields", this2.addressFields != nil},
-		{"typeColumns", this2.typeColumns != nil},
-		{"typeColumnFields", this2.typeColumnFields != nil},
-		{"typeFieldColumns", this2.typeFieldColumns != nil},
-		{"typeRowCreators", this2.typeRowCreators != nil},
-		{"addressColumns", this2.typeColumns.IsEmpty()},
-		{"addressFields", this2.typeColumns.IsEmpty()},
-		{"typeColumns", this2.typeColumns.IsEmpty()},
-		{"typeColumnFields", this2.typeColumns.IsEmpty()},
-		{"typeFieldColumns", this2.typeFieldColumns.IsEmpty()},
-		{"typeRowCreators", this2.typeRowCreators.IsEmpty()},
+	testCases := map[string][3]bool{
+		"addressColumns":   {this1.addressColumns == nil, this2.addressColumns != nil, this2.typeColumns.IsEmpty()},
+		"addressFields":    {this1.addressFields == nil, this2.addressFields != nil, this2.addressFields.IsEmpty()},
+		"typeColumns":      {this1.typeColumns == nil, this2.typeColumns != nil, this2.typeColumns.IsEmpty()},
+		"typeColumnFields": {this1.typeColumnFields == nil, this2.typeColumns != nil, this2.typeColumns.IsEmpty()},
+		"typeFieldColumns": {this1.typeFieldColumns == nil, this2.typeFieldColumns != nil, this2.typeFieldColumns.IsEmpty()},
+		"typeRowCreators":  {this1.typeRowCreators == nil, this2.typeRowCreators != nil, this2.typeRowCreators.IsEmpty()},
 	}
-	for _, x := range tests {
-		if !x.flag {
-			t.Errorf("Instance.%s test = %v, want true", x.name, x.flag)
-		}
+	for name, flags := range testCases {
+		f1, f2, f3 := flags[0], flags[1], flags[2]
+		tst.AssertTrue(t, fmt.Sprintf("Instance.%s", name), f1 && f2 && f3)
 	}
 }
 
@@ -122,97 +65,49 @@ func TestInstanceMethods(t *testing.T) {
 		Logo  string
 		Level int `col:"Lvl"`
 	}
-	this := NewInstance(MySQL)
-	p := &Person{}
-	s := &School{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType() error: %v", err)
-	}
-	err = AddType(this, s)
-	if err != nil {
-		t.Errorf("AddType() error: %v", err)
-	}
+	p, s := new(Person), new(School)
 	john := &Person{"John", "PH", "dev", 20}
+	this := testPrelude2(t, p, s)
 	// LookupColumnName
-	type testCase1 struct {
-		want     string
-		fieldRef any
+	testCases1 := []tst.P1W2[any, string, bool]{
+		{&p.Job, "Job", true}, {&s.Level, "Lvl", true},
+		{&john.Name, "", false},                  // not from type singleton
+		{p.Name, "", false}, {s.Logo, "", false}, // not a struct reference
 	}
-	testCases1 := []testCase1{
-		{"Job", &p.Job},
-		{"Lvl", &s.Level},
-		{"", &john.Name}, // Not from type singleton
-		{"", p.Name},     // Not a struct reference
-		{"", s.Logo},
-	}
-	for _, x := range testCases1 {
-		column, ok := this.LookupColumnName(x.fieldRef)
-		wantOk := x.want != ""
-		if column != x.want || ok != wantOk {
-			t.Errorf("LookupColumnName() = %q, %t, want %q, %t", column, ok, x.want, wantOk)
-		}
-		column = this.Column(x.fieldRef)
-		if column != x.want {
-			t.Errorf("Column() = %q, want %q", column, x.want)
-		}
-	}
+	tst.AllP1W2(t, testCases1, "LookupColumnName", this.LookupColumnName, tst.AssertEqual[string], tst.AssertEqual[bool])
+	testCases2 := tst.Convert(testCases1, func(tc tst.P1W2[any, string, bool]) tst.P1W1[any, string] {
+		return tst.P1W1[any, string]{P1: tc.P1, W1: tc.W1}
+	})
+	tst.AllP1W1(t, testCases2, "Column", this.Column, tst.AssertEqual)
 	// Field
-	type testCase2 struct {
-		want     string
-		typeName string
-		fieldRef any
+	testCases3 := []tst.P2W1[string, any, string]{
+		{"Person", &p.Job, "Job"},
+		{"School", &s.Level, "Level"},
+		{"Person", &p.Age, "Age"},
+		{"Person", &john.Name, ""}, // Not from type singleton
+		{"School", s.Name, ""},     // Not a struct reference
+		{"People", &p.Age, ""},     // Wrong typeName
 	}
-	testCases2 := []testCase2{
-		{"Job", "Person", &p.Job},
-		{"Level", "School", &s.Level},
-		{"Age", "Person", &p.Age},
-		{"", "Person", &john.Name}, // Not from type singleton
-		{"", "School", s.Name},     // Not a struct reference
-		{"", "People", &p.Age},     // Wrong typeName
-	}
-	for _, x := range testCases2 {
-		field := this.Field(x.typeName, x.fieldRef)
-		if field != x.want {
-			t.Errorf("Field() = %q, want %q", field, x.want)
-		}
-	}
+	tst.AllP2W1(t, testCases3, "Field", this.Field, tst.AssertEqual)
 	// Columns
-	type testCase3 struct {
-		want      []string
-		fieldRefs []any
+	testCases4 := []tst.P1W1[[]any, []string]{
+		{[]any{&p.Job, &p.Age, &p.Name}, []string{"Job", "Age", "Name"}},
+		{[]any{&s.Level, &s.Logo, &s.Name}, []string{"Lvl", "Logo", "Name"}},
+		{[]any{&p.Name, &p.Age, &john.Job}, []string{}}, // has one invalid fieldRef
+		{[]any{&s.Name, &s.Logo, s.Level}, []string{}},  // has one non-struct ref
 	}
-	testCases3 := []testCase3{
-		{[]string{"Job", "Age", "Name"}, []any{&p.Job, &p.Age, &p.Name}},
-		{[]string{"Lvl", "Logo", "Name"}, []any{&s.Level, &s.Logo, &s.Name}},
-		{[]string{}, []any{&p.Name, &p.Age, &john.Job}}, // has one invalid fieldRef
-		{[]string{}, []any{&s.Name, &s.Logo, s.Level}},  // has one non-struct ref
-	}
-	for _, x := range testCases3 {
-		actual := this.Columns(x.fieldRefs...)
-		if slices.Equal(actual, x.want) == false {
-			t.Errorf("Columns() = %v, want %v", actual, x.want)
-		}
-	}
+	getColumns := func(fieldRefs []any) []string { return this.Columns(fieldRefs...) }
+	tst.AllP1W1(t, testCases4, "Columns", getColumns, tst.AssertListEqual)
 	// Fields
-	type testCase4 struct {
-		want      []string
-		typeName  string
-		fieldRefs []any
+	testCases5 := []tst.P2W1[string, []any, []string]{
+		{"Person", []any{&p.Job, &p.Age, &p.Name}, []string{"Job", "Age", "Name"}},
+		{"School", []any{&s.Level, &s.Logo, &s.Name}, []string{"Level", "Logo", "Name"}},
+		{"Person", []any{&p.Name, &p.Age, &john.Job}, []string{}}, // has one invalid fieldRef
+		{"School", []any{&s.Name, s.Level}, []string{}},           // has one non-struct reference
+		{"People", []any{&p.Name, &p.Address}, []string{}},        // wrong typeName
 	}
-	testCases4 := []testCase4{
-		{[]string{"Job", "Age", "Name"}, "Person", []any{&p.Job, &p.Age, &p.Name}},
-		{[]string{"Level", "Logo", "Name"}, "School", []any{&s.Level, &s.Logo, &s.Name}},
-		{[]string{}, "Person", []any{&p.Name, &p.Age, &john.Job}}, // has one invalid fieldRef
-		{[]string{}, "School", []any{&s.Name, s.Level}},           // has one non-struct reference
-		{[]string{}, "People", []any{&p.Name, &p.Address}},        // wrong typeName
-	}
-	for _, x := range testCases4 {
-		actual := this.Fields(x.typeName, x.fieldRefs...)
-		if slices.Equal(actual, x.want) == false {
-			t.Errorf("Fields() = %v, want %v", actual, x.want)
-		}
-	}
+	getFields := func(typeName string, fieldRefs []any) []string { return this.Fields(typeName, fieldRefs...) }
+	tst.AllP2W1(t, testCases5, "Fields", getFields, tst.AssertListEqual)
 }
 
 func TestRowFunctions(t *testing.T) {
@@ -226,80 +121,55 @@ func TestRowFunctions(t *testing.T) {
 		Name    string
 		Address string
 	}
-	this := NewInstance(MySQL)
-	user := &User{"john", "123456", 25, "secret"}
-	school := &School{"UP", "Lahug"}
+	user := new(User{"john", "123456", 25, "secret"})
+	school := new(School{"UP", "Lahug"})
 	userRef := new(User)
-	err := AddType(this, userRef)
-	if err != nil {
-		t.Errorf("AddType() error = %v", err)
-	}
+	this := testPrelude(t, userRef)
 	// ToRow
 	empty := dict.Object{}
 	userObj := dict.Object{"Name": "john", "Password": "123456", "Age": 25}
 	testCases := [][2]dict.Object{
-		{userObj, ToRow(this, user)},
-		{empty, ToRow(this, school)},
+		{userObj, ToRow(this, user)}, {empty, ToRow(this, school)},
 	}
 	for _, x := range testCases {
 		want, actual := x[0], x[1]
-		if maps.Equal(want, actual) == false {
-			t.Errorf("ToRow() = %v, want %v", actual, want)
-		}
+		tst.AssertMapEqual(t, "ToRow", actual, want)
 	}
+
 	// Not a struct type
 	intReader := NewRowReader[int](this, "Value", "Decimal")
-	intResult := intReader(mockScanner{})
-	if intResult.IsError() == false || intResult.Value() != 0 {
-		t.Errorf("NewRowReader[int] should return an error")
-	}
+	intResult := intReader(tst.NewMockScanner())
+	tst.AssertEqualAnd(t, "NewRowReader[int]", intResult.Value(), 0, intResult.IsError(), true)
 	// Valid full reader
 	fullReader := FullRowReader(this, userRef)
-	if fullReader == nil {
-		t.Errorf("FullRowReader() should return a rowReader, got nil")
-	}
+	tst.AssertTrue(t, "FullRowReader", fullReader != nil)
 	// Successful read
-	result := fullReader(mockScanner{items: []any{"John", "111", 20}})
-	if result.NotError() == false {
-		t.Errorf("FullRowReader() read = %v, want non-error", result)
-	}
+	result := fullReader(tst.NewMockScanner("John", "111", 20))
+	tst.AssertTrue(t, "FullRowReader", result.NotError())
 	// Check that struct has been filled after fullReader read
 	want := User{"John", "111", 20, ""}
-	if want != result.Value() {
-		t.Errorf("FullRowReader() read = %v, want %v", result.Value(), want)
-	}
+	tst.AssertEqual(t, "FullRowReader.Read", result.Value(), want)
 	// Valid row reader, with specified columns
 	nameCol, pwdCol := this.Column(&userRef.Name), this.Column(&userRef.Password)
 	rowReader := NewRowReader[User](this, nameCol, pwdCol)
-	result = rowReader(mockScanner{items: []any{"Jane", "222"}})
-	if result.NotError() == false {
-		t.Errorf("RowReader() read = %v, want non-error", result)
-	}
+	result = rowReader(tst.NewMockScanner("Jane", "222"))
+	tst.AssertTrue(t, "RowReader.Read", result.NotError())
 	// Check that struct has been filled after rowReader read
 	want = User{"Jane", "222", 0, ""}
-	if want != result.Value() {
-		t.Errorf("RowReader() read = %v, want %v", result.Value(), want)
-	}
+	tst.AssertEqual(t, "RowReader.Read", result.Value(), want)
+	// Valid row reader, but error in scanning (invalid type)
 	emptyUser := User{}
-	// Valid row reader, but error in scanning (mocked by incomplete items / invalid type)
-	result = rowReader(mockScanner{items: []any{"Jane", 333}})
-	if result.IsError() == false || result.Value() != emptyUser {
-		t.Errorf("RowReader() read = %v, want Result<%v, error>", result, emptyUser)
-	}
-	result = rowReader(mockScanner{items: []any{"Jane"}})
-	if result.IsError() == false || result.Value() != emptyUser {
-		t.Errorf("RowReader() read = %v, want Result<%v, error>", result, emptyUser)
-	}
+	result = rowReader(tst.NewMockScanner("Jane", 333))
+	tst.AssertEqualAnd(t, "RowReader.Read", result.Value(), emptyUser, result.IsError(), true)
+	// Valid row reader, but error in scanning (incomplete items)
+	result = rowReader(tst.NewMockScanner("Jane"))
+	tst.AssertEqualAnd(t, "RowReader.Read", result.Value(), emptyUser, result.IsError(), true)
 	// Error because of blank columns
 	userReader := NewRowReader[User](this, nameCol, pwdCol, "")
-	result = userReader(mockScanner{})
-	if result.IsError() == false || result.Value() != emptyUser {
-		t.Errorf("NewRowReader() read = %v, want Result<%v, error>", result, emptyUser)
-	}
+	result = userReader(tst.NewMockScanner())
+	tst.AssertEqualAnd(t, "NewRowReader.Read", result.Value(), emptyUser, result.IsError(), true)
 	// Error because of unknown column field
 	userReader = NewRowReader[User](this, nameCol, pwdCol, "secret")
-	result = userReader(mockScanner{})
-	if result.IsError() == false || result.Value() != emptyUser {
-		t.Errorf("NewRowReader() read = %v, want Result<%v, error>", result, emptyUser)
-	}
+	result = userReader(tst.NewMockScanner())
+	tst.AssertEqualAnd(t, "NewRowReader.Read", result.Value(), emptyUser, result.IsError(), true)
 }
