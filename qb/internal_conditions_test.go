@@ -1,12 +1,11 @@
 package qb
 
 import (
-	"reflect"
-	"slices"
 	"testing"
 
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/list"
+	"github.com/roidaradal/tst"
 )
 
 func TestKVCondition(t *testing.T) {
@@ -19,12 +18,9 @@ func TestKVCondition(t *testing.T) {
 		secret  string
 		IP      *string
 	}
-	this := NewInstance(MySQL)
 	p := &Person{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType error: %v", err)
-	}
+	emptyValues := make([]any, 0)
+	this := testPrelude(t, p)
 	// newColumnValue
 	type testCase1 struct {
 		isNil  bool
@@ -39,9 +35,7 @@ func TestKVCondition(t *testing.T) {
 		{true, empty1, newColumnValue(this, &p.Details, "abc")},
 	}
 	for _, x := range testCases1 {
-		if x.actual.IsNil() != x.isNil || x.actual.Value() != x.want {
-			t.Errorf("newColumnValue() = %v, want %v", x.actual, x.want)
-		}
+		tst.AssertEqual2(t, "newColumnValue", x.actual.Value(), x.want, x.actual.IsNil(), x.isNil)
 	}
 
 	// newFieldColumnValue
@@ -55,9 +49,7 @@ func TestKVCondition(t *testing.T) {
 		{true, empty1, newFieldColumnValue(this, "Person", "Address", "PH")},   // unknown field
 	}
 	for _, x := range testCases1 {
-		if x.actual.IsNil() != x.isNil || x.actual.Value() != x.want {
-			t.Errorf("newFieldColumnValue() = %v, want %v", x.actual, x.want)
-		}
+		tst.AssertEqual2(t, "newFieldColumnValue", x.actual.Value(), x.want, x.actual.IsNil(), x.isNil)
 	}
 
 	// newColumnValueList
@@ -74,24 +66,19 @@ func TestKVCondition(t *testing.T) {
 		{true, empty2, newColumnValueList(this, &p.Details, ds.List[string]{"abc", "def"})},
 	}
 	for _, x := range testCases2 {
-		if x.actual.IsNil() != x.isNil || reflect.DeepEqual(x.actual.Value(), x.want) == false {
-			t.Errorf("newColumnValueList() = %v, want %v", x.actual, x.want)
-		}
+		tst.AssertEqual(t, "newColumnValueList", x.actual.IsNil(), x.isNil)
+		tst.AssertDeepEqual(t, "newColumnValueList", x.actual.Value(), x.want)
 	}
 
 	// falseConditionValues
-	emptyValues := make([]any, 0)
-	wantValues := emptyValues
 	actualCond, actualValues := falseConditionValues()
-	if actualCond != "false" || slices.Equal(actualValues, wantValues) == false {
-		t.Errorf("falseConditionValues() = %v, %v, want false, []", actualCond, actualValues)
-	}
+	tst.AssertEqual(t, "falseConditionValues", actualCond, "false")
+	tst.AssertListEqual(t, "falseConditionValues", actualValues, emptyValues)
 
 	// trueConditionValues
 	actualCond, actualValues = trueConditionValues()
-	if actualCond != "true" || slices.Equal(actualValues, wantValues) == false {
-		t.Errorf("trueConditionValues() = %v, %v, want true, []", actualCond, actualValues)
-	}
+	tst.AssertEqual(t, "trueConditionValues", actualCond, "true")
+	tst.AssertListEqual(t, "trueConditionValues", actualValues, emptyValues)
 
 	// soloConditionValues
 
@@ -102,28 +89,17 @@ func TestKVCondition(t *testing.T) {
 	kv4 := newColumnValue(this, &p.IP, nil).Value()
 	kv5 := newColumnValue(this, &p.Job, "Dev").Value()
 
-	type testCase3 struct {
-		wantCond   string
-		wantValues []any
-		kv         columnValuePair
-		op         operator
+	testCases3 := []tst.P3W2[string, operator, any, string, []any]{
+		{kv1.V1, opEqual, kv1.V2, "`Name` = ?", []any{"John"}},
+		{kv2.V1, opGreater, kv2.V2, "`Age` > ?", []any{20}},
+		{kv3.V1, opNotEqual, kv3.V2, "`Lvl` <> ?", []any{5}},
+		{kv4.V1, opEqual, kv4.V2, "`IP` IS NULL", emptyValues},
+		{kv4.V1, opNotEqual, kv4.V2, "`IP` IS NOT NULL", emptyValues},
+		{kv1.V1, opPrefix, kv1.V2, "`Name` LIKE ?", []any{"John%"}},
+		{kv1.V1, opSuffix, kv1.V2, "`Name` LIKE ?", []any{"%John"}},
+		{kv5.V1, opSubstring, kv5.V2, "`Job` LIKE ?", []any{"%Dev%"}},
 	}
-	testCases3 := []testCase3{
-		{"`Name` = ?", []any{"John"}, kv1, opEqual},
-		{"`Age` > ?", []any{20}, kv2, opGreater},
-		{"`Lvl` <> ?", []any{5}, kv3, opNotEqual},
-		{"`IP` IS NULL", emptyValues, kv4, opEqual},
-		{"`IP` IS NOT NULL", emptyValues, kv4, opNotEqual},
-		{"`Name` LIKE ?", []any{"John%"}, kv1, opPrefix},
-		{"`Name` LIKE ?", []any{"%John"}, kv1, opSuffix},
-		{"`Job` LIKE ?", []any{"%Dev%"}, kv5, opSubstring},
-	}
-	for _, x := range testCases3 {
-		cond, values := soloConditionValues(x.kv.V1, x.op, x.kv.V2)
-		if cond != x.wantCond || slices.Equal(values, x.wantValues) == false {
-			t.Errorf("soloConditionValues() = %q, %v, want %q, %v", cond, values, x.wantCond, x.wantValues)
-		}
-	}
+	tst.AllP3W2(t, testCases3, "soloConditionValues", soloConditionValues, tst.AssertEqual, tst.AssertListEqual)
 }
 
 func TestInternalConditions(t *testing.T) {
@@ -133,36 +109,26 @@ func TestInternalConditions(t *testing.T) {
 		Job     string
 		Details string `col:"-"`
 	}
-	this := NewInstance(MySQL)
 	p := &Person{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType error: %v", err)
-	}
 	emptyValues := make([]any, 0)
+	this := testPrelude(t, p)
 	// missingCondition.BuildCondition()
 	cond1 := missingCondition{}
-	wantCond := "false"
 	actualCond, actualValues := cond1.BuildCondition()
-	if actualCond != wantCond || slices.Equal(actualValues, emptyValues) == false {
-		t.Errorf("missingCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
-	}
+	tst.AssertEqual(t, "missingCondition.BuildCondition", actualCond, "false")
+	tst.AssertListEqual(t, "missingCondition.BuildCondition", actualValues, emptyValues)
 	// matchAllCondition.BuildCondition()
 	cond2 := matchAllCondition{}
-	wantCond = "true"
 	actualCond, actualValues = cond2.BuildCondition()
-	if actualCond != wantCond || slices.Equal(actualValues, emptyValues) == false {
-		t.Errorf("matchAllCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, emptyValues)
-	}
+	tst.AssertEqual(t, "matchAllCondition.BuildCondition", actualCond, "true")
+	tst.AssertListEqual(t, "matchAllCondition.BuildCondition", actualValues, emptyValues)
 	// newValueCondition
 	valueCond1 := newValueCondition(this, &p.Name, "John", opNotEqual)
 	valueCond2 := newValueCondition(this, &p.Age, 20, opGreater)
 	valueCond3 := newValueCondition(this, &p.Details, "Info", opSubstring)
 	isNils := []bool{false, false, true}
 	for i, valueCond := range []valueCondition{valueCond1, valueCond2, valueCond3} {
-		if valueCond.pair.IsNil() != isNils[i] {
-			t.Errorf("newValueCondition() = %v, want nil = %t", valueCond.pair, isNils[i])
-		}
+		tst.AssertEqual(t, "newValueCondition", valueCond.pair.IsNil(), isNils[i])
 	}
 	// valueCondition.BuildCondition()
 	valueCond4 := valueCondition{
@@ -174,18 +140,13 @@ func TestInternalConditions(t *testing.T) {
 		wantValues []any
 		valueCond  valueCondition
 	}
-	testCases1 := []testCase1{
-		{"`Name` <> ?", []any{"John"}, valueCond1},
-		{"`age` > ?", []any{20}, valueCond2},
-		{"false", emptyValues, valueCond3},
-		{"false", emptyValues, valueCond4},
+	testCases1 := []tst.P1W2[valueCondition, string, []any]{
+		{valueCond1, "`Name` <> ?", []any{"John"}},
+		{valueCond2, "`age` > ?", []any{20}},
+		{valueCond3, "false", emptyValues},
+		{valueCond4, "false", emptyValues},
 	}
-	for _, x := range testCases1 {
-		actualCond, actualValues = x.valueCond.BuildCondition()
-		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("valueCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
-		}
-	}
+	tst.AllP1W2(t, testCases1, "valueCondition.BuildCondition", valueCondition.BuildCondition, tst.AssertEqual, tst.AssertListEqual)
 	// newListCondition
 	listCond1 := newListCondition(this, &p.Age, ds.List[int]{18, 19, 20}, opIn, opEqual)
 	listCond2 := newListCondition(this, &p.Job, ds.List[string]{"dev", "qa"}, opNotIn, opNotEqual)
@@ -194,35 +155,23 @@ func TestInternalConditions(t *testing.T) {
 	listCond5 := newListCondition(this, &p.Name, ds.List[string]{}, opIn, opEqual)
 	isNils = []bool{false, false, false, true, false}
 	for i, listCond := range []listCondition{listCond1, listCond2, listCond3, listCond4, listCond5} {
-		if listCond.pair.IsNil() != isNils[i] {
-			t.Errorf("newListCondition() = %v, want nil = %t", listCond.pair, isNils[i])
-		}
+		tst.AssertEqual(t, "newListCondition", listCond.pair.IsNil(), isNils[i])
 	}
 	// listCondition.BuildCondition()
-	type testCase2 struct {
-		wantCond   string
-		wantValues []any
-		listCond   listCondition
-	}
 	listCond6 := listCondition{
 		pair:         ds.NewOption(new(columnValueListPair{V1: "", V2: []any{1, 2, 3}})),
 		listOperator: opIn,
 		soloOperator: opEqual,
 	}
-	testCases2 := []testCase2{
-		{"`age` IN (?, ?, ?)", []any{18, 19, 20}, listCond1},
-		{"`Job` NOT IN (?, ?)", []any{"dev", "qa"}, listCond2},
-		{"`Name` = ?", []any{"John"}, listCond3},
-		{"false", emptyValues, listCond4},
-		{"false", emptyValues, listCond5},
-		{"false", emptyValues, listCond6},
+	testCases2 := []tst.P1W2[listCondition, string, []any]{
+		{listCond1, "`age` IN (?, ?, ?)", []any{18, 19, 20}},
+		{listCond2, "`Job` NOT IN (?, ?)", []any{"dev", "qa"}},
+		{listCond3, "`Name` = ?", []any{"John"}},
+		{listCond4, "false", emptyValues},
+		{listCond5, "false", emptyValues},
+		{listCond6, "false", emptyValues},
 	}
-	for _, x := range testCases2 {
-		actualCond, actualValues = x.listCond.BuildCondition()
-		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("listCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
-		}
-	}
+	tst.AllP1W2(t, testCases2, "listCondition.BuildCondition", listCondition.BuildCondition, tst.AssertEqual, tst.AssertListEqual)
 	// newMultiCondition
 	multiCond1 := newMultiCondition(opAnd, valueCond1, valueCond2)
 	multiCond2 := newMultiCondition(opOr, listCond1, listCond2)
@@ -231,25 +180,15 @@ func TestInternalConditions(t *testing.T) {
 	multiCond5 := newMultiCondition(opOr, multiCond1, multiCond2, nil)
 	multiCond6 := newMultiCondition(opOr, valueCond2, multiCond4)
 	// multiCondition.BuildCondition()
-	type testCase3 struct {
-		wantCond   string
-		wantValues []any
-		multiCond  multiCondition
+	testCases3 := []tst.P1W2[multiCondition, string, []any]{
+		{multiCond1, "(`Name` <> ? AND `age` > ?)", []any{"John", 20}},
+		{multiCond2, "(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", []any{18, 19, 20, "dev", "qa"}},
+		{multiCond3, "`Name` <> ?", []any{"John"}},
+		{multiCond4, "false", emptyValues},
+		{multiCond5, "((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", []any{"John", 20, 18, 19, 20, "dev", "qa"}},
+		{multiCond6, "false", emptyValues},
 	}
-	testCases3 := []testCase3{
-		{"(`Name` <> ? AND `age` > ?)", []any{"John", 20}, multiCond1},
-		{"(`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?))", []any{18, 19, 20, "dev", "qa"}, multiCond2},
-		{"`Name` <> ?", []any{"John"}, multiCond3},
-		{"false", emptyValues, multiCond4},
-		{"((`Name` <> ? AND `age` > ?) OR (`age` IN (?, ?, ?) OR `Job` NOT IN (?, ?)))", []any{"John", 20, 18, 19, 20, "dev", "qa"}, multiCond5},
-		{"false", emptyValues, multiCond6},
-	}
-	for _, x := range testCases3 {
-		actualCond, actualValues = x.multiCond.BuildCondition()
-		if actualCond != x.wantCond || slices.Equal(actualValues, x.wantValues) == false {
-			t.Errorf("multiCondition.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, x.wantCond, x.wantValues)
-		}
-	}
+	tst.AllP1W2(t, testCases3, "multiCondition.BuildCondition", multiCondition.BuildCondition, tst.AssertEqual, tst.AssertListEqual)
 }
 
 func TestInternalCombos(t *testing.T) {
@@ -259,74 +198,54 @@ func TestInternalCombos(t *testing.T) {
 		Job     string
 		Details string `col:"-"`
 	}
-	this := NewInstance(MySQL)
 	p := &Person{}
-	err := AddType(this, p)
-	if err != nil {
-		t.Errorf("AddType error: %v", err)
-	}
 	p1 := Person{"John", 18, "dev", "regular"}
 	p2 := Person{"James", 20, "qa", "prob"}
 	p3 := Person{"Jill", 25, "admin", "regular"}
 	p4 := Person{"Juno", 23, "dev", "prob"}
 	p5 := Person{"Jack", 21, "sales", "intern"}
 	people := ds.List[Person]{p1, p2, p3, p4, p5}
+	this := testPrelude(t, p)
 	// missingCombo.Test
 	combo1 := missingCombo[Person]{}
 	allFalse := people.All(func(person Person) bool {
 		return combo1.Test(person) == false
 	})
-	if !allFalse {
-		t.Errorf("Not all missingCombo.Test() returned false")
-	}
+	tst.AssertTrue(t, "missingCombo.Test", allFalse)
 	// matchAllCombo.Test
 	combo2 := matchAllCombo[Person]{}
 	allTrue := people.All(func(person Person) bool {
 		return combo2.Test(person) == true
 	})
-	if !allTrue {
-		t.Errorf("Not all matchAllCombo.Test() returned true")
-	}
+	tst.AssertTrue(t, "matchAllCombo.Test", allTrue)
 	// newValueCombo, valueCombo.Test
 	test1 := createFieldValueTest[Person]("Name", func(name string) bool { return name == "Jill" })
 	valueCond1 := newValueCondition(this, &p.Name, "Jill", opEqual)
 	valueCombo1 := newValueCombo(valueCond1, test1)
-	wantBools := []bool{false, false, true, false, false}
 	actualBools := list.Map(people, valueCombo1.Test)
-	if slices.Equal(wantBools, actualBools) == false {
-		t.Errorf("valueCombo.Test() = %v, want %v", actualBools, wantBools)
-	}
+	tst.AssertListEqual(t, "valueCombo.Test", actualBools, []bool{false, false, true, false, false})
 	test0 := createFieldValueTest[Person]("Unknown", func(unknown string) bool { return unknown != "A" })
 	valueCombo2 := newValueCombo(valueCond1, test0)
 	allFalse = people.All(func(person Person) bool {
 		return valueCombo2.Test(person) == false
 	})
-	if !allFalse {
-		t.Errorf("Not all valueCombo.Test() returned false")
-	}
+	tst.AssertTrue(t, "valueCombo.Test", allFalse)
 	// newListCombo, listCombo.Test
 	jobs := []string{"dev", "qa"}
 	test2 := createFieldValueTest[Person]("Job", func(job string) bool { return list.Has(jobs, job) })
 	listCond1 := newListCondition(this, &p.Job, jobs, opIn, opEqual)
 	listCombo1 := newListCombo(listCond1, test2)
-	wantBools = []bool{true, true, false, true, false}
 	actualBools = list.Map(people, listCombo1.Test)
-	if slices.Equal(wantBools, actualBools) == false {
-		t.Errorf("listCombo.Test() = %v, want %v", actualBools, wantBools)
-	}
+	tst.AssertListEqual(t, "listCombo.Test", actualBools, []bool{true, true, false, true, false})
 	// newMultiCombo, multiCombo.Test
 	multiTest := func(person Person) bool { return test1(person) || test2(person) }
 	multiCombo1 := newMultiCombo(ds.List[DualCondition[Person]]{valueCombo1, listCombo1}, opOr, multiTest)
-	wantBools = []bool{true, true, true, true, false}
 	actualBools = list.Map(people, multiCombo1.Test)
-	if slices.Equal(wantBools, actualBools) == false {
-		t.Errorf("multiCombo.Test() = %v, want %v", actualBools, wantBools)
-	}
+	tst.AssertListEqual(t, "multiCombo.Test", actualBools, []bool{true, true, true, true, false})
 	// multiCombo.BuildCondition
 	wantCond := "(`Name` = ? OR `Job` IN (?, ?))"
 	wantValues := []any{"Jill", "dev", "qa"}
 	actualCond, actualValues := multiCombo1.BuildCondition()
-	if actualCond != wantCond || slices.Equal(wantValues, actualValues) == false {
-		t.Errorf("multiCombo.BuildCondition() = %q, %v, want %q, %v", actualCond, actualValues, wantCond, wantValues)
-	}
+	tst.AssertEqual(t, "multiCombo.BuildCondition", actualCond, wantCond)
+	tst.AssertListEqual(t, "multiCombo.Test", actualValues, wantValues)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/roidaradal/tst"
 )
 
+// Common steps for creating Instance and adding 1 type
 func testPrelude[T any](t *testing.T, typeRef *T) *Instance {
 	this := NewInstance(MySQL)
 	err := AddType(this, typeRef)
@@ -17,6 +18,7 @@ func testPrelude[T any](t *testing.T, typeRef *T) *Instance {
 	return this
 }
 
+// Common steps for creating Instance and adding 2 types
 func testPrelude2[T1, T2 any](t *testing.T, typeRef1 *T1, typeRef2 *T2) *Instance {
 	this := NewInstance(MySQL)
 	err := AddType(this, typeRef1)
