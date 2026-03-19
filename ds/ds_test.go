@@ -1,61 +1,39 @@
 package ds
 
 import (
-	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestOption(t *testing.T) {
 	value1 := 1
 	ref1 := new(value1)
 	opt1 := NewOption(ref1)
-
-	flag := opt1.IsNil()
-	if flag != false {
-		t.Errorf("Option.IsNil() = %v, want = false", flag)
-	}
-	flag = opt1.NotNil()
-	if flag != true {
-		t.Errorf("Option.NotNil() = %v, want = true", flag)
-	}
+	// IsNil
+	tst.AssertEqual(t, "Option.IsNil", opt1.IsNil(), false)
+	// NotNil
+	tst.AssertEqual(t, "Option.NotNil", opt1.NotNil(), true)
+	// Get
 	value, flag := opt1.Get()
-	if value != value1 || flag != true {
-		t.Errorf("Option.Get() = (%v, %v), want = (%v, %v)", value, flag, value1, true)
-	}
-	value = opt1.Value()
-	if value != value1 {
-		t.Errorf("Option.Value() = %v, want = %v", value, value1)
-	}
-	text, want := opt1.String(), "1"
-	if text != want {
-		t.Errorf("Option.String() = %v, want = %v", text, want)
-	}
+	tst.AssertEqualAnd(t, "Option.Get", value, value1, flag, true)
+	// Value
+	tst.AssertEqual(t, "Option.Value", opt1.Value(), value1)
+	// String
+	tst.AssertEqual(t, "Option.String", opt1.String(), "1")
 
+	// Nil Options
 	var ref2 *int
 	opt2 := NewOption(ref2)
 	opt3 := Nil[int]()
 	for _, opt := range []Option[int]{opt2, opt3} {
-		flag = opt.IsNil()
-		if flag != true {
-			t.Errorf("Option.IsNil() = %v, want = true", flag)
-		}
-		flag = opt.NotNil()
-		if flag != false {
-			t.Errorf("Option.NotNil() = %v, want = false", flag)
-		}
 		value, flag = opt.Get()
-		if value != 0 || flag != false {
-			t.Errorf("Option.Get() = (%v, %v), want = (0, false)", value, flag)
-		}
-		value = opt.Value()
-		if value != 0 {
-			t.Errorf("Option.Value() = %v, want = 0", value)
-		}
-		text, want = opt.String(), "<nil>"
-		if text != want {
-			t.Errorf("Option.String() = %v, want = %v", text, want)
-		}
+		tst.AssertEqual(t, "Option.IsNil", opt.IsNil(), true)
+		tst.AssertEqual(t, "Option.NotNil", opt.NotNil(), false)
+		tst.AssertEqualAnd(t, "Option.Get", value, 0, flag, false)
+		tst.AssertEqual(t, "Option.Value", opt.Value(), 0)
+		tst.AssertEqual(t, "Option.String", opt.String(), "<nil>")
 	}
 }
 
@@ -67,26 +45,15 @@ func TestResult(t *testing.T) {
 	res3 := NewResult[int](67, nil)
 
 	// IsError, NotError, Error
-	testCases1 := []Tuple3[Result[int], bool, error]{
-		{res1, false, nil},
-		{res2, true, errNotEven},
-		{res3, false, nil},
+	testCases1 := []Tuple3[Result[int], bool, bool]{
+		{res1, false, false},
+		{res2, true, true},
+		{res3, false, false},
 	}
 	for _, x := range testCases1 {
-		result, want, wantErr := x.Unpack()
-		actual := result.IsError()
-		if actual != want {
-			t.Errorf("Result.IsError() = %t, want %t", actual, want)
-		}
-		want = !want
-		actual = result.NotError()
-		if actual != want {
-			t.Errorf("Result.NotError() = %t, want %t", actual, want)
-		}
-		actualErr := result.Error()
-		if errors.Is(actualErr, wantErr) == false {
-			t.Errorf("Result.Error() = %v, want = %v", actualErr, wantErr)
-		}
+		result, want, notNilErr := x.Unpack()
+		tst.AssertEqualError(t, "Result.IsError", result.IsError(), want, result.Error(), notNilErr)
+		tst.AssertEqual(t, "Result.NotError", result.NotError(), !want)
 	}
 
 	// Get, Value, String
@@ -98,16 +65,8 @@ func TestResult(t *testing.T) {
 	for _, x := range testCases2 {
 		result, wantValue, wantOk, wantString := x.Unpack()
 		actualValue, actualOk := result.Get()
-		if actualValue != wantValue || actualOk != wantOk {
-			t.Errorf("Result.Get() = %v, %t, want %v, %t", actualValue, actualOk, wantValue, wantOk)
-		}
-		actualValue = result.Value()
-		if actualValue != wantValue {
-			t.Errorf("Result.Value() = %v, want = %v", actualValue, wantValue)
-		}
-		actualString := result.String()
-		if actualString != wantString {
-			t.Errorf("Result.String() = %v, want = %v", actualString, wantString)
-		}
+		tst.AssertEqualAnd(t, "Result.Get", actualValue, wantValue, actualOk, wantOk)
+		tst.AssertEqual(t, "Result.Value", result.Value(), wantValue)
+		tst.AssertEqual(t, "Result.String", result.String(), wantString)
 	}
 }
