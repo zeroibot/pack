@@ -1,137 +1,70 @@
 package ds
 
 import (
-	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestStack(t *testing.T) {
-	// NewStack
+	// NewStack, Len, IsEmpty, NotEmpty
 	s := NewStack[int]()
-	actualString, wantString := s.String(), "[]"
-	if actualString != wantString {
-		t.Errorf("Stack.String() = %q, want %q", actualString, wantString)
-	}
-	actualCount, wantCount := s.Len(), 0
-	if actualCount != wantCount {
-		t.Errorf("Stack.Len() = %d, want %d", actualCount, wantCount)
-	}
-	actualFlag := s.IsEmpty()
-	if actualFlag != true {
-		t.Errorf("Stack.IsEmpty() = %t, want %t", actualFlag, true)
-	}
-	actualFlag = s.NotEmpty()
-	if actualFlag != false {
-		t.Errorf("Stack.NotEmpty() = %t, want %t", actualFlag, false)
-	}
-	// NewStackFrom
+	tst.AssertEqual(t, "Stack.String", s.String(), "[]")
+	tst.AssertEqual(t, "Stack.Len", s.Len(), 0)
+	tst.AssertEqual(t, "Stack.IsEmpty", s.IsEmpty(), true)
+	tst.AssertEqual(t, "Stack.NotEmpty", s.NotEmpty(), false)
+	// NewStackFrom, Stack.Items
 	items := []int{1, 2, 3}
 	s = NewStackFrom[int](items)
-	actualString, wantString = s.String(), "[1 2 3]"
-	if actualString != wantString {
-		t.Errorf("Stack.String() = %q, want %q", actualString, wantString)
-	}
-	actualCount, wantCount = s.Len(), len(items)
-	if actualCount != wantCount {
-		t.Errorf("Stack.Len() = %d, want %d", actualCount, wantCount)
-	}
-	actualFlag = s.IsEmpty()
-	if actualFlag != false {
-		t.Errorf("Stack.IsEmpty() = %t, want %t", actualFlag, false)
-	}
-	actualFlag = s.NotEmpty()
-	if actualFlag != true {
-		t.Errorf("Stack.NotEmpty() = %t, want %t", actualFlag, true)
-	}
-	actualItems := s.Items()
-	if slices.Equal(items, actualItems) == false {
-		t.Errorf("Stack.Items() = %v, want %v", actualItems, items)
-	}
+	tst.AssertEqual(t, "Stack.String", s.String(), "[1 2 3]")
+	tst.AssertEqual(t, "Stack.Len", s.Len(), len(items))
+	tst.AssertEqual(t, "Stack.IsEmpty", s.IsEmpty(), false)
+	tst.AssertEqual(t, "Stack.NotEmpty", s.NotEmpty(), true)
+	tst.AssertListEqual(t, "Stack.Items", s.Items(), items)
 	// Copy
 	s2 := s.Copy()
-	wantItems, actualItems := s.Items(), s2.Items()
-	if slices.Equal(wantItems, actualItems) == false {
-		t.Errorf("Stack.Copy.Items() = %v, want %v", actualItems, wantItems)
-	}
+	tst.AssertListEqual(t, "Stack.Copy.Items", s2.Items(), s.Items())
 	// Clear
 	s2.Clear()
-	actualFlag = s2.IsEmpty()
-	if actualFlag != true {
-		t.Errorf("Stack.Clear.IsEmpty() = %t, want %t", actualFlag, true)
-	}
+	tst.AssertEqual(t, "Stack.Clear.IsEmpty", s2.IsEmpty(), true)
 	// Check original stack is unchanged
-	actualItems = s.Items()
-	if slices.Equal(items, actualItems) == false {
-		t.Errorf("Stack.Items() = %v, want %v", actualItems, items)
-	}
+	tst.AssertListEqual(t, "StackItems", s.Items(), items)
 }
 
 func TestStackPush(t *testing.T) {
 	s := NewStack[int]()
 	s.Push(1)
-	top := s.MustTop()
-	if top != 1 {
-		t.Errorf("Push.MustTop() = %d, want 1", top)
-	}
+	tst.AssertEqual(t, "Push.MustTop", s.MustTop(), 1)
 	s.Push(2)
-	top = s.MustTop()
-	if top != 2 {
-		t.Errorf("Push.MustTop() = %d, want 2", top)
-	}
+	tst.AssertEqual(t, "Push.MustTop", s.MustTop(), 2)
 	s.Push(3)
-	top = s.MustTop()
-	if top != 3 {
-		t.Errorf("Push.MustTop() = %d, want 3", top)
-	}
-	want := []int{1, 2, 3}
-	actual := s.Items()
-	if slices.Equal(want, actual) == false {
-		t.Errorf("Stack.Items() = %v, want %v", actual, want)
-	}
+	tst.AssertEqual(t, "Push.MustTop", s.MustTop(), 3)
+	tst.AssertListEqual(t, "Stack.Items", s.Items(), []int{1, 2, 3})
 }
 
 func TestStackTop(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Stack.MustTop() did not panic")
-		}
-	}()
 	s := NewStack[int]()
 	top := s.Top()
-	if !top.IsNil() {
-		t.Errorf("Stack.Top() = %v, want nil", top)
-	}
+	tst.AssertEqual(t, "Stack.Top.IsNil", top.IsNil(), true)
 	s.Push(1)
 	top = s.Top()
-	if top.IsNil() || top.Value() != 1 {
-		t.Errorf("Stack.Top() = %v, want 1", top)
-	}
-	topItem := s.MustTop()
-	if topItem != 1 {
-		t.Errorf("Stack.MustTop() = %v, want 1", topItem)
-	}
+	tst.AssertEqual2(t, "Stack.Top", top.IsNil(), false, top.Value(), 1)
+	tst.AssertEqual(t, "Stack.MustTop", s.MustTop(), 1)
+
 	s.Pop()
+	defer tst.AssertPanic(t, "Stack.MustTop")
 	s.MustTop() // should panic
 }
 
 func TestStackPop(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Stack.MustPop() did not panic")
-		}
-	}()
 	s := NewStackFrom[int]([]int{1, 2})
 	top := s.Pop()
-	if top.IsNil() || top.Value() != 2 {
-		t.Errorf("Stack.Pop() = %v, want 2", top)
-	}
+	tst.AssertEqual2(t, "Stack.Pop", top.IsNil(), false, top.Value(), 2)
 	topItem := s.MustPop()
-	if topItem != 1 {
-		t.Errorf("Stack.MustPop() = %v, want 1", topItem)
-	}
+	tst.AssertEqual(t, "Stack.MustPop", topItem, 1)
 	top = s.Pop()
-	if !top.IsNil() {
-		t.Errorf("Stack.Pop() = %v, want nil", top)
-	}
+	tst.AssertEqual2(t, "Stack.Pop", top.IsNil(), true, top.Value(), 0)
+
+	defer tst.AssertPanic(t, "Stack.MustPop")
 	s.MustPop() // should panic
 }

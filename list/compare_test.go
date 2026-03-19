@@ -51,10 +51,7 @@ func TestCompareAllAny(t *testing.T) {
 		{ints2, 5, false},
 	}
 	tst.AllP2W1(t, testCases1, "Has", Has, tst.AssertEqual)
-
-	testCases1 = tst.Convert(testCases1, func(tc testCase1) testCase1 {
-		return testCase1{P1: tc.P1, P2: tc.P2, W1: !tc.W1}
-	})
+	testCases1 = tst.FlipP2W1(testCases1)
 	tst.AllP2W1(t, testCases1, "HasNo", HasNo, tst.AssertEqual)
 
 	// AnyTrue, AnyFalse

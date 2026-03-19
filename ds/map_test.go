@@ -2,192 +2,122 @@ package ds
 
 import (
 	"cmp"
-	"maps"
+	"fmt"
 	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestMap(t *testing.T) {
-	m := Map[string, int]{
-		"apple":  5,
-		"orange": 3,
-		"banana": 2,
-	}
-	expString := "{apple: 5, banana: 2, orange: 3}"
-	actualString := m.String()
-	if actualString != expString {
-		t.Errorf("Map.String() = %q, want %q", actualString, expString)
-	}
+	// String
+	m := Map[string, int]{"apple": 5, "orange": 3, "banana": 2}
+	tst.AssertEqual(t, "Map.String", m.String(), "{apple: 5, banana: 2, orange: 3}")
+	// Copy
 	m2 := m.Copy()
-	if maps.Equal(m, m2) == false {
-		t.Errorf("Map.Copy() = %v, want %v", m2, m)
-	}
-	size := m.Len()
-	if size != 3 {
-		t.Errorf("Map.Len() = %d, want 3", size)
-	}
-	notEmpty := m.NotEmpty()
-	if notEmpty != true {
-		t.Errorf("Map.NotEmpty() = %t, want true", notEmpty)
-	}
-	expKeys := []string{"apple", "banana", "orange"}
-	actualKeys := m.Keys()
-	slices.Sort(actualKeys)
-	if slices.Equal(actualKeys, expKeys) == false {
-		t.Errorf("Map.Keys() = %v, want %v", actualKeys, expKeys)
-	}
-	actualKeys2 := m.SortedKeysFunc(func(k1, k2 string) int { return cmp.Compare(k1, k2) })
-	if slices.Equal(actualKeys2, expKeys) == false {
-		t.Errorf("Map.SortedKeysFunc() = %v, want %v", actualKeys2, expKeys)
-	}
-	expValues := []int{2, 3, 5}
-	actualValues := m.Values()
-	slices.Sort(actualValues)
-	if slices.Equal(actualValues, expValues) == false {
-		t.Errorf("Map.Values() = %v, want %v", actualValues, expValues)
-	}
-	actualValues2 := m.SortedValuesFunc(func(v1, v2 int) int { return cmp.Compare(v1, v2) })
-	if slices.Equal(actualValues2, expValues) == false {
-		t.Errorf("Map.SortedValuesFunc() = %v, want %v", actualValues2, expValues)
-	}
-	expEntries := []Tuple2[string, int]{{"apple", 5}, {"banana", 2}, {"orange", 3}}
-	actualEntries := m.Entries()
+	tst.AssertMapEqual(t, "Map.Copy", m2, m)
+	// Len, NotEmpty
+	tst.AssertEqual(t, "Map.Len", m.Len(), 3)
+	tst.AssertEqual(t, "Map.NotEmpty", m.NotEmpty(), true)
+	// Keys
+	wantKeys := []string{"apple", "banana", "orange"}
+	keys := m.Keys()
+	slices.Sort(keys)
+	tst.AssertListEqual(t, "Map.Keys", keys, wantKeys)
+	// SortedKeysFunc
+	keys = m.SortedKeysFunc(func(k1, k2 string) int { return cmp.Compare(k1, k2) })
+	tst.AssertListEqual(t, "Map.SortedKeysFunc", keys, wantKeys)
+	// Values
+	wantValues := []int{2, 3, 5}
+	values := m.Values()
+	slices.Sort(values)
+	tst.AssertListEqual(t, "Map.Values", values, wantValues)
+	values = m.SortedValuesFunc(func(v1, v2 int) int { return cmp.Compare(v1, v2) })
+	tst.AssertListEqual(t, "Map.SortedValuesFunc", values, wantValues)
+	// Entries
+	wantEntries := []Tuple2[string, int]{{"apple", 5}, {"banana", 2}, {"orange", 3}}
+	entries := m.Entries()
 	sortFn := func(e1, e2 Tuple2[string, int]) int {
 		return cmp.Compare(e1.V1, e2.V1)
 	}
-	slices.SortFunc(actualEntries, sortFn)
-	if slices.Equal(actualEntries, expEntries) == false {
-		t.Errorf("Map.Entries() = %v, want %v", actualEntries, expEntries)
+	slices.SortFunc(entries, sortFn)
+	tst.AssertListEqual(t, "Map.Entries", entries, wantEntries)
+	entries = m.SortedEntriesFunc(sortFn)
+	tst.AssertListEqual(t, "Map.SortedEntriesFunc", entries, wantEntries)
+	// NoKey
+	keyCases := []tst.P2W1[Map[string, int], string, bool]{
+		{m, "apple", false},
+		{m, "grape", true},
 	}
-	actualEntries2 := m.SortedEntriesFunc(sortFn)
-	if slices.Equal(actualEntries2, expEntries) == false {
-		t.Errorf("Map.SortedEntriesFunc() = %v, want %v", actualEntries2, expEntries)
-	}
-	keyCases := []Tuple2[string, bool]{
-		{"apple", false},
-		{"grape", true},
-	}
-	for _, x := range keyCases {
-		key, want := x.Unpack()
-		actual := m.NoKey(key)
-		if actual != want {
-			t.Errorf("Map.NoKey(%q) = %v, want %v", key, actual, want)
-		}
-	}
-	getCases := []Tuple2[string, int]{
-		{"apple", 5},
-		{"zebra", 0},
-	}
+	tst.AllP2W1(t, keyCases, "NoKey", Map[string, int].NoKey, tst.AssertEqual)
+	// Get
+	getCases := []Tuple2[string, int]{{"apple", 5}, {"zebra", 0}}
 	for _, x := range getCases {
 		key, want := x.Unpack()
-		actual := m[key]
-		if actual != want {
-			t.Errorf("Map[%q] = %v, want %v", key, actual, want)
-		}
 		option := m.Get(key)
-		wantFlag := want != 0
-		if option.Value() != want || option.NotNil() != wantFlag {
-			t.Errorf("Map.Get(%s) = %v, %v want %v, %v", key, option.Value(), option.NotNil(), want, wantFlag)
-		}
+		tst.AssertEqual(t, fmt.Sprintf("Map[%q]", key), m[key], want)
+		tst.AssertEqualAnd(t, "Map.Get", option.Value(), want, option.NotNil(), want != 0)
 	}
+	// GetOrDefault
 	defaultValue := 69
-	getCases = []Tuple2[string, int]{
-		{"orange", 3},
-		{"cherry", defaultValue},
-	}
+	getCases = []Tuple2[string, int]{{"orange", 3}, {"cherry", defaultValue}}
 	for _, x := range getCases {
 		key, want := x.Unpack()
-		actual := m.GetOrDefault(key, defaultValue)
-		if actual != want {
-			t.Errorf("Map.GetOrDefault(%q, %v) = %v, want %v", key, defaultValue, actual, want)
-		}
+		tst.AssertEqual(t, "Map.GetOrDefault", m.GetOrDefault(key, defaultValue), want)
 		m.SetDefault(key, defaultValue)
-		actual = m[key]
-		if actual != want {
-			t.Errorf("Map.SetDefault(%q, %v) = %v, want %v", key, defaultValue, actual, want)
-		}
+		tst.AssertEqual(t, "Map.SetDefault", m[key], want)
 	}
-	keyFnCases := []Tuple2[func(string) bool, bool]{
-		{func(key string) bool { return key == "apple" }, false},
-		{func(key string) bool { return key == "zebra" }, true},
+	// NoKeyFunc
+	keyFnCases := []tst.P2W1[Map[string, int], func(string) bool, bool]{
+		{m, func(key string) bool { return key == "apple" }, false},
+		{m, func(key string) bool { return key == "zebra" }, true},
 	}
-	for _, x := range keyFnCases {
-		test, want := x.Unpack()
-		actual := m.NoKeyFunc(test)
-		if actual != want {
-			t.Errorf("Map.NoKeyFunc = %v, want %v", actual, want)
-		}
+	tst.AllP2W1(t, keyFnCases, "Map.NoKeyFunc", Map[string, int].NoKeyFunc, tst.AssertEqual)
+	// NoValueFunc
+	valueFnCases := []tst.P2W1[Map[string, int], func(int) bool, bool]{
+		{m, func(value int) bool { return value > 100 }, true},
+		{m, func(value int) bool { return value == 5 }, false},
 	}
-	valueFnCases := []Tuple2[func(int) bool, bool]{
-		{func(value int) bool { return value > 100 }, true},
-		{func(value int) bool { return value == 5 }, false},
-	}
-	for _, x := range valueFnCases {
-		test, want := x.Unpack()
-		actual := m.NoValueFunc(test)
-		if actual != want {
-			t.Errorf("Map.NoValueFunc = %v, want %v", actual, want)
-		}
-	}
+	tst.AllP2W1(t, valueFnCases, "Map.NoValueFunc", Map[string, int].NoValueFunc, tst.AssertEqual)
+	// Filter
 	mf := m.Filter(func(key string, value int) bool { return key != "zebra" && value <= 50 })
-	actualEntries = mf.SortedEntriesFunc(sortFn)
-	if slices.Equal(actualEntries, expEntries) == false {
-		t.Errorf("Map.Filter.Entries = %v, want %v", actualEntries, expEntries)
-	}
-
+	tst.AssertListEqual(t, "Map.Filter", mf.SortedEntriesFunc(sortFn), wantEntries)
+	// Delete
 	m.Delete("cherry")
-	if m.HasKey("cherry") {
-		t.Errorf("Map.Delete, HasKey = true, want false")
-	}
-
-	m2 = Map[string, int]{
-		"cherry": 30,
-		"banana": 10,
-	}
-	expEntries = []Tuple2[string, int]{
+	tst.AssertFalse(t, "Delete.HasKey", m.HasKey("cherry"))
+	// Update
+	m2 = Map[string, int]{"cherry": 30, "banana": 10}
+	wantEntries = []Tuple2[string, int]{
 		{"apple", 5}, {"banana", 10}, {"cherry", 30}, {"orange", 3},
 	}
 	m.Update(m2)
-	actualEntries = m.SortedEntriesFunc(sortFn)
-	if slices.Equal(actualEntries, expEntries) == false {
-		t.Errorf("Map.Update = %v, want %v", actualEntries, expEntries)
-	}
+	tst.AssertListEqual(t, "Map.Update", m.SortedEntriesFunc(sortFn), wantEntries)
 
+	// Clear, IsEmpty
 	m.Clear()
-	isEmpty := m.IsEmpty()
-	if isEmpty != true {
-		t.Errorf("Map.IsEmpty() = %t, want true", isEmpty)
-	}
+	tst.AssertTrue(t, "IsEmpty", m.IsEmpty())
 }
 
 func TestZipMap(t *testing.T) {
 	keys := []string{"a", "b", "c"}
 	values := List[int]{1, 2, 3}
+	// ZipMap
 	m := ZipMap(keys, values)
 	for i, key := range keys {
-		want := values[i]
 		actual, ok := m[key]
-		if actual != want || !ok {
-			t.Errorf("ZipMap[%q] = %d, %v, want %d, true", key, actual, ok, want)
-		}
-		key = key + "x"
-		actual, ok = m[key]
-		if actual != 0 || ok {
-			t.Errorf("ZipMap[%q] = %d, %v, want 0, false", key, actual, ok)
-		}
+		tst.AssertEqualAnd(t, "ZipMap", actual, values[i], ok, true)
+		actual, ok = m[key+"x"]
+		tst.AssertEqualAnd(t, "ZipMap", actual, 0, ok, false)
 	}
+	// Unzip
 	keys2, values2 := m.Unzip()
 	keySet1, keySet2 := NewSetFrom(keys), NewSetFrom(keys2)
 	valSet1, valSet2 := NewSetFrom(values), NewSetFrom(values2)
-	if keySet1.HasNoDifference(keySet2) == false {
-		t.Errorf("Unzip.Keys = %v, want %v", keys2, keys)
-	}
-	if valSet1.HasNoDifference(valSet2) == false {
-		t.Errorf("Unzip.Values = %v, want %v", values2, values)
-	}
+	tst.AssertTrue(t, "Unzip.Keys", keySet1.HasNoDifference(keySet2))
+	tst.AssertTrue(t, "Unzip.Values", valSet1.HasNoDifference(valSet2))
+	// ZipMap
 	values2 = List[int]{1, 2}
 	m2 := ZipMap(keys, values2)
-	if m2.Len() != 2 {
-		t.Errorf("ZipMap.Len = %d, want 2", m2.Len())
-	}
+	tst.AssertMapEqual(t, "ZipMap", m2, map[string]int{"a": 1, "b": 2})
+	tst.AssertEqual(t, "ZipMap.Len", m2.Len(), 2)
 }

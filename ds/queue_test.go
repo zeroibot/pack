@@ -1,133 +1,69 @@
 package ds
 
 import (
-	"slices"
 	"testing"
+
+	"github.com/roidaradal/tst"
 )
 
 func TestQueue(t *testing.T) {
-	// NewQueue
+	// NewQueue, Len, IsEmpty, NotEmpty
 	q := NewQueue[int]()
-	actualString, wantString := q.String(), "[]"
-	if actualString != wantString {
-		t.Errorf("Queue.String() = %q, want %q", actualString, wantString)
-	}
-	actualCount, wantCount := q.Len(), 0
-	if actualCount != wantCount {
-		t.Errorf("Queue.Len() = %d, want %d", actualCount, wantCount)
-	}
-	actualFlag := q.IsEmpty()
-	if actualFlag != true {
-		t.Errorf("Queue.IsEmpty() = %t, want %t", actualFlag, true)
-	}
-	actualFlag = q.NotEmpty()
-	if actualFlag != false {
-		t.Errorf("Queue.NotEmpty() = %t, want %t", actualFlag, false)
-	}
-	// NewQueueFrom
+	tst.AssertEqual(t, "Queue.String", q.String(), "[]")
+	tst.AssertEqual(t, "Queue.Len", q.Len(), 0)
+	tst.AssertEqual(t, "Queue.IsEmpty", q.IsEmpty(), true)
+	tst.AssertEqual(t, "Queue.NotEmpty", q.NotEmpty(), false)
+	// NewQueueFrom, Queue.Items
 	items := []int{1, 2, 3}
 	q = NewQueueFrom(items)
-	actualString, wantString = q.String(), "[1 2 3]"
-	if actualString != wantString {
-		t.Errorf("Queue.String() = %q, want %q", actualString, wantString)
-	}
-	actualCount, wantCount = q.Len(), len(items)
-	if actualCount != wantCount {
-		t.Errorf("Queue.Len() = %d, want %d", actualCount, wantCount)
-	}
-	actualFlag = q.IsEmpty()
-	if actualFlag != false {
-		t.Errorf("Queue.IsEmpty() = %t, want %t", actualFlag, false)
-	}
-	actualFlag = q.NotEmpty()
-	if actualFlag != true {
-		t.Errorf("Queue.NotEmpty() = %t, want %t", actualFlag, true)
-	}
-	actualItems := q.Items()
-	if slices.Equal(items, actualItems) == false {
-		t.Errorf("Queue.Items() = %v, want %v", actualItems, items)
-	}
+	tst.AssertEqual(t, "Queue.String", q.String(), "[1 2 3]")
+	tst.AssertEqual(t, "Queue.Len", q.Len(), len(items))
+	tst.AssertEqual(t, "Queue.IsEmpty", q.IsEmpty(), false)
+	tst.AssertEqual(t, "Queue.NotEmpty", q.NotEmpty(), true)
+	tst.AssertListEqual(t, "Queue.Items", q.Items(), items)
 	// Copy
 	q2 := q.Copy()
-	wantItems, actualItems := q.Items(), q2.Items()
-	if slices.Equal(wantItems, actualItems) == false {
-		t.Errorf("Queue.Copy.Items() = %v, want %v", actualItems, wantItems)
-	}
+	tst.AssertListEqual(t, "Queue.Copy.Items", q2.Items(), q.Items())
 	// Clear
 	q2.Clear()
-	actualFlag = q2.IsEmpty()
-	if actualFlag != true {
-		t.Errorf("Queue.Clear.IsEmpty() = %t, want %t", actualFlag, true)
-	}
+	tst.AssertEqual(t, "Queue.Clear.IsEmpty", q2.IsEmpty(), true)
 	// Check original queue is unchanged
-	actualItems = q.Items()
-	if slices.Equal(items, actualItems) == false {
-		t.Errorf("Queue.Items() = %v, want %v", actualItems, items)
-	}
+	tst.AssertListEqual(t, "Queue.Items", q.Items(), items)
 }
 
 func TestQueueEnqueue(t *testing.T) {
 	q := NewQueue[int]()
 	q.Enqueue(1)
-	front := q.MustFront()
-	if front != 1 {
-		t.Errorf("Enquque.MustFront() = %d, want 1", front)
-	}
+	tst.AssertEqual(t, "Enqueue.MustFront", q.MustFront(), 1)
 	q.Enqueue(2)
 	q.Enqueue(3)
-	front = q.MustFront()
-	if front != 1 {
-		t.Errorf("Enquque.MustFront() = %d, want 1", front)
-	}
-	want := []int{1, 2, 3}
-	actual := q.Items()
-	if slices.Equal(want, actual) == false {
-		t.Errorf("Queue.Items() = %v, want %v", actual, want)
-	}
+	tst.AssertEqual(t, "Enqueue.MustFront", q.MustFront(), 1)
+	tst.AssertListEqual(t, "Queue.Items", q.Items(), []int{1, 2, 3})
 }
 
 func TestQueueFront(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Queue.MustFront() did not panic")
-		}
-	}()
 	q := NewQueue[int]()
 	front := q.Front()
-	if !front.IsNil() {
-		t.Errorf("Queue.Front() = %v, want nil", front)
-	}
+	tst.AssertEqual(t, "Queue.Front", front.IsNil(), true)
 	q.Enqueue(1)
 	front = q.Front()
-	if front.IsNil() || front.Value() != 1 {
-		t.Errorf("Queue.Front() = %v, want 1", front)
-	}
-	frontItem := q.MustFront()
-	if frontItem != 1 {
-		t.Errorf("Queue.MustFront() = %d, want 1", frontItem)
-	}
+	tst.AssertEqual2(t, "Queue.Front", front.IsNil(), false, front.Value(), 1)
+	tst.AssertEqual(t, "Queue.MustFront", q.MustFront(), 1)
+
 	q.Dequeue()
+	defer tst.AssertPanic(t, "Queue.MustFront")
 	q.MustFront() // should panic
 }
 
 func TestQueueDequeue(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Queue.MustDequeue() did not panic")
-		}
-	}()
 	q := NewQueueFrom([]int{1, 2})
 	front := q.Dequeue()
-	if front.IsNil() || front.Value() != 1 {
-		t.Errorf("Queue.Dequeue() = %v, want 1", front)
-	}
+	tst.AssertEqual2(t, "Queue.Dequeue", front.IsNil(), false, front.Value(), 1)
 	frontItem := q.MustDequeue()
-	if frontItem != 2 {
-		t.Errorf("Queue.MustDequeue() = %d, want 2", frontItem)
-	}
+	tst.AssertEqual(t, "Queue.MustDequeue", frontItem, 2)
 	front = q.Dequeue()
-	if !front.IsNil() {
-		t.Errorf("Queue.Dequeue() = %v, want nil", front)
-	}
+	tst.AssertEqual2(t, "Queue.Dequeue", front.IsNil(), true, front.Value(), 0)
+
+	defer tst.AssertPanic(t, "Queue.MustDequeue")
 	q.MustDequeue() // should panic
 }
