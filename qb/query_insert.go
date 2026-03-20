@@ -56,7 +56,7 @@ func (q *InsertRowQuery) BuildQuery() (string, []any) {
 	if err != nil || numColumns == 0 {
 		return emptyQueryValues()
 	}
-	columnList, values := dict.Unzip(q.row)
+	columnList, values := dict.SortedUnzip(q.row)
 	columns := strings.Join(columnList, ", ")
 	placeholders := str.Repeat(numColumns, "?", ", ")
 	query := "INSERT INTO %s (%s) VALUES (%s)"

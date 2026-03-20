@@ -31,10 +31,10 @@ func TestUpdateQuery(t *testing.T) {
 	Update(this, q3, &u.Username, "admin")
 	Update(this, q3, &u.Password, "123")
 	q3.Where(Equal[User](this, &u.Username, "root"))
-	q4 := NewUpdateQuery[User](this, table) // has nil pair
+	q4 := NewUpdateQuery[User](this, table) // has a nil pair
 	Update(this, q4, &u.Username, "admin")
 	Update(this, q4, &u.secret, "secret")
-	q5 := NewUpdateQuery[User](this, table) // pair has blank column
+	q5 := NewUpdateQuery[User](this, table) // pair has a blank column
 	q5.updates = append(q5.updates, ds.NewOption(new(columnValuePair{V1: "", V2: 5})))
 
 	// UpdateQuery.Update, UpdateQuery.Updates

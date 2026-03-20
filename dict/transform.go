@@ -1,6 +1,7 @@
 package dict
 
 import (
+	"cmp"
 	"encoding/json"
 )
 
@@ -17,7 +18,7 @@ func Zip[K comparable, V any](keys []K, values []V) map[K]V {
 	return m
 }
 
-// Unzip returns the list of Map keys and values, where order of keys is same as corresponding values
+// Unzip returns the list of Map keys and values, where the order of keys is the same as corresponding values
 func Unzip[K comparable, V any](items map[K]V) ([]K, []V) {
 	numItems := len(items)
 	keys := make([]K, numItems)
@@ -27,6 +28,16 @@ func Unzip[K comparable, V any](items map[K]V) ([]K, []V) {
 		keys[i] = k
 		values[i] = v
 		i++
+	}
+	return keys, values
+}
+
+// SortedUnzip returns the list of Map keys and values, where the keys are sorted and the value order corresponds to the key order
+func SortedUnzip[K cmp.Ordered, V any](items map[K]V) ([]K, []V) {
+	keys := SortedKeys(items)
+	values := make([]V, len(keys))
+	for i, key := range keys {
+		values[i] = items[key]
 	}
 	return keys, values
 }
