@@ -2,6 +2,7 @@ package qb
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/roidaradal/pack/dyn"
 )
@@ -18,6 +19,12 @@ type ValueQuery[T, V any] struct {
 	typeName   string
 	columnName string
 	reader     RowReader[T]
+}
+
+type SelectRowQuery[T any] struct {
+	conditionQuery[T]
+	columns []string
+	reader  RowReader[T]
 }
 
 // NewCountQuery creates a new CountQuery
@@ -43,6 +50,28 @@ func NewValueQuery[T, V any](this *Instance, table string, fieldRef *V) *ValueQu
 	return q
 }
 
+// NewSelectRowQuery creates a new SelectRowQuery, which only uses selected columns
+func NewSelectRowQuery[T any](this *Instance, table string, reader RowReader[T]) *SelectRowQuery[T] {
+	q := new(SelectRowQuery[T])
+	q.initializeRequired(this, table)
+	q.reader = reader
+	q.columns = make([]string, 0)
+	return q
+}
+
+// NewFullSelectRowQuery creates a new SelectRowQuery, which uses all columns
+func NewFullSelectRowQuery[T any](this *Instance, table string, reader RowReader[T]) *SelectRowQuery[T] {
+	q := NewSelectRowQuery(this, table, reader)
+	var item T
+	q.Columns(this, this.allColumns(item)...)
+	return q
+}
+
+// Columns sets the columns to be selected for the SelectRowQuery
+func (q *SelectRowQuery[T]) Columns(this *Instance, columns ...string) {
+	q.columns = prepareColumns(this, columns...)
+}
+
 // BuildQuery returns the query string and parameter values of CountQuery
 func (q *CountQuery[T]) BuildQuery() (string, []any) {
 	condition, values, err := q.conditionQuery.preBuildCheck()
@@ -63,4 +92,28 @@ func (q *ValueQuery[T, V]) BuildQuery() (string, []any) {
 	query := "SELECT %s FROM %s WHERE %s"
 	query = fmt.Sprintf(query, q.columnName, q.table, condition)
 	return query, values
+}
+
+// BuildQuery returns the query string and parameter values of SelectRowQuery
+func (q *SelectRowQuery[T]) BuildQuery() (string, []any) {
+	condition, values, err := q.conditionQuery.preBuildCheck()
+	if err != nil || len(q.columns) == 0 {
+		return emptyQueryValues()
+	}
+	columns := strings.Join(q.columns, ", ")
+	query := "SELECT %s FROM %s WHERE %s LIMIT 1"
+	query = fmt.Sprintf(query, columns, q.table, condition)
+	return query, values
+}
+
+// Common: prepares the column list
+func prepareColumns(this *Instance, columns ...string) []string {
+	columns2 := make([]string, 0, len(columns))
+	for _, column := range columns {
+		if column == "" {
+			continue
+		}
+		columns2 = append(columns2, this.prepareIdentifier(column))
+	}
+	return columns2
 }

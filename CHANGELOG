@@ -2,7 +2,7 @@ v0.2.13 - Single Row Queries
     - Commit:
     x Count Query
     x Value Query
-    - SelectRow Query
+    x SelectRow Query
     - TopRow Query
     - TopValue Query
 v0.2.12 - Insert Query

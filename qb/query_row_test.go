@@ -15,3 +15,13 @@ func TestValueQuery(t *testing.T) {
 	// TODO: ValueQuery.Test
 	// TODO: ValueQuery.BuildQuery
 }
+
+func TestSelectRowQuery(t *testing.T) {
+	// TODO: NewSelectRowQuery
+	// TODO: NewFullSelectRowQuery
+	// TODO: SelectRowQuery.Columns
+	// TODO: SelectRowQuery.Where
+	// TODO: SelectRowQuery.Test
+	// TODO: SelectRowQuery.BuildQuery
+
+}
