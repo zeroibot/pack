@@ -9,3 +9,11 @@ func TestDistinctValuesQuery(t *testing.T) {
 	// TODO: DistinctValuesQuery.Test
 	// TODO: DistinctValuesQuery.BuildQuery
 }
+
+func TestLookupQuery(t *testing.T) {
+	// TODO: NewLookupQuery
+	// TODO: LookupQuery.Where
+	// TODO: LookupQuery without condition (valid)
+	// TODO: LookupQuery.Test
+	// TODO: LookupQuery.BuildQuery
+}

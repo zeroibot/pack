@@ -110,11 +110,9 @@ func (q *columnReader[T]) initialize(this *Instance, columnName string) {
 	var item T
 	q.typeName = dyn.TypeName(item)
 	if columnName != "" {
-		// Note: create RowReader before preparing identifier, since RowReader cannot recognize a processed column
+		q.columnName = this.prepareIdentifier(columnName)
 		q.reader = NewRowReader[T](this, columnName)
-		columnName = this.prepareIdentifier(columnName)
 	}
-	q.columnName = columnName
 }
 
 // useAllColumns sets the columns of columnsReader to all columns of the given type
