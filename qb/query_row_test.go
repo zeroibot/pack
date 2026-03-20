@@ -25,3 +25,13 @@ func TestSelectRowQuery(t *testing.T) {
 	// TODO: SelectRowQuery.BuildQuery
 
 }
+
+func TestTopRowQuery(t *testing.T) {
+	// TODO: NewTopRowQuery
+	// TODO: TopRowQuery.Columns
+	// TODO: TopRowQuery.OrderAsc, OrderDesc
+	// TODO: TopRowQuery.Limit
+	// TODO: TopRowQuery.Where
+	// TODO: TopRowQuery.Test
+	// TODO: TopRowQuery.BuildQuery
+}

@@ -21,10 +21,19 @@ type ValueQuery[T, V any] struct {
 	reader     RowReader[T]
 }
 
+// SelectRowQuery selects a single row from the table that satisfies the condition
 type SelectRowQuery[T any] struct {
 	conditionQuery[T]
-	columns []string
-	reader  RowReader[T]
+	columnList
+	reader RowReader[T]
+}
+
+// TopRowQuery selects the top N rows from the table that satisfy the condition
+type TopRowQuery[T any] struct {
+	conditionQuery[T]
+	orderedLimit
+	columnList
+	reader RowReader[T]
 }
 
 // NewCountQuery creates a new CountQuery
@@ -67,9 +76,15 @@ func NewFullSelectRowQuery[T any](this *Instance, table string, reader RowReader
 	return q
 }
 
-// Columns sets the columns to be selected for the SelectRowQuery
-func (q *SelectRowQuery[T]) Columns(this *Instance, columns ...string) {
-	q.columns = prepareColumns(this, columns...)
+// NewTopRowQuery creates a new TopRowQuery
+func NewTopRowQuery[T any](this *Instance, table string, reader RowReader[T]) *TopRowQuery[T] {
+	q := new(TopRowQuery[T])
+	q.initializeRequired(this, table)
+	q.reader = reader
+	q.limit = 1
+	var item T
+	q.Columns(this, this.allColumns(item)...)
+	return q
 }
 
 // BuildQuery returns the query string and parameter values of CountQuery
@@ -106,14 +121,14 @@ func (q *SelectRowQuery[T]) BuildQuery() (string, []any) {
 	return query, values
 }
 
-// Common: prepares the column list
-func prepareColumns(this *Instance, columns ...string) []string {
-	columns2 := make([]string, 0, len(columns))
-	for _, column := range columns {
-		if column == "" {
-			continue
-		}
-		columns2 = append(columns2, this.prepareIdentifier(column))
+// BuildQuery returns the query string and parameter values of TopRowQuery
+func (q *TopRowQuery[T]) BuildQuery() (string, []any) {
+	condition, values, err := q.conditionQuery.preBuildCheck()
+	if err != nil || len(q.columns) == 0 || len(q.orders) == 0 {
+		return emptyQueryValues()
 	}
-	return columns2
+	columns := strings.Join(q.columns, ", ")
+	query := "SELECT %s FROM %s WHERE %s %s"
+	query = fmt.Sprintf(query, columns, q.table, condition, q.orderLimitString())
+	return query, values
 }

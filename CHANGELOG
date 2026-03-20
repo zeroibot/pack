@@ -3,7 +3,7 @@ v0.2.13 - Single Row Queries
     x Count Query
     x Value Query
     x SelectRow Query
-    - TopRow Query
+    x TopRow Query
     - TopValue Query
 v0.2.12 - Insert Query
     x Commit: 2026-03-20 13:09

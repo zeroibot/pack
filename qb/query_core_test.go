@@ -94,7 +94,7 @@ func TestOrderedLimit(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases, "OrderString,Limit", orderStringLimit, tst.AssertEqual[string], tst.AssertEqual[uint])
 
-	// fullString
+	// orderLimitString
 	type testCase2 = tst.P1W1[*orderedLimit, string]
 	c0 := testCase2{q0, ""}
 	c3 := testCase2{q3, "LIMIT 5"}
@@ -107,7 +107,7 @@ func TestOrderedLimit(t *testing.T) {
 		{q1, "ORDER BY `Name` ASC"},
 		{q2, "ORDER BY `CreatedAt` DESC"},
 	}
-	tst.AllP1W1(t, testCases2, "orderedLimit.fullString", (*orderedLimit).fullString, tst.AssertEqual)
+	tst.AllP1W1(t, testCases2, "orderedLimit.orderLimitString", (*orderedLimit).orderLimitString, tst.AssertEqual)
 	// mustLimitString
 	testCases2 = []testCase2{
 		c0, c3, c4, c5, c6, c7, {q1, ""}, {q2, ""},

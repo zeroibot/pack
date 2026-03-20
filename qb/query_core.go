@@ -88,6 +88,24 @@ type orderedLimit struct {
 	limit  uint
 }
 
+// columnList is an abstractQuery with a list of columns
+// It does not implement the BuildQuery method; it is embedded by concrete Queries for method reuse
+type columnList struct {
+	columns []string
+}
+
+// Columns sets the columns of columnList
+func (q *columnList) Columns(this *Instance, columns ...string) {
+	columns2 := make([]string, 0, len(columns))
+	for _, column := range columns {
+		if column == "" {
+			continue
+		}
+		columns2 = append(columns2, this.prepareIdentifier(column))
+	}
+	q.columns = columns2
+}
+
 // OrderAsc adds a column with ascending order, returns orderedLimit for chaining
 func (q *orderedLimit) OrderAsc(this *Instance, column string) *orderedLimit {
 	if column == "" {
@@ -115,8 +133,8 @@ func (q *orderedLimit) Limit(limit uint) *orderedLimit {
 	return q
 }
 
-// fullString builds the orderString and limitString
-func (q *orderedLimit) fullString() string {
+// orderLimitString builds the orderString and limitString
+func (q *orderedLimit) orderLimitString() string {
 	output := make([]string, 0, 2)
 	orderString := q.orderString()
 	if orderString != "" {
@@ -138,7 +156,7 @@ func (q *orderedLimit) mustLimitString() string {
 	if q.limit == 0 {
 		return ""
 	}
-	return q.fullString()
+	return q.orderLimitString()
 }
 
 // tryAppend tries to append the given string at the end if it is not blank

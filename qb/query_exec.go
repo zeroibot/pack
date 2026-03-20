@@ -133,8 +133,8 @@ func (q *InsertRowQuery) BuildQuery() (string, []any) {
 	if err != nil || numColumns == 0 {
 		return emptyQueryValues()
 	}
-	columnList, values := dict.SortedUnzip(q.row)
-	columns := strings.Join(columnList, ", ")
+	columnKeys, values := dict.SortedUnzip(q.row)
+	columns := strings.Join(columnKeys, ", ")
 	placeholders := str.Repeat(numColumns, "?", ", ")
 	query := "INSERT INTO %s (%s) VALUES (%s)"
 	query = fmt.Sprintf(query, q.table, columns, placeholders)
