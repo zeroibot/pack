@@ -111,14 +111,77 @@ func TestLookupQuery(t *testing.T) {
 }
 
 func TestSelectRowsQuery(t *testing.T) {
-	// TODO: NewSelectRowsQuery
-	// TODO: NewFullSelectRowsQuery
-	// TODO: SelectRowsQuery.Columns
-	// TODO: SelectRowsQuery.Where
-	// TODO: SelectRowsQuery without condition (valid)
-	// TODO: SelectRowsQuery.Test
-	// TODO: SelectRowsQuery.OrderAsc, OrderDesc
-	// TODO: SelectRowsQuery.Limit
-	// TODO: SelectRowsQuery.Page
-	// TODO: SelectRowsQuery.BuildQuery
+	type Product struct {
+		ID    int
+		Name  string
+		Price float64
+		Stock int    `col:"Qty"`
+		Extra string `col:"-"`
+		code  string
+	}
+	p := new(Product)
+	this := testPrelude(t, p)
+	table := "products"
+	allCols := this.allColumns(p)
+	cols2 := this.Columns(&p.Name, &p.Price)
+	reader1 := NewRowReader[Product](this, allCols...)
+	reader2 := NewRowReader[Product](this, cols2...)
+
+	// NewSelectRowsQuery, NewFullSelectRowsQuery
+	q0 := NewSelectRowsQuery[Product](this, "", nil)    // no table
+	q1 := NewFullSelectRowsQuery(this, table, reader1)  // all columns
+	q2 := NewSelectRowsQuery(this, table, reader2)      // specific columns
+	q3 := NewSelectRowsQuery[Product](this, table, nil) // nil reader
+	q4 := NewSelectRowsQuery(this, table, reader2)      // no columns set
+	q5 := NewSelectRowsQuery(this, table, reader2)      // no condition (optional)
+	q6 := NewSelectRowsQuery(this, table, reader2)      // with private column
+	q7 := NewSelectRowsQuery(this, table, reader2)      // with skipped column
+
+	// SelectRowsQuery.Columns
+	q2.Columns(this, cols2...)
+	q5.Columns(this, cols2...)
+	q6.Columns(this, append(cols2, this.Column(&p.code))...)
+	q7.Columns(this, append(cols2, this.Column(&p.Extra))...)
+
+	// SelectRowsQuery.Where
+	q1.Where(Greater[Product](this, &p.Price, 100.0))
+	q2.Where(Equal[Product](this, &p.Stock, 50))
+
+	// SelectRowsQuery.OrderAsc, OrderDesc, Limit, Page
+	q1.OrderDesc(this, this.Column(&p.Price)).Limit(10)
+	q2.OrderAsc(this, this.Column(&p.Name))
+	q2.Page(2, 5) // offset 5, limit 5
+
+	// SelectRowsQuery.Test
+	p1 := Product{1, "Laptop", 1200.0, 10, "", "p1"}
+	p2 := Product{2, "Mouse", 25.0, 50, "", "p2"}
+	p3 := Product{3, "Monitor", 300.0, 50, "", "p3"}
+	testCases1 := []tst.P2W1[*SelectRowsQuery[Product], Product, bool]{
+		{q1, p1, true}, {q1, p2, false}, {q1, p3, true},
+		{q2, p1, false}, {q2, p2, true}, {q2, p3, true},
+		{q5, p1, true}, {q5, p2, true}, {q5, p3, true},
+	}
+	tst.AllP2W1(t, testCases1, "SelectRowsQuery.Test", (*SelectRowsQuery[Product]).Test, tst.AssertEqual)
+
+	// SelectRowsQuery.BuildQuery
+	emptyValues := make([]any, 0)
+	testCases2 := []tst.P1W2[*SelectRowsQuery[Product], string, []any]{
+		{q0, "", emptyValues},
+		{q1, "SELECT `ID`, `Name`, `Price`, `Qty` FROM `products` WHERE `Price` > ? ORDER BY `Price` DESC LIMIT 0, 10", []any{100.0}},
+		{q2, "SELECT `Name`, `Price` FROM `products` WHERE `Qty` = ? ORDER BY `Name` ASC LIMIT 5, 5", []any{50}},
+		{q3, "", emptyValues},
+		{q4, "", emptyValues},
+		{q5, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
+		{q6, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
+		{q7, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
+	}
+	tst.AllP1W2(t, testCases2, "SelectRowsQuery.BuildQuery", (*SelectRowsQuery[Product]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// ToString(SelectRowsQuery)
+	testCases3 := []tst.P1W1[Query, string]{
+		{q1, "SELECT `ID`, `Name`, `Price`, `Qty` FROM `products` WHERE `Price` > 100 ORDER BY `Price` DESC LIMIT 0, 10"},
+		{q2, "SELECT `Name`, `Price` FROM `products` WHERE `Qty` = 50 ORDER BY `Name` ASC LIMIT 5, 5"},
+		{q5, "SELECT `Name`, `Price` FROM `products` WHERE true"},
+	}
+	tst.AllP1W1(t, testCases3, "ToString(SelectRowsQuery)", ToString, tst.AssertEqual)
 }
