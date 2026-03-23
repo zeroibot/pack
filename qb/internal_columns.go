@@ -134,6 +134,20 @@ func (i *Instance) getStructColumnValue(structRef any, typeName, columnName stri
 	return dyn.AnyValue(structField)
 }
 
+// Internal: get field value from given struct reference, type name, and column name, and type coerce into type V
+func getStructTypedColumnValue[V any](this *Instance, structRef any, typeName, columnName string) (V, error) {
+	var item V
+	rawValue, ok := this.getStructColumnValue(structRef, typeName, columnName)
+	if !ok {
+		return item, errNotFoundField
+	}
+	item, ok = rawValue.(V)
+	if !ok {
+		return item, errFailedTypeAssertion
+	}
+	return item, nil
+}
+
 // Internal: get corresponding field name of given field reference
 func (i *Instance) getFieldName(fieldRef any) string {
 	fieldAddress := dyn.AddressOf(fieldRef)

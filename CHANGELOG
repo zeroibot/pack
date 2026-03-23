@@ -2,6 +2,7 @@ v0.2.18 - Single Row Query Executions
     - Commit:
     x CountQuery Results
     x Add DB interfaces
+    x ValueQuery Results
 v0.2.17 - Aggregate Queries
     x Commit: 2026-03-23 16:19
     x Sum Query

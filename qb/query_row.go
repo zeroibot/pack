@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/pack/list"
 )
 
@@ -177,7 +178,7 @@ func (q *SumQuery[T]) BuildQuery() (string, []any) {
 }
 
 // Count returns the number of rows that satisfy the CountQuery
-func (q *CountQuery[T]) Count(dbc DBConn) (int, error) {
+func (q *CountQuery[T]) Count(dbc db.Conn) (int, error) {
 	query, values, err := preQueryCheck(q, dbc)
 	if err != nil {
 		return 0, err
@@ -191,10 +192,25 @@ func (q *CountQuery[T]) Count(dbc DBConn) (int, error) {
 }
 
 // Exists checks if there is at least 1 row that satisfies the CountQuery
-func (q *CountQuery[T]) Exists(dbc DBConn) (bool, error) {
+func (q *CountQuery[T]) Exists(dbc db.Conn) (bool, error) {
 	count, err := q.Count(dbc)
 	if err != nil {
 		return false, err
 	}
 	return count > 0, nil
+}
+
+// QueryValue executes the ValueQuery and gets the column value
+func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) (V, error) {
+	var zero V
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return zero, err
+	}
+	row := dbc.QueryRow(query, values...)
+	result := q.reader(row)
+	if result.IsError() {
+		return zero, result.Error()
+	}
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
 }

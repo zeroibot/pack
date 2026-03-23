@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/pack/dyn"
 )
 
 var (
-	errEmptyQuery     = errors.New("empty query")
-	errEmptyTable     = errors.New("empty table")
-	errNoDBConnection = errors.New("no db connection")
+	errEmptyQuery          = errors.New("empty query")
+	errEmptyTable          = errors.New("empty table")
+	errFailedTypeAssertion = errors.New("failed type assertion")
+	errNoDBConnection      = errors.New("no db connection")
+	errNoReader            = errors.New("no row reader")
+	errNotFoundField       = errors.New("field not found")
 )
 
 // Query interface unifies all Query types:
@@ -86,13 +90,25 @@ func (q *conditionQuery[T]) preBuildCheck() (string, []any, error) {
 }
 
 // preQueryCheck checks if the db connection is set and builds the Query
-func preQueryCheck(q Query, dbc DBConn) (string, []any, error) {
+func preQueryCheck(q Query, dbc db.Conn) (string, []any, error) {
 	var err error = nil
 	query, values := q.BuildQuery()
 	if dbc == nil {
 		err = errNoDBConnection
 	} else if query == "" {
 		err = errEmptyQuery
+	}
+	return query, values, err
+}
+
+// preReadCheck is performed before a SELECT query to check the db connection and reader, and builds the Query
+func preReadCheck[T any](q Query, dbc db.Conn, reader RowReader[T]) (string, []any, error) {
+	query, values, err := preQueryCheck(q, dbc)
+	if err != nil {
+		return query, values, err
+	}
+	if reader == nil {
+		err = errNoReader
 	}
 	return query, values, err
 }
