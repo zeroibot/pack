@@ -215,10 +215,64 @@ func TestTopRowQuery(t *testing.T) {
 }
 
 func TestTopValueQuery(t *testing.T) {
-	// TODO: NewTopValueQuery
-	// TODO: TopValueQuery.OrderAsc, OrderDesc
-	// TODO: TopValueQuery.Limit
-	// TODO: TopValueQuery.Where
-	// TODO: TopValueQuery.Test
-	// TODO: TopValueQuery.BuildQuery
+	type User struct {
+		ID      int
+		Name    string
+		Code    string
+		Age     int
+		Balance float64
+		secret  string
+	}
+	u := new(User)
+	this := testPrelude(t, u)
+	table := "users"
+
+	// NewTopValueQuery
+	q0 := NewTopValueQuery[User, string](this, "", &u.Name)      // no table
+	q1 := NewTopValueQuery[User, string](this, table, &u.Name)   // success
+	q2 := NewTopValueQuery[User, int](this, table, &u.Age)       // success, another column
+	q6 := NewTopValueQuery[User, string](this, table, &u.Code)   // success, another string column
+	q3 := NewTopValueQuery[User, string](this, table, &u.Code)   // no condition
+	q4 := NewTopValueQuery[User, string](this, table, &u.Code)   // no order
+	q5 := NewTopValueQuery[User, string](this, table, &u.secret) // private field
+
+	// TopValueQuery.OrderAsc, OrderDesc, Limit
+	q1.OrderDesc(this, this.Column(&u.Age)).OrderAsc(this, this.Column(&u.Name)).Limit(5)
+	q2.OrderDesc(this, this.Column(&u.Balance))
+	q3.OrderDesc(this, this.Column(&u.Balance))
+	q5.OrderAsc(this, this.Column(&u.Age))
+	q6.OrderDesc(this, this.Column(&u.Age))
+
+	// TopValueQuery.Where
+	q1.Where(Greater[User](this, &u.Balance, 0))
+	q2.Where(Greater[User](this, &u.Age, 10))
+	q5.Where(Greater[User](this, &u.Age, 0))
+	q6.Where(Greater[User](this, &u.Age, 10))
+
+	// TopValueQuery.Test
+	u1 := User{1, "John", "john", 20, 5.0, "x"}
+	u2 := User{2, "Jean", "jean", 5, 0.0, "z"}
+	u3 := User{3, "Jack", "jack", 10, 15.0, "d"}
+	testCases := []tst.P2W1[*TopValueQuery[User, string], User, bool]{
+		{q1, u1, true}, {q1, u2, false}, {q1, u3, true},
+		{q6, u1, true}, {q6, u2, false}, {q6, u3, false},
+	}
+	tst.AllP2W1(t, testCases, "TopValueQuery.Test", (*TopValueQuery[User, string]).Test, tst.AssertEqual)
+
+	// TopValueQuery.BuildQuery
+	testCases2 := []tst.P1W2[*TopValueQuery[User, string], string, []any]{
+		{q0, "", []any{}},
+		{q1, "SELECT `Name` FROM `users` WHERE `Balance` > ? ORDER BY `Age` DESC, `Name` ASC LIMIT 5", []any{0.0}},
+		{q3, "SELECT `Code` FROM `users` WHERE false ORDER BY `Balance` DESC LIMIT 1", []any{}},
+		{q4, "", []any{}},
+		{q5, "", []any{}},
+		{q6, "SELECT `Code` FROM `users` WHERE `Age` > ? ORDER BY `Age` DESC LIMIT 1", []any{10}},
+	}
+	tst.AllP1W2(t, testCases2, "TopValueQuery.BuildQuery", (*TopValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// Test TopValueQuery with different value type
+	testCases3 := []tst.P1W2[*TopValueQuery[User, int], string, []any]{
+		{q2, "SELECT `Age` FROM `users` WHERE `Age` > ? ORDER BY `Balance` DESC LIMIT 1", []any{10}},
+	}
+	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 }

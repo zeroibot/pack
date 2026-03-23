@@ -12,12 +12,12 @@ v0.2.16 - Multiple Row Query Tests
     - Lookup Query tests
     - SelectRows Query tests
 v0.2.15 - Single Row Query Tests
-    - Commit:
+    x Commit: 2026-03-23 14:33
     x Count Query tests
     x Value Query tests
     x SelectRow Query tests
     x TopRow Query tests
-    - TopValue Query tests
+    x TopValue Query tests
 v0.2.14 - Multiple Row Queries
     x Commit: 2026-03-20 21:44
     x Refactor common query parts
