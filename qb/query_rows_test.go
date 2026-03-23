@@ -243,3 +243,10 @@ func TestGroupCountQuery(t *testing.T) {
 	}
 	tst.AllP1W1(t, testCases4, "ToString(GroupCountQuery)", ToString, tst.AssertEqual)
 }
+
+func TestGroupSumQuery(t *testing.T) {
+	// TODO: NewGroupSumQuery
+	// TODO: GroupSumQuery.Where
+	// TODO: GroupSumQuery without condition (optional)
+	// TODO: GroupSumQuery.BuildQuery
+}
