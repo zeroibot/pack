@@ -81,13 +81,78 @@ func TestValueQuery(t *testing.T) {
 }
 
 func TestSelectRowQuery(t *testing.T) {
-	// TODO: NewSelectRowQuery
-	// TODO: NewFullSelectRowQuery
-	// TODO: SelectRowQuery.Columns
-	// TODO: SelectRowQuery.Where
-	// TODO: SelectRowQuery.Test
-	// TODO: SelectRowQuery.BuildQuery
-
+	type Company struct {
+		ID       int
+		Name     string
+		Code     string
+		Age      int
+		Type     string `col:"Kind"`
+		Extra    string `col:"-"`
+		password string
+	}
+	c := new(Company)
+	this := testPrelude(t, c)
+	table := "companies"
+	cols2 := this.Columns(&c.Name, &c.Type)
+	cols3 := this.Columns(&c.Name, &c.Code)
+	cols4 := this.Columns(&c.ID)
+	cols8 := append([]string{}, cols4...)
+	cols8 = append(cols8, this.Column(&c.password))
+	cols9 := append([]string{}, cols4...)
+	cols9 = append(cols9, this.Column(&c.Extra))
+	reader1 := NewRowReader[Company](this, this.allColumns(c)...)
+	reader2 := NewRowReader[Company](this, cols2...)
+	reader3 := NewRowReader[Company](this, cols3...)
+	reader4 := NewRowReader[Company](this, cols4...)
+	// NewSelectRowQuery, NewFullSelectRowQuery
+	q0 := NewSelectRowQuery[Company](this, "", nil)    // no table
+	q1 := NewFullSelectRowQuery(this, table, reader1)  // all columns
+	q2 := NewSelectRowQuery(this, table, reader2)      // specific columns
+	q3 := NewSelectRowQuery(this, table, reader3)      // specific columns
+	q4 := NewSelectRowQuery(this, table, reader4)      // one column
+	q5 := NewSelectRowQuery[Company](this, table, nil) // nil reader
+	q6 := NewSelectRowQuery(this, table, reader4)      // no columns
+	q7 := NewSelectRowQuery(this, table, reader4)      // no condition
+	q8 := NewSelectRowQuery(this, table, reader4)      // with private column
+	q9 := NewSelectRowQuery(this, table, reader4)      // with blank column
+	// SelectRowQuery.Columns
+	q2.Columns(this, cols2...)
+	q3.Columns(this, cols3...)
+	q4.Columns(this, cols4...)
+	q7.Columns(this, cols4...)
+	q8.Columns(this, cols8...)
+	q9.Columns(this, cols9...)
+	// SelectRowQuery.Where
+	q1.Where(Equal[Company](this, &c.Name, "Google"))
+	q2.Where(Equal[Company](this, &c.Code, "XYZ"))
+	q3.Where(Greater[Company](this, &c.Age, 10))
+	q4.Where(NotIn[Company](this, &c.Type, []string{"IT", "Finance"}))
+	// SelectRowQuery.Test
+	c1 := Company{1, "Google", "GGL", 25, "IT", "", "search"}
+	c2 := Company{2, "Unknown", "XYZ", 5, "Finance", "", "banks"}
+	c3 := Company{3, "GoldStar", "GS", 7, "Mining", "", "nuggets"}
+	c4 := Company{4, "Apple", "APL", 20, "IT", "", "ios"}
+	testCases := []tst.P2W1[*SelectRowQuery[Company], Company, bool]{
+		{q1, c1, true}, {q1, c2, false}, {q1, c3, false}, {q1, c4, false},
+		{q2, c1, false}, {q2, c2, true}, {q2, c3, false}, {q2, c4, false},
+		{q3, c1, true}, {q3, c2, false}, {q3, c3, false}, {q3, c4, true},
+		{q4, c1, false}, {q4, c2, false}, {q4, c3, true}, {q4, c4, false},
+	}
+	tst.AllP2W1(t, testCases, "SelectRowQuery.Test", (*SelectRowQuery[Company]).Test, tst.AssertEqual)
+	// SelectRowQuery.BuildQuery
+	testCases2 := []tst.P1W2[*SelectRowQuery[Company], string, []any]{
+		{q0, "", []any{}},
+		{q1, "SELECT `ID`, `Name`, `Code`, `Age`, `Kind` FROM `companies` WHERE `Name` = ? LIMIT 1", []any{"Google"}},
+		{q2, "SELECT `Name`, `Kind` FROM `companies` WHERE `Code` = ? LIMIT 1", []any{"XYZ"}},
+		{q3, "SELECT `Name`, `Code` FROM `companies` WHERE `Age` > ? LIMIT 1", []any{10}},
+		{q4, "SELECT `ID` FROM `companies` WHERE `Kind` NOT IN (?, ?) LIMIT 1", []any{"IT", "Finance"}},
+		{q5, "", []any{}},
+		{q6, "", []any{}},
+		{q7, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
+		{q8, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
+		{q9, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
+	}
+	tst.AllP1W2(t, testCases2, "SelectRowQuery.BuildQuery", (*SelectRowQuery[Company]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 }
 
 func TestTopRowQuery(t *testing.T) {

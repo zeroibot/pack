@@ -10,7 +10,7 @@ v0.2.15 - Single Row Query Tests
     - Commit:
     x Count Query tests
     x Value Query tests
-    - SelectRow Query tests
+    x SelectRow Query tests
     - TopRow Query tests
     - TopValue Query tests
 v0.2.14 - Multiple Row Queries
