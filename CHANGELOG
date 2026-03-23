@@ -1,11 +1,11 @@
 v0.2.17 - Aggregate Queries
-    - Commit:
+    x Commit: 2026-03-23 16:19
     x Sum Query
     x Sum Query tests
     x GroupCount Query
     x GroupCount Query tests
     x GroupSum Query
-    - GroupSum Query tests
+    x GroupSum Query tests
 v0.2.16 - Multiple Row Query Tests
     x Commit: 2026-03-23 15:24
     x DistinctValues Query tests

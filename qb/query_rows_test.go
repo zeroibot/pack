@@ -245,8 +245,75 @@ func TestGroupCountQuery(t *testing.T) {
 }
 
 func TestGroupSumQuery(t *testing.T) {
-	// TODO: NewGroupSumQuery
-	// TODO: GroupSumQuery.Where
-	// TODO: GroupSumQuery without condition (optional)
-	// TODO: GroupSumQuery.BuildQuery
+	type Product struct {
+		ID      int
+		Name    string
+		Price   float64
+		Qty     int
+		Extra   int `col:"-"`
+		code    string
+		balance float64
+	}
+	p := new(Product)
+	this := testPrelude(t, p)
+	table := "products"
+
+	// NewGroupSumQuery
+	q0 := NewGroupSumQuery[Product, string, float64](this, "", &p.Name, &p.Price)        // no table
+	q1 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.Price)     // valid
+	q2 := NewGroupSumQuery[Product, int, int](this, table, &p.ID, &p.Qty)                // another fields
+	q3 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.Price)     // with condition
+	q4 := NewGroupSumQuery[Product, string, float64](this, table, new(string), &p.Price) // invalid group field
+	q5 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, new(float64)) // invalid sum field
+	q6 := NewGroupSumQuery[Product, string, float64](this, table, &p.code, &p.Price)     // private group field
+	q7 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.balance)   // private sum field
+	q8 := NewGroupSumQuery[Product, int, float64](this, table, &p.Extra, &p.Price)       // skipped group field
+	q9 := NewGroupSumQuery[Product, string, int](this, table, &p.Name, &p.Extra)         // skipped sum field
+
+	// GroupSumQuery.Where
+	q3.Where(Greater[Product](this, &p.Qty, 10))
+
+	// GroupSumQuery.BuildQuery
+	emptyValues := make([]any, 0)
+	testCases1 := []tst.P1W2[*GroupSumQuery[Product, string, float64], string, []any]{
+		{q0, "", emptyValues},
+		{q1, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE true GROUP BY `Name`", emptyValues},
+		{q3, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `Qty` > ? GROUP BY `Name`", []any{10}},
+		{q4, "", emptyValues},
+		{q5, "", emptyValues},
+		{q6, "", emptyValues},
+		{q7, "", emptyValues},
+	}
+	tst.AllP1W2(t, testCases1, "GroupSumQuery.BuildQuery (string, float64)", (*GroupSumQuery[Product, string, float64]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	testCases2 := []tst.P1W2[*GroupSumQuery[Product, int, int], string, []any]{
+		{q2, "SELECT `ID`, SUM(`Qty`) FROM `products` WHERE true GROUP BY `ID`", emptyValues},
+	}
+	tst.AllP1W2(t, testCases2, "GroupSumQuery.BuildQuery (int, int)", (*GroupSumQuery[Product, int, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	testCases6 := []tst.P1W2[*GroupSumQuery[Product, int, float64], string, []any]{
+		{q8, "", emptyValues},
+	}
+	tst.AllP1W2(t, testCases6, "GroupSumQuery.BuildQuery (int, float64)", (*GroupSumQuery[Product, int, float64]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	testCases5 := []tst.P1W2[*GroupSumQuery[Product, string, int], string, []any]{
+		{q9, "", emptyValues},
+	}
+	tst.AllP1W2(t, testCases5, "GroupSumQuery.BuildQuery (string, int)", (*GroupSumQuery[Product, string, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// GroupSumQuery.Test
+	p1 := Product{ID: 1, Name: "Laptop", Price: 1200.0, Qty: 20}
+	p2 := Product{ID: 2, Name: "Mouse", Price: 25.0, Qty: 5}
+	testCases3 := []tst.P2W1[*GroupSumQuery[Product, string, float64], Product, bool]{
+		{q1, p1, true}, {q1, p2, true},
+		{q3, p1, true}, {q3, p2, false},
+	}
+	tst.AllP2W1(t, testCases3, "GroupSumQuery.Test", (*GroupSumQuery[Product, string, float64]).Test, tst.AssertEqual)
+
+	// ToString(GroupSumQuery)
+	testCases4 := []tst.P1W1[Query, string]{
+		{q1, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE true GROUP BY `Name`"},
+		{q3, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `Qty` > 10 GROUP BY `Name`"},
+	}
+	tst.AllP1W1(t, testCases4, "ToString(GroupSumQuery)", ToString, tst.AssertEqual)
 }
