@@ -156,13 +156,62 @@ func TestSelectRowQuery(t *testing.T) {
 }
 
 func TestTopRowQuery(t *testing.T) {
-	// TODO: NewTopRowQuery
-	// TODO: TopRowQuery.Columns
-	// TODO: TopRowQuery.OrderAsc, OrderDesc
-	// TODO: TopRowQuery.Limit
-	// TODO: TopRowQuery.Where
-	// TODO: TopRowQuery.Test
-	// TODO: TopRowQuery.BuildQuery
+	type User struct {
+		Name    string
+		Code    string
+		Age     int
+		Balance float64
+		secret1 string
+		secret2 string
+	}
+	u := new(User)
+	this := testPrelude(t, u)
+	table := "users"
+	cols1 := this.allColumns(u)
+	cols2 := this.Columns(&u.Code, &u.Age)
+	cols3 := this.Columns(&u.secret1, &u.secret2)
+	reader1 := NewRowReader[User](this, cols1...)
+	reader2 := NewRowReader[User](this, cols2...)
+	reader3 := NewRowReader[User](this, cols3...)
+	// NewTopRowQuery
+	q0 := NewTopRowQuery[User](this, "", nil)  // no table
+	q1 := NewTopRowQuery(this, table, reader1) // all columns
+	q2 := NewTopRowQuery(this, table, reader2) // selected columns
+	q3 := NewTopRowQuery(this, table, reader2) // no condition
+	q4 := NewTopRowQuery(this, table, reader2) // no order
+	q5 := NewTopRowQuery(this, table, reader3) // no columns
+	// TopRowQuery.Columns
+	q2.Columns(this, cols2...)
+	q3.Columns(this, cols2...)
+	q5.Columns(this, cols3...)
+	// TopRowQuery.OrderAsc, OrderDesc, Limit
+	q1.OrderDesc(this, this.Column(&u.Age)).OrderAsc(this, this.Column(&u.Name)).Limit(5)
+	q2.OrderDesc(this, this.Column(&u.Balance))
+	q3.OrderDesc(this, this.Column(&u.Balance))
+	q5.OrderAsc(this, this.Column(&u.Age))
+	// TopRowQuery.Where
+	q1.Where(Greater[User](this, &u.Balance, 0))
+	q2.Where(Greater[User](this, &u.Age, 10))
+	q5.Where(Greater[User](this, &u.Age, 0))
+	// TopRowQuery.Test
+	u1 := User{"John", "john", 20, 5.0, "x", "y"}
+	u2 := User{"Jean", "jean", 5, 0.0, "z", "z"}
+	u3 := User{"Jack", "jack", 10, 15.0, "d", "r"}
+	testCases := []tst.P2W1[*TopRowQuery[User], User, bool]{
+		{q1, u1, true}, {q1, u2, false}, {q1, u3, true},
+		{q2, u1, true}, {q2, u2, false}, {q2, u3, false},
+	}
+	tst.AllP2W1(t, testCases, "TopRowQuery.Test", (*TopRowQuery[User]).Test, tst.AssertEqual)
+	// TopRowQuery.BuildQuery
+	testCases2 := []tst.P1W2[*TopRowQuery[User], string, []any]{
+		{q0, "", []any{}},
+		{q1, "SELECT `Name`, `Code`, `Age`, `Balance` FROM `users` WHERE `Balance` > ? ORDER BY `Age` DESC, `Name` ASC LIMIT 5", []any{0.0}},
+		{q2, "SELECT `Code`, `Age` FROM `users` WHERE `Age` > ? ORDER BY `Balance` DESC LIMIT 1", []any{10}},
+		{q3, "SELECT `Code`, `Age` FROM `users` WHERE false ORDER BY `Balance` DESC LIMIT 1", []any{}},
+		{q4, "", []any{}},
+		{q5, "", []any{}},
+	}
+	tst.AllP1W2(t, testCases2, "TopRowQuery.BuildQuery", (*TopRowQuery[User]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 }
 
 func TestTopValueQuery(t *testing.T) {
