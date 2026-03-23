@@ -237,11 +237,11 @@ func TestTopValueQuery(t *testing.T) {
 	q5 := NewTopValueQuery[User, string](this, table, &u.secret) // private field
 
 	// TopValueQuery.OrderAsc, OrderDesc, Limit
-	q1.OrderDesc(this, this.Column(&u.Age)).OrderAsc(this, this.Column(&u.Name)).Limit(5)
+	q1.OrderAsc(this, this.Column(&u.Name)).OrderDesc(this, this.Column(&u.Age)).Limit(3)
+	q3.OrderAsc(this, this.Column(&u.Age))
 	q2.OrderDesc(this, this.Column(&u.Balance))
-	q3.OrderDesc(this, this.Column(&u.Balance))
-	q5.OrderAsc(this, this.Column(&u.Age))
 	q6.OrderDesc(this, this.Column(&u.Age))
+	q5.OrderAsc(this, this.Column(&u.Age))
 
 	// TopValueQuery.Where
 	q1.Where(Greater[User](this, &u.Balance, 0))
@@ -262,8 +262,8 @@ func TestTopValueQuery(t *testing.T) {
 	// TopValueQuery.BuildQuery
 	testCases2 := []tst.P1W2[*TopValueQuery[User, string], string, []any]{
 		{q0, "", []any{}},
-		{q1, "SELECT `Name` FROM `users` WHERE `Balance` > ? ORDER BY `Age` DESC, `Name` ASC LIMIT 5", []any{0.0}},
-		{q3, "SELECT `Code` FROM `users` WHERE false ORDER BY `Balance` DESC LIMIT 1", []any{}},
+		{q1, "SELECT `Name` FROM `users` WHERE `Balance` > ? ORDER BY `Name` ASC, `Age` DESC LIMIT 3", []any{0.0}},
+		{q3, "SELECT `Code` FROM `users` WHERE false ORDER BY `Age` ASC LIMIT 1", []any{}},
 		{q4, "", []any{}},
 		{q5, "", []any{}},
 		{q6, "SELECT `Code` FROM `users` WHERE `Age` > ? ORDER BY `Age` DESC LIMIT 1", []any{10}},
