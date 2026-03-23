@@ -35,6 +35,9 @@ func TestCountQuery(t *testing.T) {
 		{q2, "SELECT COUNT(*) FROM `persons` WHERE false", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "CountQuery.BuildQuery", (*CountQuery[Person]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: CountQuery.Count
+	// TODO: CountQuery.Exists
 }
 
 func TestValueQuery(t *testing.T) {
@@ -78,6 +81,8 @@ func TestValueQuery(t *testing.T) {
 		{q5, "", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: ValueQuery.QueryValue
 }
 
 func TestSelectRowQuery(t *testing.T) {
@@ -153,6 +158,8 @@ func TestSelectRowQuery(t *testing.T) {
 		{q9, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "SelectRowQuery.BuildQuery", (*SelectRowQuery[Company]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: SelectRowQuery.QueryRow
 }
 
 func TestTopRowQuery(t *testing.T) {
@@ -212,6 +219,8 @@ func TestTopRowQuery(t *testing.T) {
 		{q5, "", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "TopRowQuery.BuildQuery", (*TopRowQuery[User]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: TopRowQuery.QueryRow
 }
 
 func TestTopValueQuery(t *testing.T) {
@@ -275,6 +284,8 @@ func TestTopValueQuery(t *testing.T) {
 		{q2, "SELECT `Age` FROM `users` WHERE `Age` > ? ORDER BY `Balance` DESC LIMIT 1", []any{10}},
 	}
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: TopValueQuery.QueryRow
 }
 
 func TestSumQuery(t *testing.T) {
@@ -333,4 +344,6 @@ func TestSumQuery(t *testing.T) {
 		{q5, "", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "SumQuery.BuildQuery", (*SumQuery[Product]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: SumQuery.Sum
 }

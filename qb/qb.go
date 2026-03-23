@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/pack/dict"
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/dyn"
@@ -120,13 +121,8 @@ func (i *Instance) Fields(typeName string, fieldRefs ...any) ds.List[string] {
 	return fieldNames
 }
 
-// rowScanner is an Interface that unifies *sql.Row and *sql.Rows
-type rowScanner interface {
-	Scan(...any) error
-}
-
 // RowReader is a function that reads row values into a struct
-type RowReader[T any] = func(rowScanner) ds.Result[T]
+type RowReader[T any] = func(db.RowScanner) ds.Result[T]
 
 // ToRow converts a given struct to map[string]any for row insertion
 func ToRow[T any](this *Instance, structRef *T) dict.Object {
@@ -146,7 +142,7 @@ func FullRowReader[T any](this *Instance, structRef *T) RowReader[T] {
 
 // NewRowReader creates a RowReader for type T, with the given columns
 func NewRowReader[T any](this *Instance, columns ...string) RowReader[T] {
-	return func(row rowScanner) ds.Result[T] {
+	return func(row db.RowScanner) ds.Result[T] {
 		var item T
 		if !dyn.IsStruct(item) {
 			return ds.Error[T](fmt.Errorf("not a struct type"))

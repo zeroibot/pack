@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/list"
 )
 
@@ -174,4 +176,93 @@ func (q *SumQuery[T]) BuildQuery() (string, []any) {
 	query := "SELECT %s FROM %s WHERE %s"
 	query = fmt.Sprintf(query, columns, q.table, condition)
 	return query, values
+}
+
+// Count returns the number of rows that satisfy the CountQuery
+func (q *CountQuery[T]) Count(dbc db.Conn) ds.Result[int] {
+	query, values, err := preQueryCheck(q, dbc)
+	if err != nil {
+		return ds.Error[int](err)
+	}
+	count := 0
+	err = dbc.QueryRow(query, values...).Scan(&count)
+	if err != nil {
+		return ds.Error[int](err)
+	}
+	return ds.NewResult(count, nil)
+}
+
+// Exists checks if there is at least 1 row that satisfies the CountQuery
+func (q *CountQuery[T]) Exists(dbc db.Conn) ds.Result[bool] {
+	result := q.Count(dbc)
+	if result.IsError() {
+		return ds.Error[bool](result.Error())
+	}
+	return ds.NewResult(result.Value() > 0, nil)
+}
+
+// QueryValue executes the ValueQuery and gets the column value
+func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] {
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[V](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	result := q.reader(row)
+	if result.IsError() {
+		return ds.Error[V](result.Error())
+	}
+
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+}
+
+// QueryRow executes the SelectRowQuery and gets the row object
+func (q *SelectRowQuery[T]) QueryRow(dbc db.Conn) ds.Result[T] {
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[T](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	return q.reader(row)
+}
+
+// QueryRow executes the TopRowQuery and gets the top row object
+func (q *TopRowQuery[T]) QueryRow(dbc db.Conn) ds.Result[T] {
+	q.limit = 1 // override limit to 1
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[T](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	return q.reader(row)
+}
+
+// QueryValue executes the TopValueQuery and gets the top column value
+func (q *TopValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] {
+	q.limit = 1 // override limit to 1
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[V](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	result := q.reader(row)
+	if result.IsError() {
+		return ds.Error[V](result.Error())
+	}
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+}
+
+// Sum executes the SumQuery and returns an object with the sum values
+func (q *SumQuery[T]) Sum(dbc db.Conn) ds.Result[T] {
+	query, values, err := preQueryCheck(q, dbc)
+	if err != nil {
+		return ds.Error[T](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	return q.reader(row)
 }
