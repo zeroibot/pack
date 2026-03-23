@@ -276,3 +276,11 @@ func TestTopValueQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 }
+
+func TestSumQuery(t *testing.T) {
+	// TODO: NewSumQuery
+	// TODO: SumQuery.Where
+	// TODO: SumQuery without condition (optional)
+	// TODO: SumQuery.Columns
+	// TODO: SumQuery.BuildQuery
+}

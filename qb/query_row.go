@@ -3,6 +3,8 @@ package qb
 import (
 	"fmt"
 	"strings"
+
+	"github.com/roidaradal/pack/list"
 )
 
 // CountQuery counts the number of rows that satisfy the condition
@@ -35,6 +37,12 @@ type TopValueQuery[T, V any] struct {
 	conditionQuery[T]
 	columnReader[T]
 	orderedLimit
+}
+
+// SumQuery sums up the selected columns for rows that satisfy the condition
+type SumQuery[T any] struct {
+	conditionQuery[T]
+	columnsReader[T]
 }
 
 // NewCountQuery creates a new CountQuery
@@ -84,6 +92,15 @@ func NewTopValueQuery[T, V any](this *Instance, table string, fieldRef *V) *TopV
 	q.initializeRequired(this, table)
 	q.columnReader.initialize(this, this.Column(fieldRef))
 	q.limit = 1
+	return q
+}
+
+// NewSumQuery creates a new SumQuery
+func NewSumQuery[T any](this *Instance, table string, reader RowReader[T]) *SumQuery[T] {
+	q := new(SumQuery[T])
+	q.initializeOptional(this, table)
+	q.reader = reader
+	q.columns = make([]string, 0)
 	return q
 }
 
@@ -141,5 +158,20 @@ func (q *TopValueQuery[T, V]) BuildQuery() (string, []any) {
 	}
 	query := "SELECT %s FROM %s WHERE %s %s"
 	query = fmt.Sprintf(query, q.columnName, q.table, condition, q.orderLimitString())
+	return query, values
+}
+
+// BuildQuery returns the query string and parameter values of SumQuery
+func (q *SumQuery[T]) BuildQuery() (string, []any) {
+	condition, values, err := q.conditionQuery.preBuildCheck()
+	if err != nil || len(q.columns) == 0 {
+		return emptyQueryValues()
+	}
+	sumColumns := list.Map(q.columns, func(column string) string {
+		return fmt.Sprintf("SUM(%s)", column)
+	})
+	columns := strings.Join(sumColumns, ", ")
+	query := "SELECT %s FROM %s WHERE %s"
+	query = fmt.Sprintf(query, columns, q.table, condition)
 	return query, values
 }

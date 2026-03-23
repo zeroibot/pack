@@ -1,6 +1,6 @@
 v0.2.17 - Aggregate Queries
     - Commit:
-    - Sum Query
+    x Sum Query
     - GroupCount Query
     - GroupSum Query
     - Sum Query tests
