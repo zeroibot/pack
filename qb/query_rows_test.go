@@ -57,11 +57,57 @@ func TestDistinctValuesQuery(t *testing.T) {
 }
 
 func TestLookupQuery(t *testing.T) {
-	// TODO: NewLookupQuery
-	// TODO: LookupQuery.Where
-	// TODO: LookupQuery without condition (valid)
-	// TODO: LookupQuery.Test
-	// TODO: LookupQuery.BuildQuery
+	type User struct {
+		Username string
+		Age      int
+		Extra    string `col:"-"`
+		secret   string
+	}
+	u := new(User)
+	table := "users"
+	this := testPrelude(t, u)
+
+	// NewLookupQuery
+	q1 := NewLookupQuery[User](this, table, &u.Username, &u.Age)
+	q1.Where(Greater[User](this, &u.Age, 18))
+	q2 := NewLookupQuery[User](this, table, &u.Username, &u.Age)    // no condition
+	q3 := NewLookupQuery[User](this, "", &u.Username, &u.Age)       // no table
+	q4 := NewLookupQuery[User](this, table, new(string), &u.Age)    // invalid key field (not in struct)
+	q5 := NewLookupQuery[User](this, table, &u.Username, new(int))  // invalid value field (not in struct)
+	q6 := NewLookupQuery[User](this, table, &u.secret, &u.Age)      // private key field
+	q7 := NewLookupQuery[User](this, table, &u.Username, &u.secret) // private value field
+	q8 := NewLookupQuery[User](this, table, &u.Extra, &u.Age)       // blank key column
+	q9 := NewLookupQuery[User](this, table, &u.Username, &u.Extra)  // blank value column
+
+	// LookupQuery.BuildQuery
+	emptyValues := make([]any, 0)
+	testCases1 := []tst.P1W2[*LookupQuery[User, string, int], string, []any]{
+		{q1, "SELECT `Username`, `Age` FROM `users` WHERE `Age` > ?", []any{18}},
+		{q2, "SELECT `Username`, `Age` FROM `users` WHERE true", emptyValues},
+		{q3, "", emptyValues}, {q4, "", emptyValues}, {q5, "", emptyValues},
+		{q6, "", emptyValues}, {q8, "", emptyValues},
+	}
+	tst.AllP1W2(t, testCases1, "LookupQuery.BuildQuery", (*LookupQuery[User, string, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+	testCases4 := []tst.P1W2[*LookupQuery[User, string, string], string, []any]{
+		{q7, "", emptyValues}, {q9, "", emptyValues},
+	}
+	tst.AllP1W2(t, testCases4, "LookupQuery.BuildQuery", (*LookupQuery[User, string, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// LookupQuery.Test
+	u1 := User{"Alice", 18, "", ""}
+	u2 := User{"Bob", 20, "", ""}
+	testCases2 := []tst.P2W1[*LookupQuery[User, string, int], User, bool]{
+		{q1, u1, false}, {q1, u2, true},
+		{q2, u1, true}, {q2, u2, true},
+	}
+	tst.AllP2W1(t, testCases2, "LookupQuery.Test", (*LookupQuery[User, string, int]).Test, tst.AssertEqual)
+
+	// ToString(LookupQuery)
+	testCases3 := []tst.P1W1[Query, string]{
+		{q1, fmt.Sprintf("SELECT `Username`, `Age` FROM `users` WHERE `Age` > %d", 18)},
+		{q2, "SELECT `Username`, `Age` FROM `users` WHERE true"},
+	}
+	tst.AllP1W1(t, testCases3, "ToString(LookupQuery)", ToString, tst.AssertEqual)
 }
 
 func TestSelectRowsQuery(t *testing.T) {
