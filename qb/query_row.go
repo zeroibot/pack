@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/list"
 )
 
@@ -178,39 +179,51 @@ func (q *SumQuery[T]) BuildQuery() (string, []any) {
 }
 
 // Count returns the number of rows that satisfy the CountQuery
-func (q *CountQuery[T]) Count(dbc db.Conn) (int, error) {
+func (q *CountQuery[T]) Count(dbc db.Conn) ds.Result[int] {
 	query, values, err := preQueryCheck(q, dbc)
 	if err != nil {
-		return 0, err
+		return ds.Error[int](err)
 	}
 	count := 0
 	err = dbc.QueryRow(query, values...).Scan(&count)
 	if err != nil {
-		return 0, err
+		return ds.Error[int](err)
 	}
-	return count, nil
+	return ds.NewResult(count, nil)
 }
 
 // Exists checks if there is at least 1 row that satisfies the CountQuery
-func (q *CountQuery[T]) Exists(dbc db.Conn) (bool, error) {
-	count, err := q.Count(dbc)
-	if err != nil {
-		return false, err
+func (q *CountQuery[T]) Exists(dbc db.Conn) ds.Result[bool] {
+	result := q.Count(dbc)
+	if result.IsError() {
+		return ds.Error[bool](result.Error())
 	}
-	return count > 0, nil
+	return ds.NewResult(result.Value() > 0, nil)
 }
 
 // QueryValue executes the ValueQuery and gets the column value
-func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) (V, error) {
-	var zero V
+func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] {
 	query, values, err := preReadCheck(q, dbc, q.reader)
 	if err != nil {
-		return zero, err
+		return ds.Error[V](err)
 	}
+
 	row := dbc.QueryRow(query, values...)
 	result := q.reader(row)
 	if result.IsError() {
-		return zero, result.Error()
+		return ds.Error[V](result.Error())
 	}
+
 	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+}
+
+// QueryRow executes the SelectRowQuery and gets the row object
+func (q *SelectRowQuery[T]) QueryRow(this *Instance, dbc db.Conn) ds.Result[T] {
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[T](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	return q.reader(row)
 }

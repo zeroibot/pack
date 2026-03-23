@@ -81,6 +81,8 @@ func TestValueQuery(t *testing.T) {
 		{q5, "", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: ValueQuery.QueryValue
 }
 
 func TestSelectRowQuery(t *testing.T) {
@@ -156,6 +158,8 @@ func TestSelectRowQuery(t *testing.T) {
 		{q9, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "SelectRowQuery.BuildQuery", (*SelectRowQuery[Company]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
+
+	// TODO: SelectRowQuery.QueryRow
 }
 
 func TestTopRowQuery(t *testing.T) {
