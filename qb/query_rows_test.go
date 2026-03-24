@@ -54,6 +54,8 @@ func TestDistinctValuesQuery(t *testing.T) {
 		{q2, "SELECT DISTINCT `Username` FROM `users` WHERE true"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(DistinctValuesQuery)", ToString, tst.AssertEqual)
+
+	// TODO: DistinctValuesQuery.Query
 }
 
 func TestLookupQuery(t *testing.T) {
@@ -108,6 +110,8 @@ func TestLookupQuery(t *testing.T) {
 		{q2, "SELECT `Username`, `Age` FROM `users` WHERE true"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(LookupQuery)", ToString, tst.AssertEqual)
+
+	// TODO: LookupQuery.Lookup
 }
 
 func TestSelectRowsQuery(t *testing.T) {
@@ -184,6 +188,8 @@ func TestSelectRowsQuery(t *testing.T) {
 		{q5, "SELECT `Name`, `Price` FROM `products` WHERE true"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(SelectRowsQuery)", ToString, tst.AssertEqual)
+
+	// TODO: SelectRowsQuery.Query
 }
 
 func TestGroupCountQuery(t *testing.T) {
@@ -242,6 +248,8 @@ func TestGroupCountQuery(t *testing.T) {
 		{q3, fmt.Sprintf("SELECT `Name`, COUNT(*) FROM `users` WHERE `Age` > %d GROUP BY `Name`", 18)},
 	}
 	tst.AllP1W1(t, testCases4, "ToString(GroupCountQuery)", ToString, tst.AssertEqual)
+
+	// TODO: GroupCountQuery.GroupCount
 }
 
 func TestGroupSumQuery(t *testing.T) {
@@ -316,4 +324,6 @@ func TestGroupSumQuery(t *testing.T) {
 		{q3, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `Qty` > 10 GROUP BY `Name`"},
 	}
 	tst.AllP1W1(t, testCases4, "ToString(GroupSumQuery)", ToString, tst.AssertEqual)
+
+	// TODO: GroupSumQuery.GroupSum
 }

@@ -221,6 +221,7 @@ func TestTopRowQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases2, "TopRowQuery.BuildQuery", (*TopRowQuery[User]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// TODO: TopRowQuery.QueryRow
+	// TODO: TopRowQuery.QueryRows
 }
 
 func TestTopValueQuery(t *testing.T) {
@@ -286,6 +287,7 @@ func TestTopValueQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// TODO: TopValueQuery.QueryRow
+	// TODO: TopValueQuery.QueryRows
 }
 
 func TestSumQuery(t *testing.T) {

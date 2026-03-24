@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/number"
 )
 
@@ -177,4 +179,143 @@ func (q *GroupSumQuery[T, K, V]) BuildQuery() (string, []any) {
 	query := "SELECT %s, SUM(%s) FROM %s WHERE %s GROUP BY %s"
 	query = fmt.Sprintf(query, q.groupColumn, q.sumColumn, q.table, condition, q.groupColumn)
 	return query, values
+}
+
+// Query executes the DistinctValuesQuery and returns the list of distinct values
+func (q *DistinctValuesQuery[T, V]) Query(this *Instance, dbc db.Conn) ds.Result[[]V] {
+	return getValueList[T, V](this, dbc, q, q.reader, q.typeName, q.columnName)
+}
+
+// Lookup executes the LookupQuery and returns the map[K]V lookup
+func (q *LookupQuery[T, K, V]) Lookup(this *Instance, dbc db.Conn) ds.Result[map[K]V] {
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[map[K]V](err)
+	}
+
+	lookup := make(map[K]V)
+	err = readRows(dbc, query, values, q.reader, func(item *T) {
+		keyResult := getStructTypedColumnValue[K](this, item, q.typeName, q.keyColumn)
+		valueResult := getStructTypedColumnValue[V](this, item, q.typeName, q.valueColumn)
+		if keyResult.IsError() || valueResult.IsError() {
+			return
+		}
+		lookup[keyResult.Value()] = valueResult.Value()
+	})
+	if err != nil {
+		return ds.Error[map[K]V](err)
+	}
+
+	return ds.NewResult(lookup, nil)
+}
+
+// Query executes the SelectRowsQuery and returns the list of rows
+func (q *SelectRowsQuery[T]) Query(dbc db.Conn) ds.Result[[]T] {
+	return getRows(dbc, q, q.reader)
+}
+
+// GroupCount executes the GroupCountQuery and returns the map[group]count
+func (q *GroupCountQuery[T, K]) GroupCount(dbc db.Conn) ds.Result[map[K]int] {
+	return getGroups[K, int](dbc, q)
+}
+
+// GroupSum executes the GroupSumQuery and returns the map[group]sum
+func (q *GroupSumQuery[T, K, V]) GroupSum(dbc db.Conn) ds.Result[map[K]V] {
+	return getGroups[K, V](dbc, q)
+}
+
+// Common: read rows after executing the Query
+func readRows[T any](dbc db.Conn, query string, values []any, reader RowReader[T], task func(*T)) error {
+	rows, err := dbc.Query(query, values...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		result := reader(rows)
+		if result.IsError() {
+			continue
+		}
+		item := new(result.Value())
+		task(item)
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Common: get list of values after executing the Query
+func getValueList[T, V any](this *Instance, dbc db.Conn, q Query, reader RowReader[T], typeName, columnName string) ds.Result[[]V] {
+	query, values, err := preReadCheck(q, dbc, reader)
+	if err != nil {
+		return ds.Error[[]V](err)
+	}
+
+	valueList := make([]V, 0)
+	err = readRows(dbc, query, values, reader, func(item *T) {
+		result := getStructTypedColumnValue[V](this, item, typeName, columnName)
+		if result.IsError() {
+			return
+		}
+		valueList = append(valueList, result.Value())
+	})
+	if err != nil {
+		return ds.Error[[]V](err)
+	}
+
+	return ds.NewResult(valueList, nil)
+}
+
+// Common: get list of rows after executing the Query
+func getRows[T any](dbc db.Conn, q Query, reader RowReader[T]) ds.Result[[]T] {
+	query, values, err := preReadCheck(q, dbc, reader)
+	if err != nil {
+		return ds.Error[[]T](err)
+	}
+
+	items := make([]T, 0)
+	err = readRows(dbc, query, values, reader, func(item *T) {
+		if item == nil {
+			return
+		}
+		items = append(items, *item)
+	})
+	if err != nil {
+		return ds.Error[[]T](err)
+	}
+
+	return ds.NewResult(items, nil)
+}
+
+// Common: execute a GroupQuery and return map[group]V
+func getGroups[K comparable, V number.Type](dbc db.Conn, q Query) ds.Result[map[K]V] {
+	query, values, err := preQueryCheck(q, dbc)
+	if err != nil {
+		return ds.Error[map[K]V](err)
+	}
+
+	rows, err := dbc.Query(query, values...)
+	if err != nil {
+		return ds.Error[map[K]V](err)
+	}
+	defer rows.Close()
+
+	groups := make(map[K]V)
+	for rows.Next() {
+		var key K
+		var value V
+		err = rows.Scan(&key, &value)
+		if err != nil {
+			continue
+		}
+		groups[key] = value
+	}
+	if err = rows.Err(); err != nil {
+		return ds.Error[map[K]V](err)
+	}
+
+	return ds.NewResult(groups, nil)
 }
