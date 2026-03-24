@@ -1,3 +1,11 @@
+v0.2.19 - Multiple Row Query Executions
+    - Commit:
+    x DistinctValuesQuery Results
+    - LookupQuery Results
+    - TopRowQuery and TopValueQuery Results
+    - SelectRowsQuery Results
+    - GroupCountQuery Results
+    - GroupSumQuery Results
 v0.2.18 - Single Row Query Executions
     x Commit: 2026-03-24 07:37
     x CountQuery Results

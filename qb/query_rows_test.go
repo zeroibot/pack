@@ -54,6 +54,8 @@ func TestDistinctValuesQuery(t *testing.T) {
 		{q2, "SELECT DISTINCT `Username` FROM `users` WHERE true"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(DistinctValuesQuery)", ToString, tst.AssertEqual)
+
+	// TODO: DistinctValuesQuery.Query
 }
 
 func TestLookupQuery(t *testing.T) {

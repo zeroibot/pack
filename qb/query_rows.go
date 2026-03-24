@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/pack/number"
 )
 
@@ -177,4 +179,49 @@ func (q *GroupSumQuery[T, K, V]) BuildQuery() (string, []any) {
 	query := "SELECT %s, SUM(%s) FROM %s WHERE %s GROUP BY %s"
 	query = fmt.Sprintf(query, q.groupColumn, q.sumColumn, q.table, condition, q.groupColumn)
 	return query, values
+}
+
+// Query executes the DistinctValuesQuery and returns the list of distinct values
+func (q *DistinctValuesQuery[T, V]) Query(this *Instance, dbc db.Conn) ds.Result[[]V] {
+	query, values, err := preReadCheck(q, dbc, q.reader)
+	if err != nil {
+		return ds.Error[[]V](err)
+	}
+
+	distinct := make([]V, 0)
+	err = readRows(dbc, query, values, q.reader, func(item *T) {
+		result := getStructTypedColumnValue[V](this, item, q.typeName, q.columnName)
+		if result.IsError() {
+			return
+		}
+		distinct = append(distinct, result.Value())
+	})
+	if err != nil {
+		return ds.Error[[]V](err)
+	}
+
+	return ds.NewResult(distinct, nil)
+}
+
+// Common: read rows after executing the Query
+func readRows[T any](dbc db.Conn, query string, values []any, reader RowReader[T], task func(*T)) error {
+	rows, err := dbc.Query(query, values...)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		result := reader(rows)
+		if result.IsError() {
+			continue
+		}
+		item := new(result.Value())
+		task(item)
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
