@@ -1,12 +1,15 @@
 package qb
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/roidaradal/pack/dict"
 	"github.com/roidaradal/pack/ds"
 	"github.com/roidaradal/tst"
 )
+
+var errMock = errors.New("mock error")
 
 // Common steps for creating Instance and adding 1 type
 func testPrelude[T any](t *testing.T, typeRef *T) *Instance {

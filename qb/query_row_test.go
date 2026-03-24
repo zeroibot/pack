@@ -3,6 +3,8 @@ package qb
 import (
 	"testing"
 
+	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/list"
 	"github.com/roidaradal/tst"
 )
 
@@ -22,10 +24,13 @@ func TestCountQuery(t *testing.T) {
 	// CountQuery.Where
 	q1.Where(GreaterEqual[Person](this, &p.Age, 18))
 	// CountQuery.Test
+	p1 := Person{"John", 20, "dev"}
+	p2 := Person{"Jane", 18, "student"}
+	p3 := Person{"Alice", 15, "student"}
 	testCases := []tst.P2W1[*CountQuery[Person], Person, bool]{
-		{q1, Person{"John", 20, "dev"}, true},
-		{q1, Person{"Jane", 18, "student"}, true},
-		{q1, Person{"Alice", 15, "student"}, false},
+		{q1, p1, true},
+		{q1, p2, true},
+		{q1, p3, false},
 	}
 	tst.AllP2W1(t, testCases, "CountQuery.Test", (*CountQuery[Person]).Test, tst.AssertEqual)
 	// CountQuery.BuildQuery
@@ -36,8 +41,43 @@ func TestCountQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "CountQuery.BuildQuery", (*CountQuery[Person]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: CountQuery.Count
-	// TODO: CountQuery.Exists
+	// CountQuery.Count
+	items := []Person{p1, p2, p3}
+	dbc := db.NewMockAdapter(tst.NewConn[Person](items...))
+	// Empty query
+	res := q0.Count(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
+	// No db connection
+	res = q1.Count(nil)
+	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
+	// Error on Query
+	dbc.Conn.SetError(errMock)
+	res = q1.Count(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
+	// Success with results
+	dbc.Conn.SetError(nil)
+	count1 := list.CountFunc(items, q1.Test)
+	dbc.Conn.SetRow(tst.NewRow(count1))
+	res = q1.Count(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 2, res.IsError(), false)
+	// Success with 0 count
+	count2 := list.CountFunc(items, q2.Test)
+	dbc.Conn.SetRow(tst.NewRow(count2))
+	res = q2.Count(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), false)
+
+	// CountQuery.Exists
+	// No db connection
+	res2 := q1.Exists(nil)
+	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), false, res2.IsError(), true)
+	// Success with exists = true
+	dbc.Conn.SetRow(tst.NewRow(count1))
+	res2 = q1.Exists(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), true, res2.IsError(), false)
+	// Success with exists = false
+	dbc.Conn.SetRow(tst.NewRow(count2))
+	res2 = q2.Exists(dbc)
+	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), false, res2.IsError(), false)
 }
 
 func TestValueQuery(t *testing.T) {

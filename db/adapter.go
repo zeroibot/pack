@@ -12,8 +12,8 @@ type Adapter struct {
 }
 
 // MockAdapter is an adapter for tst.Conn so it follows the Conn interface
-type MockAdapter struct {
-	Conn *tst.Conn
+type MockAdapter[T any] struct {
+	Conn *tst.Conn[T]
 }
 
 // NewAdapter creates a new Adapter
@@ -22,8 +22,8 @@ func NewAdapter(db *sql.DB) *Adapter {
 }
 
 // NewMockAdapter creates a new MockAdapter
-func NewMockAdapter(conn *tst.Conn) *MockAdapter {
-	return new(MockAdapter{Conn: conn})
+func NewMockAdapter[T any](conn *tst.Conn[T]) *MockAdapter[T] {
+	return new(MockAdapter[T]{Conn: conn})
 }
 
 // QueryRow executes a query and returns a Row object
@@ -32,7 +32,7 @@ func (a *Adapter) QueryRow(query string, args ...any) Row {
 }
 
 // QueryRow executes a query and returns a Row object
-func (a *MockAdapter) QueryRow(query string, args ...any) Row {
+func (a *MockAdapter[T]) QueryRow(query string, args ...any) Row {
 	return a.Conn.QueryRow(query, args...)
 }
 
@@ -42,7 +42,7 @@ func (a *Adapter) Query(query string, args ...any) (Rows, error) {
 }
 
 // Query executes a query and returns a Rows object
-func (a *MockAdapter) Query(query string, args ...any) (Rows, error) {
+func (a *MockAdapter[T]) Query(query string, args ...any) (Rows, error) {
 	return a.Conn.Query(query, args...)
 }
 
@@ -52,7 +52,7 @@ func (a *Adapter) Exec(query string, args ...any) (sql.Result, error) {
 }
 
 // Exec executes a query and returns a Result object
-func (a *MockAdapter) Exec(query string, args ...any) (sql.Result, error) {
+func (a *MockAdapter[T]) Exec(query string, args ...any) (sql.Result, error) {
 	return a.Conn.Exec(query, args...)
 }
 
@@ -62,6 +62,6 @@ func (a *Adapter) Begin() (Tx, error) {
 }
 
 // Begin starts a transaction
-func (a *MockAdapter) Begin() (Tx, error) {
+func (a *MockAdapter[T]) Begin() (Tx, error) {
 	return a.Conn.Begin()
 }
