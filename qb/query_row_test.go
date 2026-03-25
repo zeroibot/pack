@@ -47,38 +47,39 @@ func TestCountQuery(t *testing.T) {
 	countFn := func(items []Person) ([]any, error) {
 		return []any{len(items)}, nil
 	}
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := func() {
+		dbc.Conn.SetError(nil)
+		dbc.Conn.PrepareRow(q1.Test, countFn)
+	}
+	prep2 := func() { dbc.Conn.PrepareRow(q2.Test, countFn) }
 
-	res := q0.Count(dbc) // Empty query
-	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
-
-	res = q1.Count(nil) // No db connection
-	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
-
-	dbc.Conn.SetError(errMock) // Error on Query
-	res = q1.Count(dbc)
-	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), true)
-
-	dbc.Conn.SetError(nil) // Success with results
-	dbc.Conn.PrepareRow(q1.Test, countFn)
-	res = q1.Count(dbc)
-	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 2, res.IsError(), false)
-
-	dbc.Conn.PrepareRow(q2.Test, countFn) // Success with 0 count
-	res = q2.Count(dbc)
-	tst.AssertEqualAnd(t, "CountQuery.Count", res.Value(), 0, res.IsError(), false)
+	testCases3 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, int, bool]{
+		{nil, q0, dbc, 0, false},   // Empty query
+		{nil, q1, nil, 0, false},   // No db connection
+		{prep0, q1, dbc, 0, false}, // Error on query
+		{prep1, q1, dbc, 2, true},  // Success with results
+		{prep2, q2, dbc, 0, true},  // Success with 0 count
+	}
+	countQuery := func(q *CountQuery[Person], dbc db.Conn) (int, bool) {
+		res := q.Count(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "CountQuery.Count", countQuery, tst.AssertEqual[int], tst.AssertEqual[bool])
 
 	// CountQuery.Exists
-
-	res2 := q1.Exists(nil) // No db connection
-	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), false, res2.IsError(), true)
-
-	dbc.Conn.PrepareRow(q1.Test, countFn) // Success with exists = true
-	res2 = q1.Exists(dbc)
-	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), true, res2.IsError(), false)
-
-	dbc.Conn.PrepareRow(q2.Test, countFn) // Success with exists = false
-	res2 = q2.Exists(dbc)
-	tst.AssertEqualAnd(t, "CountQuery.Exists", res2.Value(), false, res2.IsError(), false)
+	testCases4 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, bool, bool]{
+		{nil, q0, dbc, false, false},   // Empty query
+		{nil, q1, nil, false, false},   // No db connection
+		{prep0, q1, dbc, false, false}, // Error on query
+		{prep1, q1, dbc, true, true},   // Success with exist = true
+		{prep2, q2, dbc, false, true},  // Success with exist = false
+	}
+	existsQuery := func(q *CountQuery[Person], dbc db.Conn) (bool, bool) {
+		res := q.Exists(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases4, "CountQuery.Exists", existsQuery, tst.AssertEqual[bool], tst.AssertEqual[bool])
 }
 
 func TestValueQuery(t *testing.T) {

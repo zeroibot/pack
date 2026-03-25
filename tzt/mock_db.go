@@ -31,7 +31,7 @@ func (c *Conn[T]) Query(query string, args ...any) (*Rows, error) {
 }
 
 func (c *Conn[T]) QueryRow(query string, args ...any) *Row {
-	if c.testFn == nil || c.rowFn == nil {
+	if c.testFn == nil || c.rowFn == nil || c.err != nil {
 		return NewRow()
 	}
 	validItems := make([]T, 0, len(c.items))
