@@ -1,3 +1,22 @@
+v0.2.21 - Multiple Row Query Execution Tests
+    - Commit: 2026-03-24 10:00
+    - DistinctValuesQuery Query tests
+    - LookupQuery Lookup tests
+    - SelectRowsQuery Query tests
+    - TopRowQuery QueryRows tests
+    - TopValueQuery QueryValues tests
+    - GroupCountQuery GroupCount tests
+    - GroupSumQuery GroupSum tests
+v0.2.20 - Single Row Query Execution Tests
+    x Commit: 2026-03-025 16:33
+    x CountQuery Count and Exists tests
+    x SumQuery Sum tests
+    x ValueQuery QueryValue tests
+    x SelectRowQuery QueryRow tests
+    x TopRowQuery QueryRow tests
+    x TopValueQuery QueryValue tests
+    x Refactor prepare steps
+    x Transfer tzt functions to tst
 v0.2.19 - Multiple Row Query Executions
     x Commit: 2026-03-24 09:41
     x DistinctValuesQuery Results

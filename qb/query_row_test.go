@@ -1,8 +1,11 @@
 package qb
 
 import (
+	"cmp"
 	"testing"
 
+	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/list"
 	"github.com/roidaradal/tst"
 )
 
@@ -22,10 +25,13 @@ func TestCountQuery(t *testing.T) {
 	// CountQuery.Where
 	q1.Where(GreaterEqual[Person](this, &p.Age, 18))
 	// CountQuery.Test
+	p1 := Person{"John", 20, "dev"}
+	p2 := Person{"Jane", 18, "student"}
+	p3 := Person{"Alice", 15, "student"}
 	testCases := []tst.P2W1[*CountQuery[Person], Person, bool]{
-		{q1, Person{"John", 20, "dev"}, true},
-		{q1, Person{"Jane", 18, "student"}, true},
-		{q1, Person{"Alice", 15, "student"}, false},
+		{q1, p1, true},
+		{q1, p2, true},
+		{q1, p3, false},
 	}
 	tst.AllP2W1(t, testCases, "CountQuery.Test", (*CountQuery[Person]).Test, tst.AssertEqual)
 	// CountQuery.BuildQuery
@@ -36,8 +42,41 @@ func TestCountQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "CountQuery.BuildQuery", (*CountQuery[Person]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: CountQuery.Count
-	// TODO: CountQuery.Exists
+	// CountQuery.Count
+	dbc := db.NewMockAdapter(tst.NewConn[Person](p1, p2, p3))
+	countFn := func(items []Person) ([]any, error) {
+		return []any{len(items)}, nil
+	}
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := dbc.Conn.Prep(q1.Test, countFn)
+	prep2 := dbc.Conn.Prep(q2.Test, countFn)
+
+	testCases3 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, int, bool]{
+		{nil, q0, dbc, 0, false},   // Empty query
+		{nil, q1, nil, 0, false},   // No db connection
+		{prep0, q1, dbc, 0, false}, // Error on query
+		{prep1, q1, dbc, 2, true},  // Success with results
+		{prep2, q2, dbc, 0, true},  // Success with 0 count
+	}
+	countQuery := func(q *CountQuery[Person], dbc db.Conn) (int, bool) {
+		res := q.Count(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "CountQuery.Count", countQuery, tst.AssertEqual[int], tst.AssertEqual[bool])
+
+	// CountQuery.Exists
+	testCases4 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, bool, bool]{
+		{nil, q0, dbc, false, false},   // Empty query
+		{nil, q1, nil, false, false},   // No db connection
+		{prep0, q1, dbc, false, false}, // Error on query
+		{prep1, q1, dbc, true, true},   // Success with exist = true
+		{prep2, q2, dbc, false, true},  // Success with exist = false
+	}
+	existsQuery := func(q *CountQuery[Person], dbc db.Conn) (bool, bool) {
+		res := q.Exists(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases4, "CountQuery.Exists", existsQuery, tst.AssertEqual[bool], tst.AssertEqual[bool])
 }
 
 func TestValueQuery(t *testing.T) {
@@ -82,7 +121,28 @@ func TestValueQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: ValueQuery.QueryValue
+	// ValueQuery.QueryValue
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	prep1 := dbc.Conn.PrepOne(q1.Test, func(x User) []any { return []any{x.Name} })
+	prep2 := dbc.Conn.PrepOne(q2.Test, func(x User) []any { return []any{x.Code} })
+	prep3 := dbc.Conn.PrepOne(q3.Test, func(x User) []any { return []any{x.Job} })
+
+	testCases3 := []tst.P2W2Pre[*ValueQuery[User, string], db.Conn, string, bool]{
+		{nil, q0, dbc, "", false},       // Empty query
+		{nil, q1, nil, "", false},       // No db connection
+		{prep0a, q1, dbc, "", false},    // Error on query
+		{prep1, q1, dbc, "Admin", true}, // Success query1
+		{prep2, q2, dbc, "guest", true}, // Success query2
+		{prep3, q3, dbc, "", false},     // Row not found
+		{prep0b, q1, dbc, "", false},    // nil reader
+	}
+	valueQuery := func(q *ValueQuery[User, string], dbc db.Conn) (string, bool) {
+		res := q.QueryValue(this, dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "ValueQuery.QueryValue", valueQuery, tst.AssertEqual[string], tst.AssertEqual[bool])
 }
 
 func TestSelectRowQuery(t *testing.T) {
@@ -124,6 +184,7 @@ func TestSelectRowQuery(t *testing.T) {
 	q2.Columns(this, cols2...)
 	q3.Columns(this, cols3...)
 	q4.Columns(this, cols4...)
+	q5.Columns(this, cols4...)
 	q7.Columns(this, cols4...)
 	q8.Columns(this, cols8...)
 	q9.Columns(this, cols9...)
@@ -151,7 +212,7 @@ func TestSelectRowQuery(t *testing.T) {
 		{q2, "SELECT `Name`, `Kind` FROM `companies` WHERE `Code` = ? LIMIT 1", []any{"XYZ"}},
 		{q3, "SELECT `Name`, `Code` FROM `companies` WHERE `Age` > ? LIMIT 1", []any{10}},
 		{q4, "SELECT `ID` FROM `companies` WHERE `Kind` NOT IN (?, ?) LIMIT 1", []any{"IT", "Finance"}},
-		{q5, "", []any{}},
+		{q5, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
 		{q6, "", []any{}},
 		{q7, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
 		{q8, "SELECT `ID` FROM `companies` WHERE false LIMIT 1", []any{}},
@@ -159,7 +220,40 @@ func TestSelectRowQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "SelectRowQuery.BuildQuery", (*SelectRowQuery[Company]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: SelectRowQuery.QueryRow
+	// SelectRowQuery.QueryRow
+	var zero Company
+	dbc := db.NewMockAdapter(tst.NewConn[Company](c1, c2, c3, c4))
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := dbc.Conn.PrepOne(q1.Test, func(x Company) []any { return []any{x.ID, x.Name, x.Code, x.Age, x.Type} })
+	prep2 := dbc.Conn.PrepOne(q2.Test, func(x Company) []any { return []any{x.Name, x.Type} })
+	prep3 := dbc.Conn.PrepOne(q3.Test, func(x Company) []any { return []any{x.Name, x.Code} })
+	getID := func(x Company) []any { return []any{x.ID} }
+	prep4 := dbc.Conn.PrepOne(q4.Test, getID)
+	prep5 := dbc.Conn.PrepOne(q7.Test, getID)
+
+	want1 := Company{1, "Google", "GGL", 25, "IT", "", ""}
+	want2 := Company{Name: "Unknown", Type: "Finance"}
+	want3 := Company{Name: "Google", Code: "GGL"}
+	want4 := Company{ID: 3}
+
+	testCases3 := []tst.P2W2Pre[*SelectRowQuery[Company], db.Conn, Company, bool]{
+		{nil, q0, dbc, zero, false},   // Empty query
+		{nil, q1, nil, zero, false},   // No DB connection
+		{nil, q5, dbc, zero, false},   // nil reader
+		{prep0, q1, dbc, zero, false}, // Error on query
+		{prep1, q1, dbc, want1, true}, // Success query1
+		{prep2, q2, dbc, want2, true}, // Success query2
+		{prep3, q3, dbc, want3, true}, // Success query3
+		{prep4, q4, dbc, want4, true}, // Success query4
+		{prep5, q7, dbc, zero, false}, // no condition
+		{nil, q8, dbc, zero, false},   // private column
+		{nil, q9, dbc, zero, false},   // blank column
+	}
+	selectRowQuery := func(q *SelectRowQuery[Company], dbc db.Conn) (Company, bool) {
+		res := q.QueryRow(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "SelectRowQuery.QueryRow", selectRowQuery, tst.AssertEqual[Company], tst.AssertEqual[bool])
 }
 
 func TestTopRowQuery(t *testing.T) {
@@ -198,7 +292,7 @@ func TestTopRowQuery(t *testing.T) {
 	q5.OrderAsc(this, this.Column(&u.Age))
 	// TopRowQuery.Where
 	q1.Where(Greater[User](this, &u.Balance, 0))
-	q2.Where(Greater[User](this, &u.Age, 10))
+	q2.Where(GreaterEqual[User](this, &u.Age, 10))
 	q5.Where(Greater[User](this, &u.Age, 0))
 	// TopRowQuery.Test
 	u1 := User{"John", "john", 20, 5.0, "x", "y"}
@@ -206,21 +300,51 @@ func TestTopRowQuery(t *testing.T) {
 	u3 := User{"Jack", "jack", 10, 15.0, "d", "r"}
 	testCases := []tst.P2W1[*TopRowQuery[User], User, bool]{
 		{q1, u1, true}, {q1, u2, false}, {q1, u3, true},
-		{q2, u1, true}, {q2, u2, false}, {q2, u3, false},
+		{q2, u1, true}, {q2, u2, false}, {q2, u3, true},
 	}
 	tst.AllP2W1(t, testCases, "TopRowQuery.Test", (*TopRowQuery[User]).Test, tst.AssertEqual)
 	// TopRowQuery.BuildQuery
 	testCases2 := []tst.P1W2[*TopRowQuery[User], string, []any]{
 		{q0, "", []any{}},
 		{q1, "SELECT `Name`, `Code`, `Age`, `Balance` FROM `users` WHERE `Balance` > ? ORDER BY `Age` DESC, `Name` ASC LIMIT 5", []any{0.0}},
-		{q2, "SELECT `Code`, `Age` FROM `users` WHERE `Age` > ? ORDER BY `Balance` DESC LIMIT 1", []any{10}},
+		{q2, "SELECT `Code`, `Age` FROM `users` WHERE `Age` >= ? ORDER BY `Balance` DESC LIMIT 1", []any{10}},
 		{q3, "SELECT `Code`, `Age` FROM `users` WHERE false ORDER BY `Balance` DESC LIMIT 1", []any{}},
 		{q4, "", []any{}},
 		{q5, "", []any{}},
 	}
 	tst.AllP1W2(t, testCases2, "TopRowQuery.BuildQuery", (*TopRowQuery[User]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: TopRowQuery.QueryRow
+	// TopRowQuery.QueryRow
+	var zero User
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2, u3))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	sortAgeDesc := func(x1, x2 User) int { return cmp.Compare(x2.Age, x1.Age) }
+	getAllColumns := func(x User) []any { return []any{x.Name, x.Code, x.Age, x.Balance} }
+	prep1 := dbc.Conn.PrepSortOne(q1.Test, sortAgeDesc, getAllColumns)
+	sortBalanceDesc := func(x1, x2 User) int { return cmp.Compare(x2.Balance, x1.Balance) }
+	getCodeAge := func(x User) []any { return []any{x.Code, x.Age} }
+	prep2 := dbc.Conn.PrepSortOne(q2.Test, sortBalanceDesc, getCodeAge)
+	prep3 := dbc.Conn.PrepSortOne(q3.Test, sortBalanceDesc, getCodeAge)
+
+	want1 := User{Name: "John", Code: "john", Age: 20, Balance: 5.0}
+	want2 := User{Code: "jack", Age: 10}
+
+	testCases3 := []tst.P2W2Pre[*TopRowQuery[User], db.Conn, User, bool]{
+		{nil, q0, dbc, zero, false},    // empty query
+		{nil, q1, nil, zero, false},    // no DB connection
+		{prep0a, q1, dbc, zero, false}, // Error on query
+		{prep1, q1, dbc, want1, true},  // Success query1
+		{prep2, q2, dbc, want2, true},  // Success query2
+		{prep3, q3, dbc, zero, false},  // No condition
+		{prep0b, q1, dbc, zero, false}, // Nil reader
+	}
+	topRowQuery := func(q *TopRowQuery[User], dbc db.Conn) (User, bool) {
+		res := q.QueryRow(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "TopRowQuery.QueryRow", topRowQuery, tst.AssertEqual[User], tst.AssertEqual[bool])
+
 	// TODO: TopRowQuery.QueryRows
 }
 
@@ -286,8 +410,34 @@ func TestTopValueQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: TopValueQuery.QueryRow
-	// TODO: TopValueQuery.QueryRows
+	// TopValueQuery.QueryValue
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2, u3))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	sortNameAsc := func(x1, x2 User) int { return cmp.Compare(x1.Name, x2.Name) }
+	getName := func(x User) []any { return []any{x.Name} }
+	prep1 := dbc.Conn.PrepSortOne(q1.Test, sortNameAsc, getName)
+	sortAgeDesc := func(x1, x2 User) int { return cmp.Compare(x2.Age, x1.Age) }
+	getCode := func(x User) []any { return []any{x.Code} }
+	prep6 := dbc.Conn.PrepSortOne(q6.Test, sortAgeDesc, getCode)
+	prep3 := dbc.Conn.PrepSortOne(q3.Test, sortAgeDesc, getCode)
+
+	testCases4 := []tst.P2W2Pre[*TopValueQuery[User, string], db.Conn, string, bool]{
+		{nil, q0, dbc, "", false},      // empty query
+		{nil, q1, nil, "", false},      // no db connection
+		{prep0a, q1, dbc, "", false},   // error on query
+		{prep1, q1, dbc, "Jack", true}, // success query1
+		{prep6, q6, dbc, "john", true}, // success query6
+		{prep3, q3, dbc, "", false},    // no results
+		{prep0b, q1, dbc, "", false},   // nil reader
+	}
+	topValueQuery := func(q *TopValueQuery[User, string], dbc db.Conn) (string, bool) {
+		res := q.QueryValue(this, dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases4, "TopValueQuery.QueryValue", topValueQuery, tst.AssertEqual[string], tst.AssertEqual[bool])
+
+	// TODO: TopValueQuery.QueryValues
 }
 
 func TestSumQuery(t *testing.T) {
@@ -329,12 +479,16 @@ func TestSumQuery(t *testing.T) {
 	// SumQuery.Test
 	p1 := Product{101, 60.0, 10, 0}
 	p2 := Product{50, 40.0, 5, 0}
+	p3 := Product{10, 49.0, 3, 0}
 	testCases1 := []tst.P2W1[*SumQuery[Product], Product, bool]{
-		{q1, p1, true}, {q1, p2, false},
-		{q2, p1, false}, {q2, p2, true},
-		{q3, p1, true}, {q3, p2, true},
+		{q1, p1, true}, {q1, p2, false}, {q1, p3, false},
+		{q2, p1, false}, {q2, p2, true}, {q2, p3, true},
+		{q3, p1, true}, {q3, p2, true}, {q3, p3, true},
 	}
 	tst.AllP2W1(t, testCases1, "SumQuery.Test", (*SumQuery[Product]).Test, tst.AssertEqual)
+	sum1 := Product{Price: 60, Quantity: 10}
+	sum2 := Product{Price: 89}
+	sum3 := Product{Price: 149, Quantity: 18}
 
 	// SumQuery.BuildQuery
 	testCases2 := []tst.P1W2[*SumQuery[Product], string, []any]{
@@ -347,5 +501,37 @@ func TestSumQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "SumQuery.BuildQuery", (*SumQuery[Product]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: SumQuery.Sum
+	// SumQuery.Sum
+	var zero Product
+	dbc := db.NewMockAdapter(tst.NewConn[Product](p1, p2, p3))
+	getPriceQty := func(items []Product) ([]any, error) {
+		sumPrice := 0.0
+		sumQty := 0
+		for _, item := range items {
+			sumPrice += item.Price
+			sumQty += item.Quantity
+		}
+		return []any{sumPrice, sumQty}, nil
+	}
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := dbc.Conn.Prep(q1.Test, getPriceQty)
+	prep3 := dbc.Conn.Prep(q3.Test, getPriceQty)
+	prep2 := dbc.Conn.Prep(q2.Test, func(items []Product) ([]any, error) {
+		sumPrice := list.SumOf(items, func(item Product) float64 { return item.Price })
+		return []any{sumPrice}, nil
+	})
+
+	testCases3 := []tst.P2W2Pre[*SumQuery[Product], db.Conn, Product, bool]{
+		{nil, q0, dbc, zero, false},   // Empty query
+		{nil, q1, nil, zero, false},   // No db connection
+		{prep0, q1, dbc, zero, false}, // Error on query
+		{prep1, q1, dbc, sum1, true},  // Success query1
+		{prep2, q2, dbc, sum2, true},  // Success query2
+		{prep3, q3, dbc, sum3, true},  // Success query3
+	}
+	sumQuery := func(q *SumQuery[Product], dbc db.Conn) (Product, bool) {
+		res := q.Sum(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "SumQuery.Sum", sumQuery, tst.AssertEqual[Product], tst.AssertEqual[bool])
 }

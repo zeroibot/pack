@@ -142,3 +142,45 @@ func TestInternalFields(t *testing.T) {
 	age, ok := getStructFieldValue[int](p2, "Age")
 	tst.AssertEqualAnd(t, "getStructFieldValue", age, p2.Age, ok, true)
 }
+
+func TestGetStructTypedColumnValue(t *testing.T) {
+	type User struct {
+		Name     string
+		Age      int
+		Code     string
+		Secret   string `col:"-"`
+		password string
+	}
+	u := new(User)
+	typeName := "User"
+	this := testPrelude(t, u)
+	u1 := new(User{"John", 20, "apple", "123", "456"})
+	u2 := new(User{"Jane", 21, "banana", "456", "123"})
+	testCases := []tst.P3W2[any, string, string, string, bool]{
+		{User{}, typeName, "Name", "", false}, // not a struct ref
+		{u1, "Person", "Name", "", false},     // unknown type name
+		{u1, typeName, "Job", "", false},      // unknown column name
+		{u2, typeName, "", "", false},         // blank column name
+		{u2, typeName, "Secret", "", false},   // blank column name
+		{u1, typeName, "password", "", false}, // private field
+		{u1, typeName, "Name", u1.Name, true}, // success
+		{u2, typeName, "Code", u2.Code, true}, // success
+	}
+	bridgeFn := func(structRef any, typeName, columnName string) (string, bool) {
+		res := getStructTypedColumnValue[string](this, structRef, typeName, columnName)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP3W2(t, testCases, "getStructTypedColumnValue", bridgeFn, tst.AssertEqual[string], tst.AssertEqual[bool])
+
+	testCases2 := []tst.P3W2[any, string, string, int, bool]{
+		{u1, typeName, "Name", 0, false},    // wrong type
+		{u2, typeName, "Code", 0, false},    // wrong type
+		{u1, typeName, "Age", u1.Age, true}, // success
+		{u2, typeName, "Age", u2.Age, true}, // success
+	}
+	bridgeFn2 := func(structRef any, typeName, columnName string) (int, bool) {
+		res := getStructTypedColumnValue[int](this, structRef, typeName, columnName)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP3W2(t, testCases2, "getStructTypedColumnValue", bridgeFn2, tst.AssertEqual[int], tst.AssertEqual[bool])
+}

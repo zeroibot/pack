@@ -102,4 +102,18 @@ func TestSumProduct(t *testing.T) {
 	items := []int{1, 2, 3, 4, 5, 6}
 	tst.AssertEqual(t, "Sum", Sum(items), 21)
 	tst.AssertEqual(t, "Product", Product(items), 720)
+	// SumOf
+	type Person struct {
+		Age     int
+		Balance float64
+	}
+	getAge := func(p Person) int { return p.Age }
+	getBalance := func(p Person) float64 { return p.Balance }
+	persons := []Person{
+		{20, 15.0},
+		{25, 18.0},
+		{22, 20.0},
+	}
+	tst.AssertEqual(t, "SumOf", SumOf(persons, getAge), 67)
+	tst.AssertEqual(t, "SumOf", SumOf(persons, getBalance), 53.0)
 }

@@ -9,10 +9,10 @@ import "database/sql"
 
 // Conn generalizes an sql.Conn object
 type Conn interface {
-	QueryRow(query string, args ...any) Row
-	Query(query string, args ...any) (Rows, error)
-	Exec(query string, args ...any) (sql.Result, error)
 	Begin() (Tx, error)
+	Exec(query string, args ...any) (sql.Result, error)
+	Query(query string, args ...any) (Rows, error)
+	QueryRow(query string, args ...any) Row
 }
 
 // Tx generalizes an sql.Tx object

@@ -119,11 +119,20 @@ func Apply[T any](items []T, task func(T) T) []T {
 
 // Sum computes the sum of number items
 func Sum[T number.Type](numbers []T) T {
-	var total T = 0
+	var sum T = 0
 	for _, x := range numbers {
-		total += x
+		sum += x
 	}
-	return total
+	return sum
+}
+
+// SumOf computes the sum of mapped number items
+func SumOf[T any, V number.Type](items []T, convert func(T) V) V {
+	var sum V = 0
+	for _, item := range items {
+		sum += convert(item)
+	}
+	return sum
 }
 
 // Product computes the product of number items

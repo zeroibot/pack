@@ -214,7 +214,8 @@ func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] 
 		return ds.Error[V](result.Error())
 	}
 
-	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+	columnName := this.dbType.rawIdentifier(q.columnName)
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, columnName)
 }
 
 // QueryRow executes the SelectRowQuery and gets the row object
@@ -258,7 +259,9 @@ func (q *TopValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[
 	if result.IsError() {
 		return ds.Error[V](result.Error())
 	}
-	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+
+	columnName := this.dbType.rawIdentifier(q.columnName)
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, columnName)
 }
 
 // QueryValues executes the TopValueQuery and gets the top N column values

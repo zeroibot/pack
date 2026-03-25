@@ -9,3 +9,11 @@ func TestAdapter(t *testing.T) {
 	// TODO: Adapter.Exec
 	// TODO: Adapter.Begin
 }
+
+func TestMockAdapter(t *testing.T) {
+	// TODO: NewMockAdapter
+	// TODO: MockAdapter.QueryRow
+	// TODO: MockAdapter.Query
+	// TODO: MockAdapter.Exec
+	// TODO: MockAdapter.Begin
+}
