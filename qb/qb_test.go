@@ -34,6 +34,11 @@ func TestPrepareIdentifier(t *testing.T) {
 		{db2, "name", "name"}, {db2, "age", "age"},
 	}
 	tst.AllP2W1(t, testCases, "dbType.prepareIdentifier", dbType.prepareIdentifier, tst.AssertEqual)
+	testCases2 := []tst.P2W1[dbType, string, string]{
+		{db1, "`name`", "name"}, {db1, "`age`", "age"},
+		{db2, "name", "name"}, {db2, "age", "age"},
+	}
+	tst.AllP2W1(t, testCases2, "dbType.rawIdentifier", dbType.rawIdentifier, tst.AssertEqual)
 }
 
 func TestNewInstance(t *testing.T) {

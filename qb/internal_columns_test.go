@@ -142,3 +142,7 @@ func TestInternalFields(t *testing.T) {
 	age, ok := getStructFieldValue[int](p2, "Age")
 	tst.AssertEqualAnd(t, "getStructFieldValue", age, p2.Age, ok, true)
 }
+
+func TestGetStructTypedColumnValue(t *testing.T) {
+	// TODO: getStructTypedColumnValue
+}

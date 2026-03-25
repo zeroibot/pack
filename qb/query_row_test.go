@@ -124,14 +124,50 @@ func TestValueQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: ValueQuery.QueryValue
-	// blank query
-	// no connection
-	// nil reader
-	// reader result is error
-	// get struct typed column value: errNotFoundField
-	// get struct typed column value: errFailedTypeAssertion
-	// success
+	// ValueQuery.QueryValue
+	dbc := db.NewMockAdapter(tzt.NewConn[User](u1, u2))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0d := func() { q1.reader = nil }
+	prep1 := func() {
+		dbc.Conn.SetError(nil)
+		dbc.Conn.PrepareRow(q1.Test, func(items []User) ([]any, error) {
+			if len(items) == 0 {
+				return nil, errNotFound
+			}
+			return []any{items[0].Name}, nil
+		})
+	}
+	prep2 := func() {
+		dbc.Conn.PrepareRow(q2.Test, func(items []User) ([]any, error) {
+			if len(items) == 0 {
+				return nil, errNotFound
+			}
+			return []any{items[0].Code}, nil
+		})
+	}
+	prep3 := func() {
+		dbc.Conn.PrepareRow(q3.Test, func(items []User) ([]any, error) {
+			if len(items) == 0 {
+				return nil, errNotFound
+			}
+			return []any{items[0].Job}, nil
+		})
+	}
+
+	testCases3 := []tst.P2W2Pre[*ValueQuery[User, string], db.Conn, string, bool]{
+		{nil, q0, dbc, "", false},       // Empty query
+		{nil, q1, nil, "", false},       // No db connection
+		{prep0a, q1, dbc, "", false},    // Error on query
+		{prep1, q1, dbc, "Admin", true}, // Success query1
+		{prep2, q2, dbc, "guest", true}, // Success query2
+		{prep3, q3, dbc, "", false},     // Row not found
+		{prep0d, q1, dbc, "", false},    // nil reader
+	}
+	valueQuery := func(q *ValueQuery[User, string], dbc db.Conn) (string, bool) {
+		res := q.QueryValue(this, dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "ValueQuery.QueryValue", valueQuery, tst.AssertEqual[string], tst.AssertEqual[bool])
 }
 
 func TestSelectRowQuery(t *testing.T) {

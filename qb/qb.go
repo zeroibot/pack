@@ -31,6 +31,16 @@ func (db dbType) prepareIdentifier(identifier string) string {
 	}
 }
 
+// rawIdentifier removes the identifier wrappers depending on the database type
+func (db dbType) rawIdentifier(identifier string) string {
+	switch db.name {
+	case MySQL.name:
+		return strings.Trim(identifier, "`")
+	default:
+		return identifier
+	}
+}
+
 // Instance type stores the needed QueryBuilder data for registered types' columns and fields
 type Instance struct {
 	dbType

@@ -2,7 +2,7 @@ v0.2.20 - Single Row Query Execution Tests
     - Commit:
     x CountQuery Count and Exists tests
     x SumQuery Sum tests
-    - ValueQuery QueryValue tests
+    x ValueQuery QueryValue tests
     - SelectRowQuery QueryRow tests
     - TopRowQuery QueryRow tests
     - TopValueQuery QueryValue tests

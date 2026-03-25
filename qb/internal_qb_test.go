@@ -9,7 +9,10 @@ import (
 	"github.com/roidaradal/tst"
 )
 
-var errMock = errors.New("mock error")
+var (
+	errMock     = errors.New("mock error")
+	errNotFound = errors.New("not found")
+)
 
 // Common steps for creating Instance and adding 1 type
 func testPrelude[T any](t *testing.T, typeRef *T) *Instance {

@@ -214,7 +214,8 @@ func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] 
 		return ds.Error[V](result.Error())
 	}
 
-	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, q.columnName)
+	columnName := this.dbType.rawIdentifier(q.columnName)
+	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, columnName)
 }
 
 // QueryRow executes the SelectRowQuery and gets the row object
