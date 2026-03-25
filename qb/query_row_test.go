@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/roidaradal/pack/db"
+	"github.com/roidaradal/pack/list"
 	"github.com/roidaradal/pack/tzt"
 	"github.com/roidaradal/tst"
 )
@@ -42,8 +43,7 @@ func TestCountQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases2, "CountQuery.BuildQuery", (*CountQuery[Person]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// CountQuery.Count
-	items := []Person{p1, p2, p3}
-	dbc := db.NewMockAdapter(tzt.NewConn[Person](items...))
+	dbc := db.NewMockAdapter(tzt.NewConn[Person](p1, p2, p3))
 	countFn := func(items []Person) ([]any, error) {
 		return []any{len(items)}, nil
 	}
@@ -125,6 +125,13 @@ func TestValueQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// TODO: ValueQuery.QueryValue
+	// blank query
+	// no connection
+	// nil reader
+	// reader result is error
+	// get struct typed column value: errNotFoundField
+	// get struct typed column value: errFailedTypeAssertion
+	// success
 }
 
 func TestSelectRowQuery(t *testing.T) {
@@ -328,8 +335,8 @@ func TestTopValueQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: TopValueQuery.QueryRow
-	// TODO: TopValueQuery.QueryRows
+	// TODO: TopValueQuery.QueryValue
+	// TODO: TopValueQuery.QueryValues
 }
 
 func TestSumQuery(t *testing.T) {
@@ -371,12 +378,16 @@ func TestSumQuery(t *testing.T) {
 	// SumQuery.Test
 	p1 := Product{101, 60.0, 10, 0}
 	p2 := Product{50, 40.0, 5, 0}
+	p3 := Product{10, 49.0, 3, 0}
 	testCases1 := []tst.P2W1[*SumQuery[Product], Product, bool]{
-		{q1, p1, true}, {q1, p2, false},
-		{q2, p1, false}, {q2, p2, true},
-		{q3, p1, true}, {q3, p2, true},
+		{q1, p1, true}, {q1, p2, false}, {q1, p3, false},
+		{q2, p1, false}, {q2, p2, true}, {q2, p3, true},
+		{q3, p1, true}, {q3, p2, true}, {q3, p3, true},
 	}
 	tst.AllP2W1(t, testCases1, "SumQuery.Test", (*SumQuery[Product]).Test, tst.AssertEqual)
+	sum1 := Product{Price: 60, Quantity: 10}
+	sum2 := Product{Price: 89}
+	sum3 := Product{Price: 149, Quantity: 18}
 
 	// SumQuery.BuildQuery
 	testCases2 := []tst.P1W2[*SumQuery[Product], string, []any]{
@@ -389,5 +400,42 @@ func TestSumQuery(t *testing.T) {
 	}
 	tst.AllP1W2(t, testCases2, "SumQuery.BuildQuery", (*SumQuery[Product]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
-	// TODO: SumQuery.Sum
+	// SumQuery.Sum
+	var zero Product
+	dbc := db.NewMockAdapter(tzt.NewConn[Product](p1, p2, p3))
+	getPriceQty := func(items []Product) ([]any, error) {
+		sumPrice := 0.0
+		sumQty := 0
+		for _, item := range items {
+			sumPrice += item.Price
+			sumQty += item.Quantity
+		}
+		return []any{sumPrice, sumQty}, nil
+	}
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := func() {
+		dbc.Conn.SetError(nil)
+		dbc.Conn.PrepareRow(q1.Test, getPriceQty)
+	}
+	prep2 := func() {
+		dbc.Conn.PrepareRow(q2.Test, func(items []Product) ([]any, error) {
+			sumPrice := list.SumOf(items, func(item Product) float64 { return item.Price })
+			return []any{sumPrice}, nil
+		})
+	}
+	prep3 := func() { dbc.Conn.PrepareRow(q3.Test, getPriceQty) }
+
+	testCases3 := []tst.P2W2Pre[*SumQuery[Product], db.Conn, Product, bool]{
+		{nil, q0, dbc, zero, false},   // Empty query
+		{nil, q1, nil, zero, false},   // No db connection
+		{prep0, q1, dbc, zero, false}, // Error on query
+		{prep1, q1, dbc, sum1, true},  // Success query1
+		{prep2, q2, dbc, sum2, true},  // Success query2
+		{prep3, q3, dbc, sum3, true},  // Success query3
+	}
+	sumQuery := func(q *SumQuery[Product], dbc db.Conn) (Product, bool) {
+		res := q.Sum(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases3, "SumQuery.Sum", sumQuery, tst.AssertEqual[Product], tst.AssertEqual[bool])
 }
