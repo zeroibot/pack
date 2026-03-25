@@ -6,7 +6,6 @@ import (
 
 	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/pack/list"
-	"github.com/roidaradal/pack/tzt"
 	"github.com/roidaradal/tst"
 )
 
@@ -44,13 +43,13 @@ func TestCountQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases2, "CountQuery.BuildQuery", (*CountQuery[Person]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// CountQuery.Count
-	dbc := db.NewMockAdapter(tzt.NewConn[Person](p1, p2, p3))
+	dbc := db.NewMockAdapter(tst.NewConn[Person](p1, p2, p3))
 	countFn := func(items []Person) ([]any, error) {
 		return []any{len(items)}, nil
 	}
 	prep0 := func() { dbc.Conn.SetError(errMock) }
-	prep1 := tzt.PrepFn(dbc.Conn, q1.Test, countFn)
-	prep2 := tzt.PrepFn(dbc.Conn, q2.Test, countFn)
+	prep1 := dbc.Conn.Prep(q1.Test, countFn)
+	prep2 := dbc.Conn.Prep(q2.Test, countFn)
 
 	testCases3 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, int, bool]{
 		{nil, q0, dbc, 0, false},   // Empty query
@@ -123,12 +122,12 @@ func TestValueQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases2, "ValueQuery.BuildQuery", (*ValueQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// ValueQuery.QueryValue
-	dbc := db.NewMockAdapter(tzt.NewConn[User](u1, u2))
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2))
 	prep0a := func() { dbc.Conn.SetError(errMock) }
 	prep0b := func() { q1.reader = nil }
-	prep1 := tzt.PrepOne(dbc.Conn, q1.Test, func(x User) []any { return []any{x.Name} })
-	prep2 := tzt.PrepOne(dbc.Conn, q2.Test, func(x User) []any { return []any{x.Code} })
-	prep3 := tzt.PrepOne(dbc.Conn, q3.Test, func(x User) []any { return []any{x.Job} })
+	prep1 := dbc.Conn.PrepOne(q1.Test, func(x User) []any { return []any{x.Name} })
+	prep2 := dbc.Conn.PrepOne(q2.Test, func(x User) []any { return []any{x.Code} })
+	prep3 := dbc.Conn.PrepOne(q3.Test, func(x User) []any { return []any{x.Job} })
 
 	testCases3 := []tst.P2W2Pre[*ValueQuery[User, string], db.Conn, string, bool]{
 		{nil, q0, dbc, "", false},       // Empty query
@@ -223,14 +222,14 @@ func TestSelectRowQuery(t *testing.T) {
 
 	// SelectRowQuery.QueryRow
 	var zero Company
-	dbc := db.NewMockAdapter(tzt.NewConn[Company](c1, c2, c3, c4))
+	dbc := db.NewMockAdapter(tst.NewConn[Company](c1, c2, c3, c4))
 	prep0 := func() { dbc.Conn.SetError(errMock) }
-	prep1 := tzt.PrepOne(dbc.Conn, q1.Test, func(x Company) []any { return []any{x.ID, x.Name, x.Code, x.Age, x.Type} })
-	prep2 := tzt.PrepOne(dbc.Conn, q2.Test, func(x Company) []any { return []any{x.Name, x.Type} })
-	prep3 := tzt.PrepOne(dbc.Conn, q3.Test, func(x Company) []any { return []any{x.Name, x.Code} })
+	prep1 := dbc.Conn.PrepOne(q1.Test, func(x Company) []any { return []any{x.ID, x.Name, x.Code, x.Age, x.Type} })
+	prep2 := dbc.Conn.PrepOne(q2.Test, func(x Company) []any { return []any{x.Name, x.Type} })
+	prep3 := dbc.Conn.PrepOne(q3.Test, func(x Company) []any { return []any{x.Name, x.Code} })
 	getID := func(x Company) []any { return []any{x.ID} }
-	prep4 := tzt.PrepOne(dbc.Conn, q4.Test, getID)
-	prep5 := tzt.PrepOne(dbc.Conn, q7.Test, getID)
+	prep4 := dbc.Conn.PrepOne(q4.Test, getID)
+	prep5 := dbc.Conn.PrepOne(q7.Test, getID)
 
 	want1 := Company{1, "Google", "GGL", 25, "IT", "", ""}
 	want2 := Company{Name: "Unknown", Type: "Finance"}
@@ -317,16 +316,16 @@ func TestTopRowQuery(t *testing.T) {
 
 	// TopRowQuery.QueryRow
 	var zero User
-	dbc := db.NewMockAdapter(tzt.NewConn[User](u1, u2, u3))
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2, u3))
 	prep0a := func() { dbc.Conn.SetError(errMock) }
 	prep0b := func() { q1.reader = nil }
 	sortAgeDesc := func(x1, x2 User) int { return cmp.Compare(x2.Age, x1.Age) }
 	getAllColumns := func(x User) []any { return []any{x.Name, x.Code, x.Age, x.Balance} }
-	prep1 := tzt.PrepSortOne(dbc.Conn, q1.Test, sortAgeDesc, getAllColumns)
+	prep1 := dbc.Conn.PrepSortOne(q1.Test, sortAgeDesc, getAllColumns)
 	sortBalanceDesc := func(x1, x2 User) int { return cmp.Compare(x2.Balance, x1.Balance) }
 	getCodeAge := func(x User) []any { return []any{x.Code, x.Age} }
-	prep2 := tzt.PrepSortOne(dbc.Conn, q2.Test, sortBalanceDesc, getCodeAge)
-	prep3 := tzt.PrepSortOne(dbc.Conn, q3.Test, sortBalanceDesc, getCodeAge)
+	prep2 := dbc.Conn.PrepSortOne(q2.Test, sortBalanceDesc, getCodeAge)
+	prep3 := dbc.Conn.PrepSortOne(q3.Test, sortBalanceDesc, getCodeAge)
 
 	want1 := User{Name: "John", Code: "john", Age: 20, Balance: 5.0}
 	want2 := User{Code: "jack", Age: 10}
@@ -412,16 +411,16 @@ func TestTopValueQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases3, "TopValueQuery.BuildQuery (int)", (*TopValueQuery[User, int]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
 	// TopValueQuery.QueryValue
-	dbc := db.NewMockAdapter(tzt.NewConn[User](u1, u2, u3))
+	dbc := db.NewMockAdapter(tst.NewConn[User](u1, u2, u3))
 	prep0a := func() { dbc.Conn.SetError(errMock) }
 	prep0b := func() { q1.reader = nil }
 	sortNameAsc := func(x1, x2 User) int { return cmp.Compare(x1.Name, x2.Name) }
 	getName := func(x User) []any { return []any{x.Name} }
-	prep1 := tzt.PrepSortOne(dbc.Conn, q1.Test, sortNameAsc, getName)
+	prep1 := dbc.Conn.PrepSortOne(q1.Test, sortNameAsc, getName)
 	sortAgeDesc := func(x1, x2 User) int { return cmp.Compare(x2.Age, x1.Age) }
 	getCode := func(x User) []any { return []any{x.Code} }
-	prep6 := tzt.PrepSortOne(dbc.Conn, q6.Test, sortAgeDesc, getCode)
-	prep3 := tzt.PrepSortOne(dbc.Conn, q3.Test, sortAgeDesc, getCode)
+	prep6 := dbc.Conn.PrepSortOne(q6.Test, sortAgeDesc, getCode)
+	prep3 := dbc.Conn.PrepSortOne(q3.Test, sortAgeDesc, getCode)
 
 	testCases4 := []tst.P2W2Pre[*TopValueQuery[User, string], db.Conn, string, bool]{
 		{nil, q0, dbc, "", false},      // empty query
@@ -504,7 +503,7 @@ func TestSumQuery(t *testing.T) {
 
 	// SumQuery.Sum
 	var zero Product
-	dbc := db.NewMockAdapter(tzt.NewConn[Product](p1, p2, p3))
+	dbc := db.NewMockAdapter(tst.NewConn[Product](p1, p2, p3))
 	getPriceQty := func(items []Product) ([]any, error) {
 		sumPrice := 0.0
 		sumQty := 0
@@ -515,9 +514,9 @@ func TestSumQuery(t *testing.T) {
 		return []any{sumPrice, sumQty}, nil
 	}
 	prep0 := func() { dbc.Conn.SetError(errMock) }
-	prep1 := tzt.PrepFn(dbc.Conn, q1.Test, getPriceQty)
-	prep3 := tzt.PrepFn(dbc.Conn, q3.Test, getPriceQty)
-	prep2 := tzt.PrepFn(dbc.Conn, q2.Test, func(items []Product) ([]any, error) {
+	prep1 := dbc.Conn.Prep(q1.Test, getPriceQty)
+	prep3 := dbc.Conn.Prep(q3.Test, getPriceQty)
+	prep2 := dbc.Conn.Prep(q2.Test, func(items []Product) ([]any, error) {
 		sumPrice := list.SumOf(items, func(item Product) float64 { return item.Price })
 		return []any{sumPrice}, nil
 	})

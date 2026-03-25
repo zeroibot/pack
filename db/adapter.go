@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 
-	"github.com/roidaradal/pack/tzt"
+	"github.com/roidaradal/tst"
 )
 
 // Adapter is an adapter for sql.DB so it follows the Conn interface
@@ -38,11 +38,11 @@ func (a *Adapter) Begin() (Tx, error) {
 
 // MockAdapter is an adapter for tst.Conn so it follows the Conn interface
 type MockAdapter[T any] struct {
-	Conn *tzt.Conn[T]
+	Conn *tst.Conn[T]
 }
 
 // NewMockAdapter creates a new MockAdapter
-func NewMockAdapter[T any](conn *tzt.Conn[T]) *MockAdapter[T] {
+func NewMockAdapter[T any](conn *tst.Conn[T]) *MockAdapter[T] {
 	return new(MockAdapter[T]{Conn: conn})
 }
 
