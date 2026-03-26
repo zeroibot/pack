@@ -3,7 +3,7 @@ v0.2.21 - Multiple Row Query Execution Tests
     x DistinctValuesQuery Query tests
     x LookupQuery Lookup tests
     x TopRowQuery QueryRows tests
-    - TopValueQuery QueryValues tests
+    x TopValueQuery QueryValues tests
     - SelectRowsQuery Query tests
     - GroupCountQuery GroupCount tests
     - GroupSumQuery GroupSum tests

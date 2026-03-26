@@ -186,8 +186,7 @@ func (q *GroupSumQuery[T, K, V]) BuildQuery() (string, []any) {
 
 // Query executes the DistinctValuesQuery and returns the list of distinct values
 func (q *DistinctValuesQuery[T, V]) Query(this *Instance, dbc db.Conn) ds.Result[[]V] {
-	columnName := this.dbType.rawIdentifier(q.columnName)
-	return getValueList[T, V](this, dbc, q, q.reader, q.typeName, columnName)
+	return getValueList[T, V](this, dbc, q, q.reader, q.typeName, q.columnName)
 }
 
 // Lookup executes the LookupQuery and returns the map[K]V lookup
@@ -260,6 +259,7 @@ func getValueList[T, V any](this *Instance, dbc db.Conn, q Query, reader RowRead
 	}
 
 	valueList := make([]V, 0)
+	columnName = this.dbType.rawIdentifier(columnName)
 	err = readRows(dbc, query, values, reader, func(item *T) {
 		result := getStructTypedColumnValue[V](this, item, typeName, columnName)
 		if result.IsError() {
