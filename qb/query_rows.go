@@ -183,7 +183,8 @@ func (q *GroupSumQuery[T, K, V]) BuildQuery() (string, []any) {
 
 // Query executes the DistinctValuesQuery and returns the list of distinct values
 func (q *DistinctValuesQuery[T, V]) Query(this *Instance, dbc db.Conn) ds.Result[[]V] {
-	return getValueList[T, V](this, dbc, q, q.reader, q.typeName, q.columnName)
+	columnName := this.dbType.rawIdentifier(q.columnName)
+	return getValueList[T, V](this, dbc, q, q.reader, q.typeName, columnName)
 }
 
 // Lookup executes the LookupQuery and returns the map[K]V lookup

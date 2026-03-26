@@ -48,8 +48,8 @@ func TestCountQuery(t *testing.T) {
 		return []any{len(items)}, nil
 	}
 	prep0 := func() { dbc.Conn.SetError(errMock) }
-	prep1 := dbc.Conn.Prep(q1.Test, countFn)
-	prep2 := dbc.Conn.Prep(q2.Test, countFn)
+	prep1 := dbc.Conn.PrepRow(q1.Test, countFn)
+	prep2 := dbc.Conn.PrepRow(q2.Test, countFn)
 
 	testCases3 := []tst.P2W2Pre[*CountQuery[Person], db.Conn, int, bool]{
 		{nil, q0, dbc, 0, false},   // Empty query
@@ -514,9 +514,9 @@ func TestSumQuery(t *testing.T) {
 		return []any{sumPrice, sumQty}, nil
 	}
 	prep0 := func() { dbc.Conn.SetError(errMock) }
-	prep1 := dbc.Conn.Prep(q1.Test, getPriceQty)
-	prep3 := dbc.Conn.Prep(q3.Test, getPriceQty)
-	prep2 := dbc.Conn.Prep(q2.Test, func(items []Product) ([]any, error) {
+	prep1 := dbc.Conn.PrepRow(q1.Test, getPriceQty)
+	prep3 := dbc.Conn.PrepRow(q3.Test, getPriceQty)
+	prep2 := dbc.Conn.PrepRow(q2.Test, func(items []Product) ([]any, error) {
 		sumPrice := list.SumOf(items, func(item Product) float64 { return item.Price })
 		return []any{sumPrice}, nil
 	})

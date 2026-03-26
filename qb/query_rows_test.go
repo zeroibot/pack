@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/tst"
 )
 
@@ -26,6 +27,8 @@ func TestDistinctValuesQuery(t *testing.T) {
 	q4 := NewDistinctValuesQuery[User](this, table, new(string)) // invalid field (not in struct)
 	q5 := NewDistinctValuesQuery[User](this, table, &u.secret)   // private field
 	q6 := NewDistinctValuesQuery[User](this, table, &u.Extra)    // blank column
+	q7 := NewDistinctValuesQuery[User](this, table, &u.Username) // zero results
+	q7.Where(Lesser[User](this, &u.Age, 10))
 
 	// DistinctValuesQuery.BuildQuery
 	emptyValues := make([]any, 0)
@@ -36,6 +39,7 @@ func TestDistinctValuesQuery(t *testing.T) {
 		{q4, "", emptyValues},
 		{q5, "", emptyValues},
 		{q6, "", emptyValues},
+		{q7, "SELECT DISTINCT `Username` FROM `users` WHERE `Age` < ?", []any{10}},
 	}
 	tst.AllP1W2(t, testCases1, "DistinctValuesQuery.BuildQuery", (*DistinctValuesQuery[User, string]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
@@ -45,17 +49,41 @@ func TestDistinctValuesQuery(t *testing.T) {
 	testCases2 := []tst.P2W1[*DistinctValuesQuery[User, string], User, bool]{
 		{q1, u1, true}, {q1, u2, false},
 		{q2, u1, true}, {q2, u2, true},
+		{q7, u1, false}, {q7, u2, false},
 	}
 	tst.AllP2W1(t, testCases2, "DistinctValuesQuery.Test", (*DistinctValuesQuery[User, string]).Test, tst.AssertEqual)
 
 	// ToString(DistinctValuesQuery)
 	testCases3 := []tst.P1W1[Query, string]{
-		{q1, fmt.Sprintf("SELECT DISTINCT `Username` FROM `users` WHERE `Age` = %d", 18)},
+		{q1, "SELECT DISTINCT `Username` FROM `users` WHERE `Age` = 18"},
 		{q2, "SELECT DISTINCT `Username` FROM `users` WHERE true"},
+		{q7, "SELECT DISTINCT `Username` FROM `users` WHERE `Age` < 10"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(DistinctValuesQuery)", ToString, tst.AssertEqual)
 
-	// TODO: DistinctValuesQuery.Query
+	// DistinctValuesQuery.Query
+	dbc := db.NewMockAdapter(tst.NewConn(u1, u2))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	getUsername := func(x User) []any { return []any{x.Username} }
+	prep1 := dbc.Conn.PrepRows(q1.Test, getUsername)
+	prep2 := dbc.Conn.PrepRows(q2.Test, getUsername)
+	prep3 := dbc.Conn.PrepRows(q7.Test, getUsername)
+
+	testCases4 := []tst.P2W2Pre[*DistinctValuesQuery[User, string], db.Conn, []string, bool]{
+		{nil, q3, dbc, nil, false},                       // empty query
+		{nil, q1, nil, nil, false},                       // no db connection
+		{prep1, q1, dbc, []string{"Alice"}, true},        // success query1
+		{prep2, q2, dbc, []string{"Alice", "Bob"}, true}, // success query2
+		{prep3, q7, dbc, []string{}, true},               // empty rows
+		{prep0a, q1, dbc, nil, false},                    // error on query
+		{prep0b, q1, dbc, nil, false},                    // nil reader
+	}
+	distinctValuesQuery := func(q *DistinctValuesQuery[User, string], dbc db.Conn) ([]string, bool) {
+		res := q.Query(this, dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases4, "DistinctValuesQuery.Query", distinctValuesQuery, tst.AssertListEqual, tst.AssertEqual)
 }
 
 func TestLookupQuery(t *testing.T) {

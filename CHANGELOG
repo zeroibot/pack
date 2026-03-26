@@ -1,10 +1,10 @@
 v0.2.21 - Multiple Row Query Execution Tests
     - Commit: 2026-03-24 10:00
-    - DistinctValuesQuery Query tests
+    x DistinctValuesQuery Query tests
     - LookupQuery Lookup tests
-    - SelectRowsQuery Query tests
     - TopRowQuery QueryRows tests
     - TopValueQuery QueryValues tests
+    - SelectRowsQuery Query tests
     - GroupCountQuery GroupCount tests
     - GroupSumQuery GroupSum tests
 v0.2.20 - Single Row Query Execution Tests
