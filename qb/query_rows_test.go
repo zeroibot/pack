@@ -1,6 +1,7 @@
 package qb
 
 import (
+	"cmp"
 	"fmt"
 	"testing"
 
@@ -198,16 +199,19 @@ func TestSelectRowsQuery(t *testing.T) {
 	q5 := NewSelectRowsQuery(this, table, reader2)      // no condition (optional)
 	q6 := NewSelectRowsQuery(this, table, reader2)      // with private column
 	q7 := NewSelectRowsQuery(this, table, reader2)      // with skipped column
+	q8 := NewSelectRowsQuery(this, table, reader2)      // no results
 
 	// SelectRowsQuery.Columns
 	q2.Columns(this, cols2...)
 	q5.Columns(this, cols2...)
 	q6.Columns(this, append(cols2, this.Column(&p.code))...)
 	q7.Columns(this, append(cols2, this.Column(&p.Extra))...)
+	q8.Columns(this, cols2...)
 
 	// SelectRowsQuery.Where
 	q1.Where(Greater[Product](this, &p.Price, 100.0))
 	q2.Where(Equal[Product](this, &p.Stock, 50))
+	q8.Where(Equal[Product](this, &p.Name, "Computer"))
 
 	// SelectRowsQuery.OrderAsc, OrderDesc, Limit, Page
 	q1.OrderDesc(this, this.Column(&p.Price)).Limit(10)
@@ -222,6 +226,7 @@ func TestSelectRowsQuery(t *testing.T) {
 		{q1, p1, true}, {q1, p2, false}, {q1, p3, true},
 		{q2, p1, false}, {q2, p2, true}, {q2, p3, true},
 		{q5, p1, true}, {q5, p2, true}, {q5, p3, true},
+		{q8, p1, false}, {q8, p2, false}, {q8, p3, false},
 	}
 	tst.AllP2W1(t, testCases1, "SelectRowsQuery.Test", (*SelectRowsQuery[Product]).Test, tst.AssertEqual)
 
@@ -236,6 +241,7 @@ func TestSelectRowsQuery(t *testing.T) {
 		{q5, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
 		{q6, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
 		{q7, "SELECT `Name`, `Price` FROM `products` WHERE true", emptyValues},
+		{q8, "SELECT `Name`, `Price` FROM `products` WHERE `Name` = ?", []any{"Computer"}},
 	}
 	tst.AllP1W2(t, testCases2, "SelectRowsQuery.BuildQuery", (*SelectRowsQuery[Product]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
@@ -244,10 +250,38 @@ func TestSelectRowsQuery(t *testing.T) {
 		{q1, "SELECT `ID`, `Name`, `Price`, `Qty` FROM `products` WHERE `Price` > 100 ORDER BY `Price` DESC LIMIT 0, 10"},
 		{q2, "SELECT `Name`, `Price` FROM `products` WHERE `Qty` = 50 ORDER BY `Name` ASC LIMIT 5, 5"},
 		{q5, "SELECT `Name`, `Price` FROM `products` WHERE true"},
+		{q8, fmt.Sprintf("SELECT `Name`, `Price` FROM `products` WHERE `Name` = %q", "Computer")},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(SelectRowsQuery)", ToString, tst.AssertEqual)
 
-	// TODO: SelectRowsQuery.Query
+	// SelectRowsQuery.Query
+	dbc := db.NewMockAdapter(tst.NewConn(p1, p2, p3))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	getAllColumns := func(x Product) []any { return []any{x.ID, x.Name, x.Price, x.Stock} }
+	getNamePrice := func(x Product) []any { return []any{x.Name, x.Price} }
+	sortPriceDesc := func(x1, x2 Product) int { return cmp.Compare(x2.Price, x1.Price) }
+	prep1 := dbc.Conn.PrepSortRows(q1.Test, getAllColumns, sortPriceDesc, 10)
+	prep5 := dbc.Conn.PrepRows(q5.Test, getNamePrice)
+	prep8 := dbc.Conn.PrepRows(q8.Test, getNamePrice)
+	want1 := []Product{{ID: 1, Name: "Laptop", Price: 1200.0, Stock: 10}, {ID: 3, Name: "Monitor", Price: 300.0, Stock: 50}}
+	want5 := []Product{{Name: "Laptop", Price: 1200.0}, {Name: "Mouse", Price: 25.0}, {Name: "Monitor", Price: 300.0}}
+	want8 := make([]Product, 0)
+
+	testCases4 := []tst.P2W2Pre[*SelectRowsQuery[Product], db.Conn, []Product, bool]{
+		{nil, q0, dbc, nil, false},    // empty query
+		{nil, q1, nil, nil, false},    // no DB connection
+		{prep1, q1, dbc, want1, true}, // success query1
+		{prep5, q5, dbc, want5, true}, // success query5
+		{prep8, q8, dbc, want8, true}, // empty results
+		{prep0a, q1, dbc, nil, false}, // error on query
+		{prep0b, q1, dbc, nil, false}, // nil reader
+	}
+	selectRowsQuery := func(q *SelectRowsQuery[Product], dbc db.Conn) ([]Product, bool) {
+		res := q.Query(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases4, "SelectRowsQuery.Query", selectRowsQuery, tst.AssertListEqual, tst.AssertEqual)
 }
 
 func TestGroupCountQuery(t *testing.T) {
