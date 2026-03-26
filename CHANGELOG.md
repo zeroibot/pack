@@ -1,7 +1,8 @@
 ## v0.2.22 - Query Execution Tests
   - Commit:
   * ResultChecker functions
-  - Query Execution functions
+  * Query Execution functions
+  - Add db.TxAdapter
   - DeleteQuery Execute tests
   - InsertRowQuery Execute tests
   - InsertRowsQuery Execute tests

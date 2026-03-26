@@ -12,9 +12,12 @@ import (
 var (
 	errEmptyQuery          = errors.New("empty query")
 	errEmptyTable          = errors.New("empty table")
+	errFailedResultCheck   = errors.New("failed result check")
 	errFailedTypeAssertion = errors.New("failed type assertion")
+	errNoChecker           = errors.New("no result checker")
 	errNoDBConnection      = errors.New("no db connection")
 	errNoReader            = errors.New("no row reader")
+	errNoTx                = errors.New("no db transaction")
 	errNotFoundField       = errors.New("field not found")
 )
 

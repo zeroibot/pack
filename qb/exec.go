@@ -1,6 +1,11 @@
 package qb
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+
+	"github.com/roidaradal/pack/db"
+)
 
 // ResultChecker is a function that checks the SQL result if a condition is satisfied
 type ResultChecker = func(sql.Result) bool
@@ -41,4 +46,51 @@ func LastInsertID(result sql.Result) (uint, bool) {
 		}
 	}
 	return insertID, ok
+}
+
+// Exec executes the given Query, and returns the SQL Result
+func Exec(q Query, dbc db.Conn) (sql.Result, error) {
+	query, values, err := preQueryCheck(q, dbc)
+	if err != nil {
+		return nil, err
+	}
+	return dbc.Exec(query, values...)
+}
+
+// ExecTx executes a given Query as part of a database transaction, and rolls back the transaction if any error occurs
+func ExecTx(q Query, tx db.Tx, checker ResultChecker) (sql.Result, error) {
+	var err error = nil
+	query, values := q.BuildQuery()
+	if tx == nil {
+		err = errNoTx
+	} else if query == "" {
+		err = errEmptyQuery
+	} else if checker == nil {
+		err = errNoChecker
+	}
+	if err != nil {
+		return nil, Rollback(tx, err)
+	}
+
+	result, err := tx.Exec(query, values...)
+	if err != nil {
+		return nil, Rollback(tx, err)
+	}
+
+	if ok := checker(result); !ok {
+		return nil, Rollback(tx, errFailedResultCheck)
+	}
+
+	return result, nil
+}
+
+// Rollback rolls back the given database transaction
+func Rollback(tx db.Tx, err error) error {
+	err2 := tx.Rollback()
+	if err2 != nil {
+		// Combine original error and rollback error
+		return fmt.Errorf("error: %w, rollback error: %w", err, err2)
+	}
+	// Return original error if successful rollback
+	return err
 }
