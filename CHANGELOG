@@ -6,7 +6,7 @@ v0.2.21 - Multiple Row Query Execution Tests
     x TopValueQuery QueryValues tests
     x SelectRowsQuery Query tests
     x GroupCountQuery GroupCount tests
-    - GroupSumQuery GroupSum tests
+    x GroupSumQuery GroupSum tests
     - Multiple Row Query edge cases tests
 v0.2.20 - Single Row Query Execution Tests
     x Commit: 2026-03-25 16:33

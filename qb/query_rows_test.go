@@ -409,9 +409,11 @@ func TestGroupSumQuery(t *testing.T) {
 	q7 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.balance)   // private sum field
 	q8 := NewGroupSumQuery[Product, int, float64](this, table, &p.Extra, &p.Price)       // skipped group field
 	q9 := NewGroupSumQuery[Product, string, int](this, table, &p.Name, &p.Extra)         // skipped sum field
+	q10 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.Price)    // no results
 
 	// GroupSumQuery.Where
 	q3.Where(Greater[Product](this, &p.Qty, 10))
+	q10.Where(Greater[Product](this, &p.ID, 10))
 
 	// GroupSumQuery.BuildQuery
 	emptyValues := make([]any, 0)
@@ -423,6 +425,7 @@ func TestGroupSumQuery(t *testing.T) {
 		{q5, "", emptyValues},
 		{q6, "", emptyValues},
 		{q7, "", emptyValues},
+		{q10, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `ID` > ? GROUP BY `Name`", []any{10}},
 	}
 	tst.AllP1W2(t, testCases1, "GroupSumQuery.BuildQuery (string, float64)", (*GroupSumQuery[Product, string, float64]).BuildQuery, tst.AssertEqual, tst.AssertListEqual)
 
@@ -447,6 +450,7 @@ func TestGroupSumQuery(t *testing.T) {
 	testCases3 := []tst.P2W1[*GroupSumQuery[Product, string, float64], Product, bool]{
 		{q1, p1, true}, {q1, p2, true},
 		{q3, p1, true}, {q3, p2, false},
+		{q10, p1, false}, {q10, p2, false},
 	}
 	tst.AllP2W1(t, testCases3, "GroupSumQuery.Test", (*GroupSumQuery[Product, string, float64]).Test, tst.AssertEqual)
 
@@ -454,8 +458,44 @@ func TestGroupSumQuery(t *testing.T) {
 	testCases4 := []tst.P1W1[Query, string]{
 		{q1, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE true GROUP BY `Name`"},
 		{q3, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `Qty` > 10 GROUP BY `Name`"},
+		{q10, "SELECT `Name`, SUM(`Price`) FROM `products` WHERE `ID` > 10 GROUP BY `Name`"},
 	}
 	tst.AllP1W1(t, testCases4, "ToString(GroupSumQuery)", ToString, tst.AssertEqual)
 
-	// TODO: GroupSumQuery.GroupSum
+	// GroupSumQuery.GroupSum
+	p3 := Product{ID: 3, Name: "Laptop", Price: 1500.0, Qty: 10}
+	p4 := Product{ID: 4, Name: "Monitor", Price: 300.0, Qty: 50}
+	dbc := db.NewMockAdapter(tst.NewConn(p1, p2, p3, p4))
+	sumPriceByName := func(products []Product) [][]any {
+		totalPrice := make(map[string]float64)
+		for _, product := range products {
+			totalPrice[product.Name] += product.Price
+		}
+		values := make([][]any, 0, len(totalPrice))
+		for name, price := range totalPrice {
+			values = append(values, []any{name, price})
+		}
+		return values
+	}
+	prep0 := func() { dbc.Conn.SetError(errMock) }
+	prep1 := dbc.Conn.PrepGroup(q1.Test, sumPriceByName)
+	prep3 := dbc.Conn.PrepGroup(q3.Test, sumPriceByName)
+	prep10 := dbc.Conn.PrepGroup(q10.Test, sumPriceByName)
+	want1 := map[string]float64{"Laptop": 2700.0, "Mouse": 25.0, "Monitor": 300.0}
+	want3 := map[string]float64{"Laptop": 1200.0, "Monitor": 300.0}
+	want10 := make(map[string]float64)
+
+	testCases7 := []tst.P2W2Pre[*GroupSumQuery[Product, string, float64], db.Conn, map[string]float64, bool]{
+		{nil, q0, dbc, nil, false},       // empty query
+		{nil, q1, nil, nil, false},       // no DB connection
+		{prep0, q1, dbc, nil, false},     // error on query
+		{prep1, q1, dbc, want1, true},    // success query1
+		{prep3, q3, dbc, want3, true},    // success query2
+		{prep10, q10, dbc, want10, true}, // empty results
+	}
+	groupSumQuery := func(q *GroupSumQuery[Product, string, float64], dbc db.Conn) (map[string]float64, bool) {
+		res := q.GroupSum(dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases7, "GroupSumQuery.GroupSum", groupSumQuery, tst.AssertMapEqual, tst.AssertEqual)
 }
