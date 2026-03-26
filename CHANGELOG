@@ -1,7 +1,7 @@
 v0.2.21 - Multiple Row Query Execution Tests
     - Commit: 2026-03-24 10:00
     x DistinctValuesQuery Query tests
-    - LookupQuery Lookup tests
+    x LookupQuery Lookup tests
     - TopRowQuery QueryRows tests
     - TopValueQuery QueryValues tests
     - SelectRowsQuery Query tests

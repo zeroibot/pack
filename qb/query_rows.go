@@ -6,6 +6,7 @@ import (
 
 	"github.com/roidaradal/pack/db"
 	"github.com/roidaradal/pack/ds"
+	"github.com/roidaradal/pack/dyn"
 	"github.com/roidaradal/pack/number"
 )
 
@@ -65,6 +66,8 @@ func NewLookupQuery[T any, K comparable, V any](this *Instance, table string, ke
 		q.valueColumn = this.prepareIdentifier(columns[1])
 		q.reader = NewRowReader[T](this, columns...)
 	}
+	var item T
+	q.typeName = dyn.TypeName(item)
 	return q
 }
 
@@ -195,9 +198,10 @@ func (q *LookupQuery[T, K, V]) Lookup(this *Instance, dbc db.Conn) ds.Result[map
 	}
 
 	lookup := make(map[K]V)
+	keyColumn, valueColumn := this.dbType.rawIdentifier(q.keyColumn), this.dbType.rawIdentifier(q.valueColumn)
 	err = readRows(dbc, query, values, q.reader, func(item *T) {
-		keyResult := getStructTypedColumnValue[K](this, item, q.typeName, q.keyColumn)
-		valueResult := getStructTypedColumnValue[V](this, item, q.typeName, q.valueColumn)
+		keyResult := getStructTypedColumnValue[K](this, item, q.typeName, keyColumn)
+		valueResult := getStructTypedColumnValue[V](this, item, q.typeName, valueColumn)
 		if keyResult.IsError() || valueResult.IsError() {
 			return
 		}

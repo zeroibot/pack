@@ -98,6 +98,8 @@ func TestLookupQuery(t *testing.T) {
 	this := testPrelude(t, u)
 
 	// NewLookupQuery
+	q0 := NewLookupQuery[User](this, table, &u.Username, &u.Age)
+	q0.Where(Lesser[User](this, &u.Age, 10))
 	q1 := NewLookupQuery[User](this, table, &u.Username, &u.Age)
 	q1.Where(Greater[User](this, &u.Age, 18))
 	q2 := NewLookupQuery[User](this, table, &u.Username, &u.Age)    // no condition
@@ -112,6 +114,7 @@ func TestLookupQuery(t *testing.T) {
 	// LookupQuery.BuildQuery
 	emptyValues := make([]any, 0)
 	testCases1 := []tst.P1W2[*LookupQuery[User, string, int], string, []any]{
+		{q0, "SELECT `Username`, `Age` FROM `users` WHERE `Age` < ?", []any{10}},
 		{q1, "SELECT `Username`, `Age` FROM `users` WHERE `Age` > ?", []any{18}},
 		{q2, "SELECT `Username`, `Age` FROM `users` WHERE true", emptyValues},
 		{q3, "", emptyValues}, {q4, "", emptyValues}, {q5, "", emptyValues},
@@ -127,6 +130,7 @@ func TestLookupQuery(t *testing.T) {
 	u1 := User{"Alice", 18, "", ""}
 	u2 := User{"Bob", 20, "", ""}
 	testCases2 := []tst.P2W1[*LookupQuery[User, string, int], User, bool]{
+		{q0, u1, false}, {q0, u2, false},
 		{q1, u1, false}, {q1, u2, true},
 		{q2, u1, true}, {q2, u2, true},
 	}
@@ -134,12 +138,38 @@ func TestLookupQuery(t *testing.T) {
 
 	// ToString(LookupQuery)
 	testCases3 := []tst.P1W1[Query, string]{
-		{q1, fmt.Sprintf("SELECT `Username`, `Age` FROM `users` WHERE `Age` > %d", 18)},
+		{q0, "SELECT `Username`, `Age` FROM `users` WHERE `Age` < 10"},
+		{q1, "SELECT `Username`, `Age` FROM `users` WHERE `Age` > 18"},
 		{q2, "SELECT `Username`, `Age` FROM `users` WHERE true"},
 	}
 	tst.AllP1W1(t, testCases3, "ToString(LookupQuery)", ToString, tst.AssertEqual)
 
-	// TODO: LookupQuery.Lookup
+	// LookupQuery.Lookup
+	dbc := db.NewMockAdapter(tst.NewConn(u1, u2))
+	prep0a := func() { dbc.Conn.SetError(errMock) }
+	prep0b := func() { q1.reader = nil }
+	getUsernameAge := func(x User) []any { return []any{x.Username, x.Age} }
+	prep1 := dbc.Conn.PrepRows(q1.Test, getUsernameAge)
+	prep2 := dbc.Conn.PrepRows(q2.Test, getUsernameAge)
+	prep3 := dbc.Conn.PrepRows(q0.Test, getUsernameAge)
+	want1 := map[string]int{"Bob": 20}
+	want2 := map[string]int{"Alice": 18, "Bob": 20}
+	want3 := map[string]int{}
+
+	testCases5 := []tst.P2W2Pre[*LookupQuery[User, string, int], db.Conn, map[string]int, bool]{
+		{nil, q3, dbc, nil, false},    // empty query
+		{nil, q1, dbc, nil, false},    // no db connection
+		{prep1, q1, dbc, want1, true}, // success query1
+		{prep2, q2, dbc, want2, true}, // success query2
+		{prep3, q0, dbc, want3, true}, // empty results
+		{prep0a, q1, dbc, nil, false}, // error on query
+		{prep0b, q1, dbc, nil, false}, // nil reader
+	}
+	lookupQuery := func(q *LookupQuery[User, string, int], dbc db.Conn) (map[string]int, bool) {
+		res := q.Lookup(this, dbc)
+		return res.Value(), res.NotError()
+	}
+	tst.AllP2W2Pre(t, testCases5, "LookupQuery.Lookup", lookupQuery, tst.AssertMapEqual, tst.AssertEqual)
 }
 
 func TestSelectRowsQuery(t *testing.T) {
