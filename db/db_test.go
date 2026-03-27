@@ -2,8 +2,10 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/roidaradal/tst"
 )
 
@@ -43,4 +45,37 @@ func TestDBInterfaces(t *testing.T) {
 	var scan4 RowScanner = rows2
 	pairs := [][2]any{{scan1, row1}, {scan2, row2}, {scan3, rows1}, {scan4, rows2}}
 	tst.All(t, pairs, "RowScanner", tst.AssertDeepEqual)
+}
+
+func TestAdapters(t *testing.T) {
+	cfg := mysql.Config{
+		User:                 "test",
+		Passwd:               "abcd1234",
+		Net:                  "tcp",
+		Addr:                 "localhost:3306",
+		DBName:               "test",
+		AllowNativePasswords: true,
+	}
+	conn, err := sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		t.Fatal(fmt.Errorf("cannot open db: %w", err))
+	}
+	err = conn.Ping()
+	if err != nil {
+		t.Fatal("cannot ping db: %w", err)
+	}
+
+	query, values := "SELECT `ID` FROM users WHERE `Name` = ?", []any{"John"}
+	dbc1 := NewMockAdapter(tst.NewConn[any]())
+	dbc2 := NewAdapter(conn)
+	for _, dbc := range []Conn{dbc1, dbc2} {
+		row := dbc.QueryRow(query, values...)
+		tst.AssertTrue(t, "QueryRow", row != nil)
+		rows, err := dbc.Query(query, values...)
+		tst.AssertTrue(t, "Query", rows != nil && err != nil)
+		result, err := dbc.Exec(query, values...)
+		tst.AssertTrue(t, "Exec", result == nil && err != nil)
+		tx, err := dbc.Begin()
+		tst.AssertTrue(t, "Begin", tx != nil && err == nil)
+	}
 }
