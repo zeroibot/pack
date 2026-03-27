@@ -1,6 +1,7 @@
 package qb
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -528,14 +529,85 @@ func TestUpdateExec(t *testing.T) {
 }
 
 func TestResultCheckers(t *testing.T) {
-	// TODO: AssertNothing
-	// TODO: AssertRowsAffected
-	// TODO: RowsAffected
-	// TODO: LastInsertID
+	var r0 sql.Result = nil
+	r1 := tst.NewResult(1, 0, nil)
+	r2 := tst.NewResult(2, 0, nil)
+	r3 := tst.NewResult(1, 67, nil)
+	r4 := tst.NewResult(2, 69, nil)
+	r5 := tst.NewResult(5, 99, errMock)
+
+	// AssertNothing
+	testCases := []tst.P1W1[sql.Result, bool]{
+		{r0, true}, {r1, true}, {r2, true}, {r3, true}, {r4, true}, {r5, true},
+	}
+	tst.AllP1W1(t, testCases, "AssertNothing", AssertNothing, tst.AssertEqual)
+
+	// AssertRowsAffected
+	assert1 := AssertRowsAffected(1)
+	assert2 := AssertRowsAffected(2)
+	testCases2 := []tst.P2W1[ResultChecker, sql.Result, bool]{
+		{assert1, r0, false}, {assert1, r1, true}, {assert1, r2, false}, {assert1, r3, true}, {assert1, r4, false},
+		{assert2, r0, false}, {assert2, r1, false}, {assert2, r2, true}, {assert2, r3, false}, {assert2, r4, true},
+		{assert1, r5, false}, {assert2, r5, false},
+	}
+	rowsAffected := func(checker ResultChecker, result sql.Result) bool {
+		return checker(result)
+	}
+	tst.AllP2W1(t, testCases2, "AssertRowsAffected", rowsAffected, tst.AssertEqual)
+
+	// RowsAffected
+	testCases3 := []tst.P1W1[sql.Result, int]{
+		{r0, 0}, {r1, 1}, {r2, 2}, {r3, 1}, {r4, 2}, {r5, 0},
+	}
+	tst.AllP1W1(t, testCases3, "RowsAffected", RowsAffected, tst.AssertEqual)
+
+	// LastInsertID
+	r1 = tst.NewResult(1, 0, errMock)
+	r2 = tst.NewResult(2, 0, errMock)
+	r3 = tst.NewResult(1, 67, nil)
+	r4 = tst.NewResult(2, 69, nil)
+	testCases4 := []tst.P1W2[sql.Result, uint, bool]{
+		{r0, 0, false}, {r1, 0, false}, {r2, 0, false},
+		{r3, 67, true}, {r4, 69, true}, {r5, 0, false},
+	}
+	tst.AllP1W2(t, testCases4, "LastInsertID", LastInsertID, tst.AssertEqual[uint], tst.AssertEqual[bool])
 }
 
 func TestExec(t *testing.T) {
-	// TODO: Exec
-	// TODO: ExecTx
-	// TODO: Rollback
+	type User struct {
+		ID   uint
+		Name string
+		Job  string
+	}
+	u := new(User)
+	table := "users"
+	this := testPrelude(t, u)
+
+	// ExecTx
+	q0 := NewDeleteQuery[User](this, "") // empty table
+	q1 := NewDeleteQuery[User](this, table)
+	q1.Where(Equal[User](this, &u.ID, 1))
+
+	res1 := tst.NewResult(1, 0, nil)
+	res2 := tst.NewResult(2, 0, nil)
+	tx1 := tst.NewTxFrom(res1, nil)
+	tx2 := tst.NewTxFrom(res2, nil)
+	tx3 := tst.NewTxFrom(res1, errMock)
+
+	check1 := AssertRowsAffected(1)
+
+	testCases := []tst.P3W2[Query, db.Tx, ResultChecker, int, bool]{
+		{q0, tx1, check1, 0, false}, // empty query
+		{q1, nil, check1, 0, false}, // nil tx
+		{q1, tx1, nil, 0, false},    // nil checker
+		{q1, tx2, check1, 0, false}, // fail result checker
+		{q1, tx3, check1, 0, false}, // error on Exec
+		{q1, tx1, check1, 1, true},  // success
+
+	}
+	execTx := func(q Query, tx db.Tx, checker ResultChecker) (int, bool) {
+		result, err := ExecTx(q, tx, checker)
+		return RowsAffected(result), err == nil
+	}
+	tst.AllP3W2(t, testCases, "ExecTx", execTx, tst.AssertEqual[int], tst.AssertEqual[bool])
 }

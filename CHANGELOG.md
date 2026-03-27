@@ -1,8 +1,10 @@
 ## v0.2.23 - Transaction Tests
-  - Commit:
-  - ResultChecker tests
-  - Transaction tests
-  - Package db tests
+  * Commit: 2026-03-27 15:59
+  * ResultChecker tests
+  * Transaction tests
+  * DB interfaces tests
+  * DB adapters tests
+  * NewSQLConnection 
 ## v0.2.22 - Query Execution Tests
   * Commit: 2026-03-27 11:57
   * ResultChecker functions

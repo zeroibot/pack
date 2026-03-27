@@ -306,6 +306,9 @@ func ExecTx(q Query, tx db.Tx, checker ResultChecker) (sql.Result, error) {
 
 // Rollback rolls back the given database transaction
 func Rollback(tx db.Tx, err error) error {
+	if tx == nil {
+		return err
+	}
 	err2 := tx.Rollback()
 	if err2 != nil {
 		// Combine original error and rollback error
