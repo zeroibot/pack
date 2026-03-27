@@ -264,6 +264,63 @@ func TestInsertRowsQuery(t *testing.T) {
 	tst.AllP1W2(t, testCases, "InsertRowsQuery.BuildQuery", (*InsertRowsQuery).BuildQuery, tst.AssertEqual, tst.AssertListMixedEqual)
 }
 
+func TestInsertRowExec(t *testing.T) {
+	type User struct {
+		ID   uint
+		Name string
+		Job  string
+	}
+	table := "users"
+	u := new(User)
+	this := testPrelude(t, u)
+	u1, u2, u3 := User{1, "Alice", "Dev"}, User{2, "Bob", "Dev"}, User{3, "Charlie", "Dev"}
+	u4 := User{4, "Dave", "QA"}
+	//u5, u6 := User{5, "Eve", "QA"}, User{6, "Frank", "Sales"}
+	//u7, u8, u9 := User{7, "Grace", "Sales"}, User{8, "Harry", "UX"}, User{9, "Ivy", "Admin"}
+
+	q1 := NewInsertRowQuery(this, "") // no table
+	q1.Row(this, ToRow(this, &u1))
+	q2 := NewInsertRowQuery(this, table) // no row
+	q3 := NewInsertRowQuery(this, table) // insert u3
+	q3.Row(this, ToRow(this, &u3))
+	q4 := NewInsertRowQuery(this, table) // insert u4
+	q4.Row(this, ToRow(this, &u4))
+
+	execFn1 := func(user User) func([]User) ([]User, error) {
+		return func(users []User) ([]User, error) {
+			users = append(users, user)
+			return users, nil
+		}
+	}
+	result1 := func(user User) *tst.Result {
+		return tst.NewResult(1, int(user.ID), nil)
+	}
+
+	dbc := db.NewMockAdapter(tst.NewConn(u1, u2))
+	prep3 := dbc.Conn.PrepExec(execFn1(u3), result1(u3))
+	prep3b := func() { dbc.Conn.SetError(errMock) }
+	prep4 := dbc.Conn.PrepExec(execFn1(u4), result1(u4))
+
+	testCases := []tst.P2W4Pre[*InsertRowQuery, db.Conn, int, uint, bool, []User]{
+		{nil, q1, dbc, 0, 0, false, []User{u1, u2}},          // empty query = no table
+		{nil, q2, dbc, 0, 0, false, []User{u1, u2}},          // empty query = no row
+		{prep3, q3, dbc, 1, 3, true, []User{u1, u2, u3}},     // success query3
+		{prep3b, q3, dbc, 0, 0, false, []User{u1, u2, u3}},   // error on query3
+		{prep4, q4, dbc, 1, 4, true, []User{u1, u2, u3, u4}}, // success query4
+	}
+	insertRow := func(q *InsertRowQuery, dbConn db.Conn) (int, uint, bool, []User) {
+		result, err := Exec(q, dbConn)
+		if err != nil {
+			return 0, 0, false, dbc.Conn.Items()
+		}
+		var insertID uint = 0
+		if id, ok := LastInsertID(result); ok {
+			insertID = id
+		}
+		return RowsAffected(result), insertID, true, dbc.Conn.Items()
+	}
+	tst.AllP2W4Pre(t, testCases, "InsertRowQuery.Exec", insertRow, tst.AssertEqual[int], tst.AssertEqual[uint], tst.AssertEqual[bool], tst.AssertListEqual)
+}
 func TestUpdateQuery(t *testing.T) {
 	type User struct {
 		Username string

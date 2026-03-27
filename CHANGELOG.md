@@ -1,13 +1,13 @@
 ## v0.2.23 - Transaction Tests
-  * Commit:
-  - Query Execution tests
+  - Commit:
+  - Transaction tests
   - Package db tests
 ## v0.2.22 - Query Execution Tests
   - Commit:
   * ResultChecker functions
   * Query Execution functions
   * DeleteQuery Execute tests
-  - InsertRowQuery Execute tests
+  * InsertRowQuery Execute tests
   - InsertRowsQuery Execute tests
   - UpdateQuery Execute tests
 ## v0.2.21 - Multiple Row Query Execution Tests
