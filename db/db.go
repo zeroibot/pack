@@ -3,7 +3,9 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/roidaradal/tst"
 )
 
@@ -42,6 +44,44 @@ type Rows interface {
 // RowScanner unifies the Row and Rows interface
 type RowScanner interface {
 	Scan(dest ...any) error
+}
+
+// ConnParams holds parameters for a MySQL DB connection
+type ConnParams struct {
+	Type     string
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
+}
+
+// NewSQLConnection creates a new MySQL DB connection pool
+func NewSQLConnection(p *ConnParams) (*sql.DB, error) {
+	if p == nil {
+		return nil, fmt.Errorf("sql conn params are not set")
+	}
+	if p.Type == "" || p.Host == "" || p.User == "" || p.Password == "" || p.Database == "" || p.Port == "" {
+		return nil, fmt.Errorf("missing sql conn params")
+	}
+	address := fmt.Sprintf("%s:%s", p.Host, p.Port)
+	cfg := mysql.Config{
+		User:                 p.User,
+		Passwd:               p.Password,
+		Net:                  "tcp",
+		Addr:                 address,
+		DBName:               p.Database,
+		AllowNativePasswords: true,
+	}
+	dbc, err := sql.Open(p.Type, cfg.FormatDSN())
+	if err != nil {
+		return nil, fmt.Errorf("cannot open db: %w", err)
+	}
+	err = dbc.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("cannot ping db: %w", err)
+	}
+	return dbc, nil
 }
 
 // Adapter is an adapter for sql.DB so it follows the Conn interface

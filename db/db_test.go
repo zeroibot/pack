@@ -2,10 +2,8 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/roidaradal/tst"
 )
 
@@ -48,21 +46,17 @@ func TestDBInterfaces(t *testing.T) {
 }
 
 func TestAdapters(t *testing.T) {
-	cfg := mysql.Config{
-		User:                 "test",
-		Passwd:               "abcd1234",
-		Net:                  "tcp",
-		Addr:                 "localhost:3306",
-		DBName:               "test",
-		AllowNativePasswords: true,
+	cfg := ConnParams{
+		Type:     "mysql",
+		Host:     "localhost",
+		Port:     "3306",
+		User:     "test",
+		Password: "abcd1234",
+		Database: "test",
 	}
-	conn, err := sql.Open("mysql", cfg.FormatDSN())
+	conn, err := NewSQLConnection(&cfg)
 	if err != nil {
-		t.Fatal(fmt.Errorf("cannot open db: %w", err))
-	}
-	err = conn.Ping()
-	if err != nil {
-		t.Fatal("cannot ping db: %w", err)
+		t.Fatal(err)
 	}
 
 	query, values := "SELECT `ID` FROM users WHERE `Name` = ?", []any{"John"}
@@ -78,4 +72,55 @@ func TestAdapters(t *testing.T) {
 		tx, err := dbc.Begin()
 		tst.AssertTrue(t, "Begin", tx != nil && err == nil)
 	}
+	err = conn.Close()
+	if err != nil {
+		t.Errorf("cannot close db: %v", err)
+	}
+}
+
+func TestNewSQLConnection(t *testing.T) {
+	clone := func(cfg ConnParams) ConnParams {
+		return ConnParams{cfg.Type, cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database}
+	}
+	cfg := ConnParams{
+		Type:     "mysql",
+		Host:     "localhost",
+		Port:     "3306",
+		User:     "test",
+		Password: "abcd1234",
+		Database: "test",
+	}
+	cfg2 := ConnParams{}
+	cfg3 := clone(cfg)
+	cfg3.Database = "nonexistent"
+	cfg4 := clone(cfg)
+	cfg4.Password = "wrong_password"
+	cfg5 := clone(cfg)
+	cfg5.User = "wrong_user"
+	cfg6 := clone(cfg)
+	cfg6.Port = "6769"
+	cfg7 := clone(cfg)
+	cfg7.Port = "xxxx"
+	cfg8 := clone(cfg)
+	cfg8.Host = "wrong_host"
+	cfg9 := clone(cfg)
+	cfg9.Type = "mongodb"
+
+	testCases := []tst.P1W2[*ConnParams, bool, bool]{
+		{&cfg, true, true},    // success
+		{nil, false, false},   // nil params
+		{&cfg2, false, false}, // has blank params
+		{&cfg3, false, false}, // wrong db
+		{&cfg4, false, false}, // wrong password
+		{&cfg5, false, false}, // wrong user
+		{&cfg6, false, false}, // wrong port number
+		{&cfg7, false, false}, // wrong port format
+		{&cfg8, false, false}, // wrong host
+		{&cfg9, false, false}, // wrong type
+	}
+	newConn := func(cfg *ConnParams) (bool, bool) {
+		conn, err := NewSQLConnection(cfg)
+		return conn != nil, err == nil
+	}
+	tst.AllP1W2(t, testCases, "NewSQLConnection", newConn, tst.AssertEqual[bool], tst.AssertEqual[bool])
 }
