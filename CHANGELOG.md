@@ -1,6 +1,6 @@
 ## v0.2.23 - Transaction Tests
   - Commit:
-  - ResultChecker tests
+  * ResultChecker tests
   - Transaction tests
   - Package db tests
 ## v0.2.22 - Query Execution Tests
