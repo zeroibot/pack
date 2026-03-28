@@ -271,18 +271,18 @@ func TestSelectRowsQuery(t *testing.T) {
 	prep1 := dbc.Conn.PrepSortRows(q1.Test, getAllColumns, sortPriceDesc, 10)
 	prep5 := dbc.Conn.PrepRows(q5.Test, getNamePrice)
 	prep8 := dbc.Conn.PrepRows(q8.Test, getNamePrice)
+	want8 := make([]Product, 0)
 	want1 := []Product{{ID: 1, Name: "Laptop", Price: 1200.0, Stock: 10}, {ID: 3, Name: "Monitor", Price: 300.0, Stock: 50}}
 	want5 := []Product{{Name: "Laptop", Price: 1200.0}, {Name: "Mouse", Price: 25.0}, {Name: "Monitor", Price: 300.0}}
-	want8 := make([]Product, 0)
 
 	testCases4 := []tst.P2W2Pre[*SelectRowsQuery[Product], db.Conn, []Product, bool]{
 		{nil, q0, dbc, nil, false},    // empty query
 		{nil, q1, nil, nil, false},    // no DB connection
+		{prep0a, q1, dbc, nil, false}, // error on query
+		{prep0b, q1, dbc, nil, false}, // nil reader
 		{prep1, q1, dbc, want1, true}, // success query1
 		{prep5, q5, dbc, want5, true}, // success query5
 		{prep8, q8, dbc, want8, true}, // empty results
-		{prep0a, q1, dbc, nil, false}, // error on query
-		{prep0b, q1, dbc, nil, false}, // nil reader
 	}
 	selectRowsQuery := func(q *SelectRowsQuery[Product], dbc db.Conn) ([]Product, bool) {
 		res := q.Query(dbc)

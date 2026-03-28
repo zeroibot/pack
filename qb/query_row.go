@@ -203,19 +203,7 @@ func (q *CountQuery[T]) Exists(dbc db.Conn) ds.Result[bool] {
 
 // QueryValue executes the ValueQuery and gets the column value
 func (q *ValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] {
-	query, values, err := preReadCheck(q, dbc, q.reader)
-	if err != nil {
-		return ds.Error[V](err)
-	}
-
-	row := dbc.QueryRow(query, values...)
-	result := q.reader(row)
-	if result.IsError() {
-		return ds.Error[V](result.Error())
-	}
-
-	columnName := this.dbType.rawIdentifier(q.columnName)
-	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, columnName)
+	return queryValue[T, V](this, dbc, q, q.reader, q.typeName, q.columnName)
 }
 
 // QueryRow executes the SelectRowQuery and gets the row object
@@ -249,19 +237,7 @@ func (q *TopRowQuery[T]) QueryRows(dbc db.Conn) ds.Result[[]T] {
 // QueryValue executes the TopValueQuery and gets the top column value
 func (q *TopValueQuery[T, V]) QueryValue(this *Instance, dbc db.Conn) ds.Result[V] {
 	q.limit = 1 // override limit to 1
-	query, values, err := preReadCheck(q, dbc, q.reader)
-	if err != nil {
-		return ds.Error[V](err)
-	}
-
-	row := dbc.QueryRow(query, values...)
-	result := q.reader(row)
-	if result.IsError() {
-		return ds.Error[V](result.Error())
-	}
-
-	columnName := this.dbType.rawIdentifier(q.columnName)
-	return getStructTypedColumnValue[V](this, new(result.Value()), q.typeName, columnName)
+	return queryValue[T, V](this, dbc, q, q.reader, q.typeName, q.columnName)
 }
 
 // QueryValues executes the TopValueQuery and gets the top N column values
@@ -278,4 +254,21 @@ func (q *SumQuery[T]) Sum(dbc db.Conn) ds.Result[T] {
 
 	row := dbc.QueryRow(query, values...)
 	return q.reader(row)
+}
+
+// Common steps for querying a row and getting a column value
+func queryValue[T, V any](this *Instance, dbc db.Conn, q Query, reader RowReader[T], typeName, columnName string) ds.Result[V] {
+	query, values, err := preReadCheck(q, dbc, reader)
+	if err != nil {
+		return ds.Error[V](err)
+	}
+
+	row := dbc.QueryRow(query, values...)
+	result := reader(row)
+	if result.IsError() {
+		return ds.Error[V](result.Error())
+	}
+
+	columnName = this.dbType.rawIdentifier(columnName)
+	return getStructTypedColumnValue[V](this, new(result.Value()), typeName, columnName)
 }

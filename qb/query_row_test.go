@@ -281,6 +281,10 @@ func TestTopRowQuery(t *testing.T) {
 	q3 := NewTopRowQuery(this, table, reader2) // no condition
 	q4 := NewTopRowQuery(this, table, reader2) // no order
 	q5 := NewTopRowQuery(this, table, reader3) // no columns
+	// TopRowQuery.Where
+	q1.Where(Greater[User](this, &u.Balance, 0))
+	q2.Where(GreaterEqual[User](this, &u.Age, 10))
+	q5.Where(Greater[User](this, &u.Age, 0))
 	// TopRowQuery.Columns
 	q2.Columns(this, cols2...)
 	q3.Columns(this, cols2...)
@@ -290,10 +294,6 @@ func TestTopRowQuery(t *testing.T) {
 	q2.OrderDesc(this, this.Column(&u.Balance))
 	q3.OrderDesc(this, this.Column(&u.Balance))
 	q5.OrderAsc(this, this.Column(&u.Age))
-	// TopRowQuery.Where
-	q1.Where(Greater[User](this, &u.Balance, 0))
-	q2.Where(GreaterEqual[User](this, &u.Age, 10))
-	q5.Where(Greater[User](this, &u.Age, 0))
 	// TopRowQuery.Test
 	u1 := User{"John", "john", 20, 5.0, "x", "y"}
 	u2 := User{"Jean", "jean", 5, 0.0, "z", "z"}
