@@ -11,13 +11,19 @@ const (
 	timestampFmt string = "060102150405"
 )
 
+type (
+	Date     = string
+	Time     = string
+	DateTime = string
+)
+
 // DateFormat formats the given time in date format (yyyy-mm-dd)
-func DateFormat(t time.Time) string {
+func DateFormat(t time.Time) Date {
 	return t.Format(dateFmt)
 }
 
 // TimeFormat formats the given time in time format (hh:mm:ss)
-func TimeFormat(t time.Time) string {
+func TimeFormat(t time.Time) Time {
 	return t.Format(timeFmt)
 }
 
@@ -27,7 +33,7 @@ func HourMinFormat(t time.Time) string {
 }
 
 // StandardFormat formats the given time in standard format (yyyy-mm-dd hh:mm:ss)
-func StandardFormat(t time.Time) string {
+func StandardFormat(t time.Time) DateTime {
 	return t.Format(standardFmt)
 }
 
