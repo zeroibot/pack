@@ -7,10 +7,11 @@ import (
 )
 
 type Schema[T any] struct {
-	Name   string
-	Ref    *T
-	Table  string
-	Reader qb.RowReader[T]
+	Name     string
+	Ref      *T
+	Table    string
+	Reader   qb.RowReader[T]
+	instance *qb.Instance
 }
 
 // NewSchema creates a new Schema and registers its type to qb
@@ -20,10 +21,11 @@ func NewSchema[T any](this *qb.Instance, structRef *T, table string) (*Schema[T]
 		return nil, err
 	}
 	schema := new(Schema[T]{
-		Name:   dyn.TypeName(structRef),
-		Ref:    structRef,
-		Table:  table,
-		Reader: qb.FullRowReader(this, structRef),
+		Name:     dyn.TypeName(structRef),
+		Ref:      structRef,
+		Table:    table,
+		Reader:   qb.FullRowReader(this, structRef),
+		instance: this,
 	})
 	return schema, nil
 }

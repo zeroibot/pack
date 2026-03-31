@@ -1,3 +1,8 @@
+## v0.3.3 - Schema Delete and Toggle 
+  * Commit: 
+  * Schema Delete 
+  * Schema Toggle 
+  * Schema SetFlag
 ## v0.3.2 - Model Package 
   * Commit: 2026-03-31 16:19
   * Model fields
