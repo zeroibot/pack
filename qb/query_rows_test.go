@@ -279,10 +279,10 @@ func TestSelectRowsQuery(t *testing.T) {
 		{nil, q0, dbc, nil, false},    // empty query
 		{nil, q1, nil, nil, false},    // no DB connection
 		{prep0a, q1, dbc, nil, false}, // error on query
-		{prep0b, q1, dbc, nil, false}, // nil reader
 		{prep1, q1, dbc, want1, true}, // success query1
 		{prep5, q5, dbc, want5, true}, // success query5
 		{prep8, q8, dbc, want8, true}, // empty results
+		{prep0b, q1, dbc, nil, false}, // nil reader
 	}
 	selectRowsQuery := func(q *SelectRowsQuery[Product], dbc db.Conn) ([]Product, bool) {
 		res := q.Query(dbc)
