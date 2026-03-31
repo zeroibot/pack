@@ -1,7 +1,12 @@
 package clock
 
-import "testing"
+import (
+	"testing"
+	"time"
+
+	"github.com/zeroibot/tst"
+)
 
 func TestTime(t *testing.T) {
-	// TODO: DateTimeNow
+	tst.AssertEqual(t, "DateTimeNow", DateTimeNow(), StandardFormat(time.Now()))
 }
