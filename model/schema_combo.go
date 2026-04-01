@@ -203,3 +203,18 @@ func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updat
 
 	return result
 }
+
+// MoveItemTx inserts an item to the insertSchema and deletes the corresponding item from the deleteSchema, as part of a transaction
+func MoveItemTx[I, D any](rqtx *my.Request, insertSchema *Schema[I], item *I, deleteSchema *Schema[D], deleteCondition qb.DualCondition[D]) error {
+	// 1) Insert item to insertSchema
+	result1 := insertSchema.InsertTx(rqtx, item)
+	if result1.IsError() {
+		return result1.Error()
+	}
+	// 2) Delete from deleteSchema
+	result2 := deleteSchema.DeleteTx(rqtx, deleteCondition)
+	if result2.IsError() {
+		return result2.Error()
+	}
+	return nil
+}

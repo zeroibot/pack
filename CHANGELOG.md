@@ -1,11 +1,11 @@
 ## v0.3.6 - Schema Combos 
-  * Commit: 
+  * Commit: 2026-04-01 22:44
   * Schema GetOrCreate 
   * Schema GetAndLockTx 
   * Schema GetAndLockTxItems 
   * Schema GetOrCreateAndLockTx
   * Schema UpdateAndGetTx
-  * MoveItem
+  * MoveItemTx
 ## v0.3.5 - Schema Add and Edit 
   * Commit: 2026-04-01 15:16
   * Schema Insert 
