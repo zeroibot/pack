@@ -3,6 +3,7 @@
   * Schema Count 
   * Schema Sum 
   * Schema Get
+  * Schema GetRows
   * Update qb.Exec and ExecTx to return ds.Result
 ## v0.3.3 - Schema Delete and Toggle 
   * Commit: 2026-04-01 09:51
