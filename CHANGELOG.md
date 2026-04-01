@@ -1,3 +1,8 @@
+## v0.3.5 - Schema Add and Edit 
+  * Commit: 
+  * Schema Insert 
+  * Schema InsertRows
+  * Schema Edit
 ## v0.3.4 - Schema Get and Group
   * Commit: 2026-04-01 11:47
   * Schema Count 
