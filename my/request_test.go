@@ -10,6 +10,7 @@ func TestRequest(t *testing.T) {
 	// TODO: Request.AddDurationLog
 	// TODO: Request.AddErrorLog
 	// TODO: Request.SetNow
+	// TODO: Request.Fail
 	// TODO: Request.Output
 	// TODO: Request.SubRequest
 	// TODO: Request.MergeLogs
