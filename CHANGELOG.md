@@ -4,7 +4,7 @@
   * Schema GetAndLockTx 
   * Schema GetAndLockTxItems 
   * Schema GetOrCreateAndLockTx
-  * Schema UpdateAndGet 
+  * Schema UpdateAndGetTx
   * MoveItem
 ## v0.3.5 - Schema Add and Edit 
   * Commit: 2026-04-01 15:16
