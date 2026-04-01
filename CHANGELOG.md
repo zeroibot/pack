@@ -1,5 +1,10 @@
+## v0.3.4 - Schema Get and Group
+  * Commit:  
+  * Schema Count 
+  * Schema Sum 
+  * Schema Get
 ## v0.3.3 - Schema Delete and Toggle 
-  * Commit: 
+  * Commit: 2026-04-01 09:51
   * Schema Delete 
   * Schema Toggle 
   * Schema SetFlag
