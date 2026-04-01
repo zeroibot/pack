@@ -82,10 +82,11 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 }
 
 // GetAndLockTx gets the item and locks it as part of a transaction
-// Note: no need to include IsLocked = true/false in conditions, as this functions adds it
+// Note: no need to include IsLocked = true/false in conditions, as this function adds it
 func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func(T) qb.DualCondition[T]) ds.Result[T] {
 	this := s.instance
 	isUnlocked := qb.Equal[T](this, lockField, false)
+
 	// Get unlocked item
 	condition := qb.And(selectCondition, isUnlocked)
 	result := s.Get(rqtx, condition)
@@ -106,4 +107,40 @@ func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondit
 	}
 
 	return ds.NewResult(item, nil)
+}
+
+// GetAndLockTxItems gets a list of items and locks all of them as part of a transaction
+// Note: no need to include IsLocked = true/false in conditions, as this function adds it
+func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func([]T) qb.DualCondition[T], numItems int) ds.Result[[]T] {
+	this := s.instance
+	isUnlocked := qb.Equal[T](this, lockField, false)
+
+	// Get unlocked items
+	condition := qb.And(selectCondition, isUnlocked)
+	result := s.GetRows(rqtx, condition)
+	if result.IsError() {
+		rqtx.Fail(my.Err500, "Failed to get unlocked items")
+		// Manual rollback on error of GetRows
+		err := qb.Rollback(rqtx.Tx, result.Error())
+		return ds.Error[[]T](err)
+	}
+
+	// Check that rows have correct number of items
+	items := result.Value()
+	if len(items) != numItems {
+		rqtx.Fail(my.Err500, "Get count mismatch: items = %d, rows = %d", numItems, len(items))
+		// Manual rollback if count mismatch
+		err := qb.Rollback(rqtx.Tx, fail.MismatchCount)
+		return ds.Error[[]T](err)
+	}
+
+	// Lock items
+	lockCondition := qb.And(lockConditionFn(items), isUnlocked)
+	err := s.SetTxFlags(rqtx, lockCondition, lockField, true, numItems)
+	if err != nil {
+		rqtx.Fail(my.Err500, "Failed to lock items")
+		return ds.Error[[]T](err)
+	}
+
+	return ds.NewResult(items, nil)
 }

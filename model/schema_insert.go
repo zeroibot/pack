@@ -131,7 +131,7 @@ func (s *Schema[T]) insertRowsAt(rq *my.Request, items []T, table string, isTx b
 	// If not transaction, check if rowsInserted == numItems
 	if !isTx && rowsInserted != numItems {
 		rq.Fail(my.Err500, "Insert count mismatch: items = %d, inserted = %d", numItems, rowsInserted)
-		return errors.New("count mismatch")
+		return fail.MismatchCount
 	}
 
 	rq.AddFmtLog("Inserted: %d %s", rowsInserted, s.Name)

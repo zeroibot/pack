@@ -2,7 +2,7 @@
   * Commit: 
   * Schema GetOrCreate 
   * Schema GetAndLockTx 
-  * Schema GetAndLockItems 
+  * Schema GetAndLockTxItems 
   * Schema GetOrCreateAndLock 
   * Schema UpdateAndGet 
   * MoveItem
