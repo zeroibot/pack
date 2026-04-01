@@ -32,8 +32,7 @@ func (s *Schema[T]) DeleteTxAt(rqtx *my.Request, condition qb.DualCondition[T], 
 func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], table string, isTx bool) (int, error) {
 	// Check that condition is set
 	if condition == nil {
-		rq.AddLog("Delete condition is not set")
-		rq.Status = my.Err500
+		rq.Fail(my.Err500, "Delete condition is not set")
 		return 0, fail.MissingParams
 	}
 
@@ -51,8 +50,7 @@ func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], tabl
 		result, err = qb.Exec(q, rq.DB)
 	}
 	if err != nil {
-		rq.AddFmtLog("Failed to delete %s", s.Name)
-		rq.Status = my.Err500
+		rq.Fail(my.Err500, "Failed to delete %s", s.Name)
 		return 0, err
 	}
 

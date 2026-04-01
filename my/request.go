@@ -121,6 +121,12 @@ func (rq *Request) SetNow() clock.DateTime {
 	return rq.Now
 }
 
+// Fail adds an log message and sets the status of the request
+func (rq *Request) Fail(status int, message string, args ...any) {
+	rq.Status = status
+	rq.AddFmtLog(message, args...)
+}
+
 // Output combines the logs into a single string separated by newline
 func (rq *Request) Output() string {
 	return strings.Join(rq.logs, "\n")
