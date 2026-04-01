@@ -9,6 +9,29 @@ import (
 	"github.com/zeroibot/pack/qb"
 )
 
+// UpdateFn is a function that decorates the UpdateQuery with necessary updates
+type UpdateFn[T any] = func(*qb.Instance, *qb.UpdateQuery[T])
+
+// Update performs an UpdateQuery using UpdateFn at schema table
+func (s *Schema[T]) Update(rq *my.Request, updateFn UpdateFn[T], condition qb.DualCondition[T]) error {
+	return s.updateAt(rq, updateFn, condition, s.Table, false)
+}
+
+// UpdateAt performs an UpdateQuery using UpdateFn at given table
+func (s *Schema[T]) UpdateAt(rq *my.Request, updateFn UpdateFn[T], condition qb.DualCondition[T], table string) error {
+	return s.updateAt(rq, updateFn, condition, table, false)
+}
+
+// UpdateTx performs an UpdateQuery using UpdateFn as part of a transaction at schema table
+func (s *Schema[T]) UpdateTx(rqtx *my.Request, updateFn UpdateFn[T], condition qb.DualCondition[T]) error {
+	return s.updateAt(rqtx, updateFn, condition, s.Table, true)
+}
+
+// UpdateTxAt performs an UpdateQuery using UpdateFn as part of a transaction at given table
+func (s *Schema[T]) UpdateTxAt(rqtx *my.Request, updateFn UpdateFn[T], condition qb.DualCondition[T], table string) error {
+	return s.updateAt(rqtx, updateFn, condition, table, true)
+}
+
 // UpdateFields performs an UpdateQuery using FieldUpdates at schema table
 func (s *Schema[T]) UpdateFields(rq *my.Request, updates qb.FieldUpdates, condition qb.DualCondition[T]) error {
 	return s.updateFieldsAt(rq, updates, condition, s.Table, false)
@@ -29,6 +52,23 @@ func (s *Schema[T]) UpdateTxFieldsAt(rqtx *my.Request, updates qb.FieldUpdates, 
 	return s.updateFieldsAt(rqtx, updates, condition, table, true)
 }
 
+// Common: create and execute UpdateQuery using UpdateFn at given table
+func (s *Schema[T]) updateAt(rq *my.Request, updateFn UpdateFn[T], condition qb.DualCondition[T], table string, isTx bool) error {
+	// Check that condition and updateFn are set
+	if condition == nil || updateFn == nil {
+		rq.Fail(my.Err500, "Update / condition is not set")
+		return fail.MissingParams
+	}
+
+	// Build UpdateQuery
+	this := s.instance
+	q := qb.NewUpdateQuery[T](this, table)
+	q.Where(condition)
+	updateFn(this, q) // Call updateFn to add updates
+
+	return s.update(rq, q, isTx)
+}
+
 // Common: create and execute UpdateQuery using FieldUpdates at given table
 func (s *Schema[T]) updateFieldsAt(rq *my.Request, updates qb.FieldUpdates, condition qb.DualCondition[T], table string, isTx bool) error {
 	// Check that condition and updates are set
@@ -43,6 +83,11 @@ func (s *Schema[T]) updateFieldsAt(rq *my.Request, updates qb.FieldUpdates, cond
 	q.Where(condition)
 	q.Updates(this, updates)
 
+	return s.update(rq, q, isTx)
+}
+
+// Common: execute UpdateQuery
+func (s *Schema[T]) update(rq *my.Request, q *qb.UpdateQuery[T], isTx bool) error {
 	// Execute UpdateQuery
 	var result ds.Result[sql.Result]
 	if isTx {

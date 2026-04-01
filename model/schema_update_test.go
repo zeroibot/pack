@@ -8,3 +8,10 @@ func TestUpdateFields(t *testing.T) {
 	// TODO: Schema.UpdateTxFields
 	// TODO: Schema.UpdateTxFieldsAt
 }
+
+func TestUpdate(t *testing.T) {
+	// TODO: Schema.Update
+	// TODO: Schema.UpdateAt
+	// TODO: Schema.UpdateTx
+	// TODO: Schema.UpdateTxAt
+}
