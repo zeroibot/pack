@@ -22,9 +22,9 @@ func (s *Schema[T]) GetOrCreate(rq *my.Request, p *GetOrCreateParams[T]) ds.Resu
 	return s.getOrCreate(rq, p, false)
 }
 
-// GetOrCreateTx gets the item if it exists, otherwise creates it as part of the transaction, and return the item
-func (s *Schema[T]) GetOrCreateTx(rq *my.Request, p *GetOrCreateParams[T]) ds.Result[T] {
-	return s.getOrCreate(rq, p, true)
+// GetOrCreateTx gets the item if it exists, otherwise creates it as part of a transaction, and return the item
+func (s *Schema[T]) GetOrCreateTx(rqtx *my.Request, p *GetOrCreateParams[T]) ds.Result[T] {
+	return s.getOrCreate(rqtx, p, true)
 }
 
 // Common: get the item if it exists, otherwise create and return it
@@ -78,5 +78,32 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 		}
 		return ds.Error[T](err)
 	}
+	return ds.NewResult(item, nil)
+}
+
+// GetAndLockTx gets the item and locks it as part of a transaction
+// Note: no need to include IsLocked = true/false in conditions, as this functions adds it
+func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func(T) qb.DualCondition[T]) ds.Result[T] {
+	this := s.instance
+	isUnlocked := qb.Equal[T](this, lockField, false)
+	// Get unlocked item
+	condition := qb.And(selectCondition, isUnlocked)
+	result := s.Get(rqtx, condition)
+	if result.IsError() {
+		rqtx.Fail(my.Err500, "Failed to get unlocked item")
+		// Manual rollback on error of Get
+		err := qb.Rollback(rqtx.Tx, result.Error())
+		return ds.Error[T](err)
+	}
+
+	// Lock item
+	item := result.Value()
+	lockCondition := qb.And(lockConditionFn(item), isUnlocked)
+	err := s.SetTxFlag(rqtx, lockCondition, lockField, true)
+	if err != nil {
+		rqtx.Fail(my.Err500, "Failed to lock item")
+		return ds.Error[T](err)
+	}
+
 	return ds.NewResult(item, nil)
 }

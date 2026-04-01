@@ -1,7 +1,7 @@
 ## v0.3.6 - Schema Combos 
   * Commit: 
   * Schema GetOrCreate 
-  * Schema GetAndLock 
+  * Schema GetAndLockTx 
   * Schema GetAndLockItems 
   * Schema GetOrCreateAndLock 
   * Schema UpdateAndGet 
