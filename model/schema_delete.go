@@ -3,37 +3,38 @@ package model
 import (
 	"database/sql"
 
+	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/fail"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/qb"
 )
 
 // Delete performs a DeleteQuery on the schema table using the given condition
-func (s *Schema[T]) Delete(rq *my.Request, condition qb.DualCondition[T]) (int, error) {
+func (s *Schema[T]) Delete(rq *my.Request, condition qb.DualCondition[T]) ds.Result[int] {
 	return s.deleteAt(rq, condition, s.Table, false)
 }
 
 // DeleteAt performs a DeleteQuery on the given table using the given condition
-func (s *Schema[T]) DeleteAt(rq *my.Request, condition qb.DualCondition[T], table string) (int, error) {
+func (s *Schema[T]) DeleteAt(rq *my.Request, condition qb.DualCondition[T], table string) ds.Result[int] {
 	return s.deleteAt(rq, condition, table, false)
 }
 
 // DeleteTx performs a DeleteQuery as part of a transaction on the schema table using the given condition
-func (s *Schema[T]) DeleteTx(rqtx *my.Request, condition qb.DualCondition[T]) (int, error) {
+func (s *Schema[T]) DeleteTx(rqtx *my.Request, condition qb.DualCondition[T]) ds.Result[int] {
 	return s.deleteAt(rqtx, condition, s.Table, true)
 }
 
 // DeleteTxAt performs a DeleteQuery as part of a transaction on the given table using the given condition
-func (s *Schema[T]) DeleteTxAt(rqtx *my.Request, condition qb.DualCondition[T], table string) (int, error) {
+func (s *Schema[T]) DeleteTxAt(rqtx *my.Request, condition qb.DualCondition[T], table string) ds.Result[int] {
 	return s.deleteAt(rqtx, condition, table, true)
 }
 
 // Common: create and execute DeleteQuery at the given table using the given condition
-func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], table string, isTx bool) (int, error) {
+func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], table string, isTx bool) ds.Result[int] {
 	// Check that condition is set
 	if condition == nil {
 		rq.Fail(my.Err500, "Delete condition is not set")
-		return 0, fail.MissingParams
+		return ds.Error[int](fail.MissingParams)
 	}
 
 	// Build DeleteQuery
@@ -41,22 +42,21 @@ func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], tabl
 	q.Where(condition)
 
 	// Execute DeleteQuery
-	var result sql.Result
-	var err error
+	var result ds.Result[sql.Result]
 	if isTx {
 		rq.AddTxStep(q)
-		result, err = qb.ExecTx(q, rq.Tx, rq.Checker)
+		result = qb.ExecTx(q, rq.Tx, rq.Checker)
 	} else {
-		result, err = qb.Exec(q, rq.DB)
+		result = qb.Exec(q, rq.DB)
 	}
-	if err != nil {
+	if result.IsError() {
 		rq.Fail(my.Err500, "Failed to delete %s", s.Name)
-		return 0, err
+		return ds.Error[int](result.Error())
 	}
 
-	rowsDeleted := qb.RowsAffected(result)
+	rowsDeleted := qb.RowsAffected(result.Value())
 	if rowsDeleted != 1 {
 		rq.AddFmtLog("Deleted: %d %s", rowsDeleted, s.Name)
 	}
-	return rowsDeleted, nil
+	return ds.NewResult[int](rowsDeleted, nil)
 }

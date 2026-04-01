@@ -144,11 +144,11 @@ func TestDeleteExec(t *testing.T) {
 		{prep5, q5, dbc, 0, true, users},   // success query5, no condition
 	}
 	deleteExec := func(q *DeleteQuery[User], dbConn db.Conn) (int, bool, []User) {
-		result, err := Exec(q, dbConn)
-		if err != nil {
+		res := Exec(q, dbConn)
+		if res.IsError() {
 			return 0, false, dbc.Conn.Items()
 		}
-		return RowsAffected(result), true, dbc.Conn.Items()
+		return RowsAffected(res.Value()), true, dbc.Conn.Items()
 	}
 	tst.AllP2W3Pre(t, testCases, "DeleteQuery.Exec", deleteExec, tst.AssertEqual[int], tst.AssertEqual[bool], tst.AssertListEqual)
 }
@@ -313,10 +313,11 @@ func TestInsertRowExec(t *testing.T) {
 		{prep4, q4, dbc, 1, 4, true, []User{u1, u2, u3, u4}}, // success query4
 	}
 	insertRow := func(q *InsertRowQuery, dbConn db.Conn) (int, uint, bool, []User) {
-		result, err := Exec(q, dbConn)
-		if err != nil {
+		res := Exec(q, dbConn)
+		if res.IsError() {
 			return 0, 0, false, dbc.Conn.Items()
 		}
+		result := res.Value()
 		var insertID uint = 0
 		if id, ok := LastInsertID(result); ok {
 			insertID = id
@@ -360,10 +361,11 @@ func TestInsertRowExec(t *testing.T) {
 		{prep8, q8, dbc, 3, 9, true, []User{u1, u2, u3, u4, u5, u6, u7, u8, u9}}, // success query8
 	}
 	insertRows := func(q *InsertRowsQuery, dbConn db.Conn) (int, uint, bool, []User) {
-		result, err := Exec(q, dbConn)
-		if err != nil {
+		res := Exec(q, dbConn)
+		if res.IsError() {
 			return 0, 0, false, dbc.Conn.Items()
 		}
+		result := res.Value()
 		var insertID uint = 0
 		if id, ok := LastInsertID(result); ok {
 			insertID = id
@@ -519,11 +521,11 @@ func TestUpdateExec(t *testing.T) {
 		{prep5, q5, dbc, 0, true, users},   // success query5, no condition
 	}
 	updateExec := func(q *UpdateQuery[User], dbConn db.Conn) (int, bool, []User) {
-		result, err := Exec(q, dbConn)
-		if err != nil {
+		result := Exec(q, dbConn)
+		if result.IsError() {
 			return 0, false, dbc.Conn.Items()
 		}
-		return RowsAffected(result), true, dbc.Conn.Items()
+		return RowsAffected(result.Value()), true, dbc.Conn.Items()
 	}
 	tst.AllP2W3Pre(t, testCases, "UpdateQuery.Exec", updateExec, tst.AssertEqual[int], tst.AssertEqual[bool], tst.AssertListEqual)
 }
@@ -606,8 +608,8 @@ func TestExec(t *testing.T) {
 
 	}
 	execTx := func(q Query, tx db.Tx, checker ResultChecker) (int, bool) {
-		result, err := ExecTx(q, tx, checker)
-		return RowsAffected(result), err == nil
+		result := ExecTx(q, tx, checker)
+		return RowsAffected(result.Value()), result.NotError()
 	}
 	tst.AllP3W2(t, testCases, "ExecTx", execTx, tst.AssertEqual[int], tst.AssertEqual[bool])
 }

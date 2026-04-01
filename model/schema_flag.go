@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/fail"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/qb"
@@ -67,20 +68,19 @@ func (s *Schema[T]) setFlagsAt(rq *my.Request, condition qb.DualCondition[T], fi
 	qb.Update(this, q, field, flag)
 
 	// Execute UpdateQuery
-	var result sql.Result
-	var err error
+	var result ds.Result[sql.Result]
 	if isTx {
 		rq.AddTxStep(q)
 		checker := qb.AssertRowsAffected(numItems)
-		result, err = qb.ExecTx(q, rq.Tx, checker)
+		result = qb.ExecTx(q, rq.Tx, checker)
 	} else {
-		result, err = qb.Exec(q, rq.DB)
+		result = qb.Exec(q, rq.DB)
 	}
-	if err != nil {
+	if result.IsError() {
 		rq.Fail(my.Err500, "Failed to update %s flag", s.Name)
-		return err
+		return result.Error()
 	}
-	rowsUpdated := qb.RowsAffected(result)
+	rowsUpdated := qb.RowsAffected(result.Value())
 
 	// If not transaction, check if rowsUpdated == numItems
 	if !isTx && rowsUpdated != numItems {

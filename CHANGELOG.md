@@ -1,5 +1,12 @@
+## v0.3.4 - Schema Get and Group
+  * Commit: 2026-04-01 11:47
+  * Schema Count 
+  * Schema Sum 
+  * Schema Get
+  * Schema GetRows
+  * Update qb.Exec and ExecTx to return ds.Result
 ## v0.3.3 - Schema Delete and Toggle 
-  * Commit: 
+  * Commit: 2026-04-01 09:51
   * Schema Delete 
   * Schema Toggle 
   * Schema SetFlag

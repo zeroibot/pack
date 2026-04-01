@@ -1,6 +1,9 @@
 package model
 
 import (
+	"database/sql"
+
+	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/fail"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/qb"
@@ -95,16 +98,16 @@ func (s *Schema[T]) toggleAt(rq *my.Request, Items *Schema[Item], p toggleParams
 	qb.Update(this, q, &item.IsActive, p.isActive)
 
 	// Execute UpdateQuery
-	var err error
+	var result ds.Result[sql.Result]
 	if isTx {
 		rq.AddTxStep(q)
-		_, err = qb.ExecTx(q, rq.Tx, rq.Checker)
+		result = qb.ExecTx(q, rq.Tx, rq.Checker)
 	} else {
-		_, err = qb.Exec(q, rq.DB)
+		result = qb.Exec(q, rq.DB)
 	}
-	if err != nil {
+	if result.IsError() {
 		rq.Fail(my.Err500, "Failed to toggle %s", s.Name)
-		return err
+		return result.Error()
 	}
 
 	return nil
