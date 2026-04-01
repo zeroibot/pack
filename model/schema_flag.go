@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/fail"
@@ -85,7 +84,7 @@ func (s *Schema[T]) setFlagsAt(rq *my.Request, condition qb.DualCondition[T], fi
 	// If not transaction, check if rowsUpdated == numItems
 	if !isTx && rowsUpdated != numItems {
 		rq.Fail(my.Err500, "Update count mismatch: items = %d, updated = %d", numItems, rowsUpdated)
-		return errors.New("count mismatch")
+		return fail.MismatchCount
 	}
 
 	if rowsUpdated != 1 {
