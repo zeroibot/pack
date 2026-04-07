@@ -2,9 +2,11 @@
 package daemon
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/zeroibot/pack/dict"
+	"github.com/zeroibot/pack/io"
 )
 
 type Instance struct {
@@ -37,6 +39,22 @@ type Config struct {
 
 // LoadConfig loads a Daemon Config which is expected to follow the required structure.
 // This checks if any Interval values are 0 (invalid).
-//func LoadConfig[T any](path string) (*T, error) {
-//
-//}
+func LoadConfig[T any](path string) (*T, error) {
+	result := io.ReadJSON[T](path)
+	if result.IsError() {
+		return nil, result.Error()
+	}
+	cfg := new(result.Value())
+	cfgMap, err := dict.FromStruct[map[string]int](cfg)
+	if err != nil {
+		return nil, err
+	}
+	for key := range cfgMap {
+		for cfgKey, value := range cfgMap[key] {
+			if value == 0 {
+				return nil, fmt.Errorf("invalid daemon %s.%s: %d", key, cfgKey, value)
+			}
+		}
+	}
+	return cfg, nil
+}

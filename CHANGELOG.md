@@ -5,6 +5,7 @@
   * Daemon Instance
   * File System Functions
   * Read and Write JSON
+  * Load Daemon Config
 ## v0.3.8 - Root Package
   * Commit: 2026-04-07 15:13
   * New Commands
