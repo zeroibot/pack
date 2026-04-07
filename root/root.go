@@ -1,6 +1,16 @@
 package root
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"slices"
+	"strings"
+
+	"github.com/zeroibot/pack/dict"
+	"github.com/zeroibot/pack/fail"
+	"github.com/zeroibot/pack/str"
+	"golang.org/x/term"
+)
 
 const (
 	allCommands string = "*"
@@ -39,4 +49,48 @@ func NewCommandMap(cfgs ...*CmdConfig) map[string]*CmdConfig {
 		commands[cfg.Command] = cfg
 	}
 	return commands
+}
+
+// ParamsMap gets the key=value map from the parameters list
+func ParamsMap(params []string, required []string, optional []string) (dict.Strings, error) {
+	if required == nil {
+		required = make([]string, 0)
+	}
+	if optional == nil {
+		optional = make([]string, 0)
+	}
+	paramsMap := make(dict.Strings)
+	for _, param := range params {
+		parts := str.CleanSplitN(param, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key, value := parts[0], parts[1]
+		if !slices.Contains(required, key) && !slices.Contains(optional, key) {
+			continue
+		}
+		paramsMap[key] = value
+	}
+	for _, key := range required {
+		if _, ok := paramsMap[key]; !ok {
+			return nil, fail.MissingParams
+		}
+	}
+	return paramsMap, nil
+}
+
+// Authenticate performs authentication for the Root account in the command-line app
+func Authenticate(authFn func(string) error) error {
+	fmt.Print("Enter password: ")
+	pwd, err := term.ReadPassword(int(os.Stdin.Fd()))
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+	password := strings.TrimSpace(string(pwd))
+	err = authFn(password)
+	if err != nil {
+		return fmt.Errorf("root authentication failed: %w", err)
+	}
+	return nil
 }

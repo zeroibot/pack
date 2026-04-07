@@ -1,6 +1,7 @@
 ## v0.3.8 - Root Package
   * Commit: 
   * New Commands
+  * ParamsMap
 ## v0.3.7 - Application Packages 
   * Commit: 2026-04-07 13:50
   * Fail functions
