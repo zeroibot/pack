@@ -1,3 +1,4 @@
+// Package root contains root application functions
 package root
 
 import (
@@ -32,23 +33,23 @@ var (
 )
 
 // CmdHandler takes in a list of string parameters
-type CmdHandler = func([]string)
+type CmdHandler[A any] = func(*A, []string)
 
-type CmdConfig struct {
+type CmdConfig[A any] struct {
 	Command   string
 	MinParams int
 	Docs      string
-	Handler   CmdHandler
+	Handler   CmdHandler[A]
 }
 
 // NewCommand creates a new CmdConfig
-func NewCommand(command string, minParams int, docs string, handler CmdHandler) *CmdConfig {
-	return new(CmdConfig{command, minParams, docs, handler})
+func NewCommand[A any](command string, minParams int, docs string, handler CmdHandler[A]) *CmdConfig[A] {
+	return new(CmdConfig[A]{command, minParams, docs, handler})
 }
 
 // NewCommandMap creates a new map of command to CmdConfigs
-func NewCommandMap(cfgs ...*CmdConfig) map[string]*CmdConfig {
-	commands := make(map[string]*CmdConfig)
+func NewCommandMap[A any](cfgs ...*CmdConfig[A]) map[string]*CmdConfig[A] {
+	commands := make(map[string]*CmdConfig[A])
 	for _, cfg := range cfgs {
 		commands[cfg.Command] = cfg
 	}
@@ -56,7 +57,7 @@ func NewCommandMap(cfgs ...*CmdConfig) map[string]*CmdConfig {
 }
 
 // MainLoop is the main REPL of the root application
-func MainLoop(cmdMap map[string]*CmdConfig, onExit func()) {
+func MainLoop[A any](app *A, cmdMap map[string]*CmdConfig[A], onExit func()) {
 	var err error
 	var line, command string
 	var params []string
@@ -92,7 +93,7 @@ func MainLoop(cmdMap map[string]*CmdConfig, onExit func()) {
 			keyword := params[0]
 			searchCommand(cmdMap, keyword)
 		default:
-			cmdMap[command].Handler(params)
+			cmdMap[command].Handler(app, params)
 		}
 	}
 }
@@ -142,7 +143,7 @@ func Authenticate(authFn func(string) error) error {
 }
 
 // validateCommandParams checks if the command exists and the parameters meet the min parameter count
-func validateCommandParams(cmdMap map[string]*CmdConfig, command string, params []string) error {
+func validateCommandParams[A any](cmdMap map[string]*CmdConfig[A], command string, params []string) error {
 	if command == cmdExit || command == cmdHelp {
 		return nil
 	}
@@ -160,7 +161,7 @@ func validateCommandParams(cmdMap map[string]*CmdConfig, command string, params 
 }
 
 // getCommandParams gets the command and parameters from the line
-func getCommandParams(cmdMap map[string]*CmdConfig, line string) (string, []string) {
+func getCommandParams[A any](cmdMap map[string]*CmdConfig[A], line string) (string, []string) {
 	if strings.TrimSpace(line) == "" {
 		fmt.Println(getHelp)
 		return "", nil
@@ -181,7 +182,7 @@ func getCommandParams(cmdMap map[string]*CmdConfig, line string) (string, []stri
 }
 
 // displayHelp displays the help list
-func displayHelp(cmdMap map[string]*CmdConfig, targetCommand string) {
+func displayHelp[A any](cmdMap map[string]*CmdConfig[A], targetCommand string) {
 	targetCommand = strings.ToLower(targetCommand)
 	if _, ok := cmdMap[targetCommand]; !ok && targetCommand != allCommands && !slices.Contains(helpSkipCommands, targetCommand) {
 		fmt.Println("Error: unknown command: ", targetCommand)
@@ -203,7 +204,7 @@ func displayHelp(cmdMap map[string]*CmdConfig, targetCommand string) {
 }
 
 // searchCommand searches for command keyword
-func searchCommand(cmdMap map[string]*CmdConfig, keyword string) {
+func searchCommand[A any](cmdMap map[string]*CmdConfig[A], keyword string) {
 	keyword = strings.ToLower(keyword)
 	commands := dict.SortedKeys(cmdMap)
 	if keyword == allCommands {
