@@ -5,6 +5,7 @@ import (
 
 	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/my"
+	"github.com/zeroibot/pack/str"
 )
 
 // DisplayOutput prints request logs and error; prints OK if no error
@@ -44,7 +45,7 @@ func DisplayData[T any](rq *my.Request, result ds.Result[T]) {
 	if result.IsError() {
 		DisplayError(result.Error())
 	} else {
-		output, err := str.IndentedJSON(result.Value())
+		output, err := str.IndentedJSON(result.Value(), 2)
 		if err == nil {
 			fmt.Println(output)
 		} else {
