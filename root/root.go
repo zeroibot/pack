@@ -1,3 +1,4 @@
+// Package root contains root application functions
 package root
 
 import (
