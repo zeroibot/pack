@@ -6,4 +6,7 @@ func TestFail(t *testing.T) {
 	// TODO: MismatchCount
 	// TODO: MissingParams
 	// TODO: NotFoundItem
+
+	// TODO: FromErrors
+	// TODO: PublicMessage
 }
