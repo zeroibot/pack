@@ -1,6 +1,7 @@
 package root
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"os"
@@ -52,6 +53,48 @@ func NewCommandMap(cfgs ...*CmdConfig) map[string]*CmdConfig {
 		commands[cfg.Command] = cfg
 	}
 	return commands
+}
+
+// MainLoop is the main REPL of the root application
+func MainLoop(cmdMap map[string]*CmdConfig, onExit func()) {
+	var err error
+	var line, command string
+	var params []string
+
+	fmt.Println("Commands:", len(cmdMap))
+	fmt.Printf("Root: type `%s` for list of commands, `%s` to close\n", cmdHelp, cmdExit)
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("\n> ")
+		line, err = reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error:", err)
+			continue
+		}
+		command, params = getCommandParams(cmdMap, line)
+		if command == "" {
+			continue
+		}
+		switch command {
+		case cmdExit:
+			if onExit != nil {
+				onExit()
+			}
+			return
+		case cmdHelp:
+			if len(params) == 0 {
+				command = allCommands
+			} else {
+				command = params[0]
+			}
+			displayHelp(cmdMap, command)
+		case cmdSearch:
+			keyword := params[0]
+			searchCommand(cmdMap, keyword)
+		default:
+			cmdMap[command].Handler(params)
+		}
+	}
 }
 
 // ParamsMap gets the key=value map from the parameters list
