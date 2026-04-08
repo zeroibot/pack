@@ -1,6 +1,7 @@
 ## v0.3.11 -
   * Commit: 
   * Update Daemon Instance methods
+  * str.RandomString
 ## v0.3.10 - Result Returns
   * Commit: 2026-04-08 08:42
   * Update Conf package
