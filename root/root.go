@@ -99,7 +99,7 @@ func MainLoop[A any](app *A, cmdMap map[string]*CmdConfig[A], onExit func()) {
 }
 
 // ParamsMap gets the key=value map from the parameters list
-func ParamsMap(params []string, required []string, optional []string) (dict.Strings, error) {
+func ParamsMap(params []string, required []string, optional []string) ds.Result[dict.Strings] {
 	if required == nil {
 		required = make([]string, 0)
 	}
@@ -120,10 +120,10 @@ func ParamsMap(params []string, required []string, optional []string) (dict.Stri
 	}
 	for _, key := range required {
 		if _, ok := paramsMap[key]; !ok {
-			return nil, fail.MissingParams
+			return ds.Error[dict.Strings](fail.MissingParams)
 		}
 	}
-	return paramsMap, nil
+	return ds.NewResult(paramsMap, nil)
 }
 
 // Authenticate performs authentication for the Root account in the command-line app

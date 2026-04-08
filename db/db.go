@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/tst"
 )
 
@@ -57,12 +58,12 @@ type ConnParams struct {
 }
 
 // NewSQLConnection creates a new MySQL DB connection pool
-func NewSQLConnection(p *ConnParams) (*sql.DB, error) {
+func NewSQLConnection(p *ConnParams) ds.Result[*sql.DB] {
 	if p == nil {
-		return nil, fmt.Errorf("sql conn params are not set")
+		return ds.Error[*sql.DB](fmt.Errorf("sql conn params are not set"))
 	}
 	if p.Type == "" || p.Host == "" || p.User == "" || p.Password == "" || p.Database == "" || p.Port == "" {
-		return nil, fmt.Errorf("missing sql conn params")
+		return ds.Error[*sql.DB](fmt.Errorf("missing sql conn params"))
 	}
 	address := fmt.Sprintf("%s:%s", p.Host, p.Port)
 	cfg := mysql.Config{
@@ -75,13 +76,13 @@ func NewSQLConnection(p *ConnParams) (*sql.DB, error) {
 	}
 	dbc, err := sql.Open(p.Type, cfg.FormatDSN())
 	if err != nil {
-		return nil, fmt.Errorf("cannot open db: %w", err)
+		return ds.Error[*sql.DB](fmt.Errorf("cannot open db: %w", err))
 	}
 	err = dbc.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("cannot ping db: %w", err)
+		return ds.Error[*sql.DB](fmt.Errorf("cannot ping db: %w", err))
 	}
-	return dbc, nil
+	return ds.NewResult(dbc, nil)
 }
 
 // Adapter is an adapter for sql.DB so it follows the Conn interface

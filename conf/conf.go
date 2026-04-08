@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/zeroibot/pack/dict"
+	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/dyn"
 	"github.com/zeroibot/pack/fail"
 	"github.com/zeroibot/pack/lang"
@@ -34,10 +35,10 @@ type Defaults struct {
 }
 
 // Lookup loads a Config map from database
-func Lookup(this *qb.Instance, rq *my.Request, appKeys []string, kvSchema *model.Schema[KV]) (dict.Strings, error) {
+func Lookup(this *qb.Instance, rq *my.Request, appKeys []string, kvSchema *model.Schema[KV]) ds.Result[dict.Strings] {
 	if kvSchema == nil {
 		rq.Fail(my.Err500, "KV Schema is nil")
-		return nil, fail.MissingParams
+		return ds.Error[dict.Strings](fail.MissingParams)
 	}
 	kv := kvSchema.Ref
 	q := qb.NewLookupQuery[KV](this, kvSchema.Table, &kv.Key, &kv.Value)
@@ -45,9 +46,8 @@ func Lookup(this *qb.Instance, rq *my.Request, appKeys []string, kvSchema *model
 	result := q.Lookup(this, rq.DB)
 	if result.IsError() {
 		rq.Fail(my.Err500, "Failed to load app config from db")
-		return nil, result.Error()
 	}
-	return result.Value(), nil
+	return result
 }
 
 // Create decorates a Config object with the contents of lookup
