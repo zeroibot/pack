@@ -38,7 +38,7 @@ func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.DualCondition[T], tabl
 	}
 
 	// Build DeleteQuery
-	q := qb.NewDeleteQuery[T](s.instance, table)
+	q := qb.NewDeleteQuery[T](s.Instance, table)
 	q.Where(condition)
 
 	// Execute DeleteQuery

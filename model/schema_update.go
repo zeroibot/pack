@@ -61,7 +61,7 @@ func (s *Schema[T]) updateAt(rq *my.Request, updateFn UpdateFn[T], condition qb.
 	}
 
 	// Build UpdateQuery
-	this := s.instance
+	this := s.Instance
 	q := qb.NewUpdateQuery[T](this, table)
 	q.Where(condition)
 	updateFn(this, q) // Call updateFn to add updates
@@ -78,7 +78,7 @@ func (s *Schema[T]) updateFieldsAt(rq *my.Request, updates qb.FieldUpdates, cond
 	}
 
 	// Build UpdateQuery
-	this := s.instance
+	this := s.Instance
 	q := qb.NewUpdateQuery[T](this, table)
 	q.Where(condition)
 	q.Updates(this, updates)

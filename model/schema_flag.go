@@ -58,7 +58,7 @@ func (s *Schema[T]) setFlagsAt(rq *my.Request, condition qb.DualCondition[T], fi
 	}
 
 	// Build UpdateQuery
-	this := s.instance
+	this := s.Instance
 	q := qb.NewUpdateQuery[T](this, table)
 	q.Where(condition)
 	if numItems == 1 {

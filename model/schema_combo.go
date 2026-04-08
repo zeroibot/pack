@@ -89,7 +89,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 // GetAndLockTx gets the item and locks it as part of a transaction
 // Note: no need to include IsLocked = true/false in conditions, as this function adds it
 func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func(T) qb.DualCondition[T]) ds.Result[T] {
-	this := s.instance
+	this := s.Instance
 	isUnlocked := qb.Equal[T](this, lockField, false)
 
 	// Get unlocked item
@@ -117,7 +117,7 @@ func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondit
 // GetAndLockTxItems gets a list of items and locks all of them as part of a transaction
 // Note: no need to include IsLocked = true/false in conditions, as this function adds it
 func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func([]T) qb.DualCondition[T], numItems int) ds.Result[[]T] {
-	this := s.instance
+	this := s.Instance
 	isUnlocked := qb.Equal[T](this, lockField, false)
 
 	// Get unlocked items
@@ -153,7 +153,7 @@ func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectC
 // GetOrCreateAndLockTx runs GetOrCreate and locks the item as part of a transaction
 // Note: no need to include IsLocked = true/false in conditions, as this function adds it
 func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLockParams[T]) ds.Result[T] {
-	this := s.instance
+	this := s.Instance
 	isUnlocked := qb.Equal[T](this, p.LockField, false)
 
 	// Get or create unlocked item
@@ -181,7 +181,7 @@ func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLock
 
 // UpdateAndGetTx updates one time and gets it as part of a transaction
 func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updateCondition, selectCondition qb.DualCondition[T]) ds.Result[T] {
-	this := s.instance
+	this := s.Instance
 
 	// Update one item
 	q := qb.NewUpdateQuery[T](this, s.Table)

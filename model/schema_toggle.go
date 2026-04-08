@@ -85,7 +85,7 @@ func (s *Schema[T]) toggleAt(rq *my.Request, Items *Schema[Item], p toggleParams
 
 	// Build UpdateQuery using Items schema
 	item := Items.Ref
-	this := s.instance
+	this := s.Instance
 	q := qb.NewUpdateQuery[T](this, table)
 	var condition1 qb.DualCondition[T]
 	if p.byID {

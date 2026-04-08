@@ -26,3 +26,7 @@ func TestRepeat(t *testing.T) {
 	}
 	tst.AllP3W1(t, testCases, "Repeat", Repeat, tst.AssertEqual)
 }
+
+func TestRandomString(t *testing.T) {
+	// TODO: RandomString
+}

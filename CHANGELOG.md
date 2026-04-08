@@ -1,3 +1,8 @@
+## v0.3.11 - Instance Updates
+  * Commit: 2026-04-08 13:27
+  * Update Daemon Instance methods
+  * str.RandomString
+  * Expose Schema Instance
 ## v0.3.10 - Result Returns
   * Commit: 2026-04-08 08:42
   * Update Conf package

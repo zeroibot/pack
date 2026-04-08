@@ -2,6 +2,7 @@ package str
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"slices"
 	"strings"
 )
@@ -39,4 +40,34 @@ func (b *Builder) Build(glue string) string {
 // Repeat creates a new string by repeating given string and joining by glue
 func Repeat(count int, text, glue string) string {
 	return strings.Join(slices.Repeat([]string{text}, count), glue)
+}
+
+const (
+	upperLetters string = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+	lowerLetters string = "abcdefghjkmnpqrstuvwxyz"
+	numbers      string = "23456789"
+)
+
+// RandomString creates a random string of given length using uppercase, lowercase letters, and numbers (flags)
+func RandomString(length uint, useUpper, useLower, useNumber bool) string {
+	charSource := ""
+	if useUpper {
+		charSource += upperLetters
+	}
+	if useLower {
+		charSource += lowerLetters
+	}
+	if useNumber {
+		charSource += numbers
+	}
+	numChars := len(charSource)
+	if numChars == 0 {
+		return ""
+	}
+	b := make([]byte, length)
+	for i := range length {
+		idx := rand.IntN(numChars)
+		b[i] = charSource[idx]
+	}
+	return string(b)
 }

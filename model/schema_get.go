@@ -83,7 +83,7 @@ func (s *Schema[T]) getRowAt(rq *my.Request, condition qb.DualCondition[T], tabl
 	}
 
 	// Build SelectRowQuery and execute
-	q := qb.NewFullSelectRowQuery[T](s.instance, table, s.Reader)
+	q := qb.NewFullSelectRowQuery[T](s.Instance, table, s.Reader)
 	q.Where(condition)
 
 	result := q.QueryRow(rq.DB)
@@ -96,7 +96,7 @@ func (s *Schema[T]) getRowAt(rq *my.Request, condition qb.DualCondition[T], tabl
 // Common: create and execute SelectRowsQuery at given table
 func (s *Schema[T]) getRowsAt(rq *my.Request, condition qb.DualCondition[T], table string) ds.Result[[]T] {
 	// Build SelectRowsQuery and execute
-	q := qb.NewFullSelectRowsQuery[T](s.instance, table, s.Reader)
+	q := qb.NewFullSelectRowsQuery[T](s.Instance, table, s.Reader)
 	if condition != nil {
 		q.Where(condition)
 	}

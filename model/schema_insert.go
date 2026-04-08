@@ -61,7 +61,7 @@ func (s *Schema[T]) insertAt(rq *my.Request, item *T, table string, isTx bool) d
 	}
 
 	// Build InsertRowQuery
-	this := s.instance
+	this := s.Instance
 	q := qb.NewInsertRowQuery(this, table)
 	q.Row(this, qb.ToRow(this, item))
 
@@ -106,7 +106,7 @@ func (s *Schema[T]) insertRowsAt(rq *my.Request, items []T, table string, isTx b
 	}
 
 	// Build InsertRowsQuery
-	this := s.instance
+	this := s.Instance
 	rows := list.Map(items, func(item T) dict.Object {
 		return qb.ToRow(this, &item)
 	})

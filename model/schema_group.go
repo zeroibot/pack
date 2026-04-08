@@ -36,7 +36,7 @@ func (s *Schema[T]) countAt(rq *my.Request, condition qb.DualCondition[T], table
 	}
 
 	// Build CountQuery and execute
-	q := qb.NewCountQuery[T](s.instance, table)
+	q := qb.NewCountQuery[T](s.Instance, table)
 	q.Where(condition)
 
 	result := q.Count(rq.DB)
@@ -55,7 +55,7 @@ func (s *Schema[T]) sumAt(rq *my.Request, columns []string, reader qb.RowReader[
 	}
 
 	// Build SumQuery and execute
-	this := s.instance
+	this := s.Instance
 	q := qb.NewSumQuery[T](this, table, reader)
 	q.Columns(this, columns...)
 	q.Where(condition)

@@ -12,7 +12,7 @@ type Schema[T any] struct {
 	Ref      *T
 	Table    string
 	Reader   qb.RowReader[T]
-	instance *qb.Instance
+	Instance *qb.Instance
 }
 
 // NewSchema creates a new Schema and registers its type to qb
@@ -26,7 +26,7 @@ func NewSchema[T any](this *qb.Instance, structRef *T, table string) ds.Result[*
 		Ref:      structRef,
 		Table:    table,
 		Reader:   qb.FullRowReader(this, structRef),
-		instance: this,
+		Instance: this,
 	})
 	return ds.NewResult(schema, nil)
 }
