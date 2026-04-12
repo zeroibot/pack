@@ -35,12 +35,13 @@ type Defaults struct {
 }
 
 // Lookup loads a Config map from database
-func Lookup(this *qb.Instance, kvSchema *model.Schema[KV], rq *my.Request, appKeys []string) ds.Result[dict.Strings] {
+func Lookup(rq *my.Request, appKeys []string, kvSchema *model.Schema[KV]) ds.Result[dict.Strings] {
 	if kvSchema == nil {
 		rq.Fail(my.Err500, "KV Schema is nil")
 		return ds.Error[dict.Strings](fail.MissingParams)
 	}
 	kv := kvSchema.Ref
+	this := kvSchema.Instance
 	q := qb.NewLookupQuery[KV](this, kvSchema.Table, &kv.Key, &kv.Value)
 	q.Where(qb.In[KV](this, &kv.Key, appKeys))
 	result := q.Lookup(this, rq.DB)
