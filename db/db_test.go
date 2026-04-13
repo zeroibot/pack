@@ -46,19 +46,18 @@ func TestDBInterfaces(t *testing.T) {
 }
 
 func TestAdapters(t *testing.T) {
-	cfg := ConnParams{
+	cfg := new(ConnParams{
 		Type:     "mysql",
 		Host:     "localhost",
 		Port:     "3306",
 		User:     "test",
 		Password: "abcd1234",
 		Database: "test",
+	})
+	conn, err := NewSQLConnection(cfg)
+	if err != nil {
+		t.Fatal(err)
 	}
-	result := NewSQLConnection(&cfg)
-	if result.IsError() {
-		t.Fatal(result.Error())
-	}
-	conn := result.Value()
 
 	query, values := "SELECT `ID` FROM users WHERE `Name` = ?", []any{"John"}
 	dbc1 := NewMockAdapter(tst.NewConn[any]())
@@ -73,7 +72,7 @@ func TestAdapters(t *testing.T) {
 		tx, err := dbc.Begin()
 		tst.AssertTrue(t, "Begin", tx != nil && err == nil)
 	}
-	err := conn.Close()
+	err = conn.Close()
 	if err != nil {
 		t.Errorf("cannot close db: %v", err)
 	}
@@ -120,8 +119,8 @@ func TestNewSQLConnection(t *testing.T) {
 		{&cfg9, false, false}, // wrong type
 	}
 	newConn := func(cfg *ConnParams) (bool, bool) {
-		result := NewSQLConnection(cfg)
-		return result.Value() != nil, result.NotError()
+		conn, err := NewSQLConnection(cfg)
+		return conn != nil, err == nil
 	}
 	tst.AllP1W2(t, testCases, "NewSQLConnection", newConn, tst.AssertEqual[bool], tst.AssertEqual[bool])
 }
