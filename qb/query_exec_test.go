@@ -26,7 +26,7 @@ func TestDeleteQuery(t *testing.T) {
 
 	// NewDeleteQuery
 	q1 := NewDeleteQuery[User](this, table)
-	q1.Where(NotEqual(this, &u.Username, "root"))
+	q1.Where2(NotEqual2[User](this, &u.Username, "root"))
 	q2 := NewDeleteQuery[User](this, table) // no condition
 	q3 := NewDeleteQuery[User](this, "")    // blank table
 
@@ -100,16 +100,16 @@ func TestDeleteExec(t *testing.T) {
 	table := "users"
 	q0 := NewDeleteQuery[User](this, "")
 	q1 := NewDeleteQuery[User](this, table)
-	q1.Where(Equal(this, &u.ID, 4))
+	q1.Where2(Equal2[User](this, &u.ID, 4))
 	q2 := NewDeleteQuery[User](this, table)
-	q2.Where(In(this, &u.Job, []string{"Sales", "UX"}))
+	q2.Where2(In2[User](this, &u.Job, []string{"Sales", "UX"}))
 	q3 := NewDeleteQuery[User](this, table)
-	q3.Where(Or(
-		Equal(this, &u.Job, "Dev"),
-		Equal(this, &u.Name, "Ivy"),
+	q3.Where2(Or2[User](
+		Equal2[User](this, &u.Job, "Dev"),
+		Equal2[User](this, &u.Name, "Ivy"),
 	))
 	q4 := NewDeleteQuery[User](this, table)
-	q4.Where(Greater(this, &u.ID, 10))
+	q4.Where2(Greater2[User](this, &u.ID, 10))
 	q5 := NewDeleteQuery[User](this, table) // no condition
 
 	execFn := func(test func(User) bool) func([]User) ([]User, error) {
@@ -460,17 +460,17 @@ func TestUpdateExec(t *testing.T) {
 
 	q0 := NewUpdateQuery[User](this, "")    // no table
 	q1 := NewUpdateQuery[User](this, table) // no update
-	q1.Where(Equal(this, &u.ID, 1))
+	q1.Where2(Equal2[User](this, &u.ID, 1))
 	q2 := NewUpdateQuery[User](this, table)
-	q2.Where(Equal(this, &u.ID, 2))
+	q2.Where2(Equal2[User](this, &u.ID, 2))
 	q2.Update(this, "Name", "Bobby")
 	update2 := func(u User) User { u.Name = "Bobby"; return u }
 	q3 := NewUpdateQuery[User](this, table)
-	q3.Where(Equal(this, &u.Job, "Sales"))
+	q3.Where2(Equal2[User](this, &u.Job, "Sales"))
 	Update(this, q3, &u.Job, "Support")
 	update3 := func(u User) User { u.Job = "Support"; return u }
 	q4 := NewUpdateQuery[User](this, table)
-	q4.Where(In(this, &u.Job, []string{"QA", "Tester", "Admin"}))
+	q4.Where2(In2[User](this, &u.Job, []string{"QA", "Tester", "Admin"}))
 	q4.Updates(this, FieldUpdates{
 		"Name": [2]any{"...", "Anon"},
 		"Job":  [2]any{"...", "Bots"},
