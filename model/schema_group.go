@@ -7,27 +7,27 @@ import (
 )
 
 // Count performs a CountQuery at schema table
-func (s *Schema[T]) Count(rq *my.Request, condition qb.DualCondition[T]) (int, error) {
+func (s *Schema[T]) Count(rq *my.Request, condition qb.Condition) (int, error) {
 	return s.countAt(rq, condition, s.Table)
 }
 
 // CountAt performs a CountQuery at the given table
-func (s *Schema[T]) CountAt(rq *my.Request, condition qb.DualCondition[T], table string) (int, error) {
+func (s *Schema[T]) CountAt(rq *my.Request, condition qb.Condition, table string) (int, error) {
 	return s.countAt(rq, condition, table)
 }
 
 // Sum performs a SumQuery at schema table
-func (s *Schema[T]) Sum(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.DualCondition[T]) (T, error) {
+func (s *Schema[T]) Sum(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.Condition) (T, error) {
 	return s.sumAt(rq, columns, reader, condition, s.Table)
 }
 
 // SumAt performs a SumQuery at the given table
-func (s *Schema[T]) SumAt(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.DualCondition[T], table string) (T, error) {
+func (s *Schema[T]) SumAt(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.Condition, table string) (T, error) {
 	return s.sumAt(rq, columns, reader, condition, table)
 }
 
 // Common: create and execute CountQuery at given table
-func (s *Schema[T]) countAt(rq *my.Request, condition qb.DualCondition[T], table string) (int, error) {
+func (s *Schema[T]) countAt(rq *my.Request, condition qb.Condition, table string) (int, error) {
 	// Check that condition is set
 	if condition == nil {
 		rq.Fail(my.Err500, "Count condition is not set")
@@ -47,7 +47,7 @@ func (s *Schema[T]) countAt(rq *my.Request, condition qb.DualCondition[T], table
 }
 
 // Common: create and execute SumQuery at given table
-func (s *Schema[T]) sumAt(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.DualCondition[T], table string) (T, error) {
+func (s *Schema[T]) sumAt(rq *my.Request, columns []string, reader qb.RowReader[T], condition qb.Condition, table string) (T, error) {
 	var zero T
 	// Check that condition is set
 	if condition == nil {
