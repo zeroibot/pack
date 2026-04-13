@@ -3,7 +3,6 @@ package sys
 import (
 	"fmt"
 
-	"github.com/zeroibot/pack/ds"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/str"
 )
@@ -38,14 +37,14 @@ func DisplayError(err error) {
 }
 
 // DisplayData prints data, request logs, and error
-func DisplayData[T any](rq *my.Request, result ds.Result[T]) {
+func DisplayData[T any](rq *my.Request, data T, err error) {
 	if rq != nil {
 		displayOutput(rq)
 	}
-	if result.IsError() {
-		DisplayError(result.Error())
+	if err != nil {
+		DisplayError(err)
 	} else {
-		output, err := str.IndentedJSON(result.Value(), 2)
+		output, err := str.IndentedJSON(data, 2)
 		if err == nil {
 			fmt.Println(output)
 		} else {
@@ -55,14 +54,13 @@ func DisplayData[T any](rq *my.Request, result ds.Result[T]) {
 }
 
 // DisplayList prints list items, request logs, and error
-func DisplayList[T any](rq *my.Request, result ds.Result[[]T]) {
+func DisplayList[T any](rq *my.Request, items []T, err error) {
 	if rq != nil {
 		displayOutput(rq)
 	}
-	if result.IsError() {
-		DisplayError(result.Error())
+	if err != nil {
+		DisplayError(err)
 	} else {
-		items := result.Value()
 		for i, item := range items {
 			fmt.Printf("%d: %v\n", i+1, item)
 		}
