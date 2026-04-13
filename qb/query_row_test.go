@@ -23,7 +23,7 @@ func TestCountQuery(t *testing.T) {
 	q1 := NewCountQuery[Person](this, table) // with condition
 	q2 := NewCountQuery[Person](this, table) // no condition
 	// CountQuery.Where
-	q1.Where(GreaterEqual[Person](this, &p.Age, 18))
+	q1.Where(GreaterEqual(this, &p.Age, 18))
 	// CountQuery.Test
 	p1 := Person{"John", 20, "dev"}
 	p2 := Person{"Jane", 18, "student"}
@@ -99,8 +99,8 @@ func TestValueQuery(t *testing.T) {
 	q4 := NewValueQuery[User](this, table, &u.Extra)  // blank column
 	q5 := NewValueQuery[User](this, table, &u.secret) // private field
 	// ValueQuery.Where
-	q1.Where(Equal[User](this, &u.Code, "admin"))
-	q2.Where(Equal[User](this, &u.ID, 2))
+	q1.Where(Equal(this, &u.Code, "admin"))
+	q2.Where(Equal(this, &u.ID, 2))
 	// ValueQuery.Test
 	u1 := User{1, "Admin", "admin", "dev", "", "123"}
 	u2 := User{2, "Guest", "guest", "dev", "", "456"}
@@ -189,10 +189,10 @@ func TestSelectRowQuery(t *testing.T) {
 	q8.Columns(this, cols8...)
 	q9.Columns(this, cols9...)
 	// SelectRowQuery.Where
-	q1.Where(Equal[Company](this, &c.Name, "Google"))
-	q2.Where(Equal[Company](this, &c.Code, "XYZ"))
-	q3.Where(Greater[Company](this, &c.Age, 10))
-	q4.Where(NotIn[Company](this, &c.Type, []string{"IT", "Finance"}))
+	q1.Where(Equal(this, &c.Name, "Google"))
+	q2.Where(Equal(this, &c.Code, "XYZ"))
+	q3.Where(Greater(this, &c.Age, 10))
+	q4.Where(NotIn(this, &c.Type, []string{"IT", "Finance"}))
 	// SelectRowQuery.Test
 	c1 := Company{1, "Google", "GGL", 25, "IT", "", "search"}
 	c2 := Company{2, "Unknown", "XYZ", 5, "Finance", "", "banks"}
@@ -282,9 +282,9 @@ func TestTopRowQuery(t *testing.T) {
 	q4 := NewTopRowQuery(this, table, reader2) // no order
 	q5 := NewTopRowQuery(this, table, reader3) // no columns
 	// TopRowQuery.Where
-	q1.Where(Greater[User](this, &u.Balance, 0))
-	q2.Where(GreaterEqual[User](this, &u.Age, 10))
-	q5.Where(Greater[User](this, &u.Age, 0))
+	q1.Where(Greater(this, &u.Balance, 0))
+	q2.Where(GreaterEqual(this, &u.Age, 10))
+	q5.Where(Greater(this, &u.Age, 0))
 	// TopRowQuery.Columns
 	q2.Columns(this, cols2...)
 	q3.Columns(this, cols2...)
@@ -400,10 +400,10 @@ func TestTopValueQuery(t *testing.T) {
 	q5.OrderAsc(this, this.Column(&u.Age))
 
 	// TopValueQuery.Where
-	q1.Where(Greater[User](this, &u.Balance, 0))
-	q2.Where(Greater[User](this, &u.Age, 10))
-	q5.Where(Greater[User](this, &u.Age, 0))
-	q6.Where(Greater[User](this, &u.Age, 10))
+	q1.Where(Greater(this, &u.Balance, 0))
+	q2.Where(Greater(this, &u.Age, 10))
+	q5.Where(Greater(this, &u.Age, 0))
+	q6.Where(Greater(this, &u.Age, 10))
 
 	// TopValueQuery.Test
 	u1 := User{1, "John", "john", 20, 5.0, "x"}
@@ -520,8 +520,8 @@ func TestSumQuery(t *testing.T) {
 	q4.Columns(this, cols3...)
 
 	// SumQuery.Where
-	q1.Where(Greater[Product](this, &p.ID, 100))
-	q2.Where(Lesser[Product](this, &p.Price, 50.0))
+	q1.Where(Greater(this, &p.ID, 100))
+	q2.Where(Lesser(this, &p.Price, 50.0))
 
 	// SumQuery.Test
 	p1 := Product{101, 60.0, 10, 0}

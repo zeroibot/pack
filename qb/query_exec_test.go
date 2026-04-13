@@ -26,7 +26,7 @@ func TestDeleteQuery(t *testing.T) {
 
 	// NewDeleteQuery
 	q1 := NewDeleteQuery[User](this, table)
-	q1.Where(NotEqual[User](this, &u.Username, "root"))
+	q1.Where(NotEqual(this, &u.Username, "root"))
 	q2 := NewDeleteQuery[User](this, table) // no condition
 	q3 := NewDeleteQuery[User](this, "")    // blank table
 
@@ -53,9 +53,9 @@ func TestDeleteQuery(t *testing.T) {
 	// ToString(DeleteQuery)
 	homeIP := new("127.0.0.1")
 	q4 := NewDeleteQuery[User](this, table)
-	q4.Where(Greater[User](this, &u.Count, 5))
+	q4.Where(Greater(this, &u.Count, 5))
 	q5 := NewDeleteQuery[User](this, table)
-	q5.Where(Equal[User](this, &u.IP, homeIP))
+	q5.Where(Equal(this, &u.IP, homeIP))
 	testCases3 := []tst.P1W1[Query, string]{
 		{q1, fmt.Sprintf("DELETE FROM `users` WHERE `Username` <> %q", "root")},
 		{q2, "DELETE FROM `users` WHERE false"},
@@ -69,10 +69,10 @@ func TestDeleteQuery(t *testing.T) {
 	q4.OrderDesc(this, "CreatedAt").Limit(5) // OrderDesc + Limit
 	q5.Limit(10)                             // Limit only
 	q6 := NewDeleteQuery[User](this, table)
-	q6.Where(Lesser[User](this, &u.Count, 10))
+	q6.Where(Lesser(this, &u.Count, 10))
 	q6.OrderDesc(this, "CreatedAt").OrderAsc(this, "ID").Limit(5) // Mixed Orders + Limit
 	q7 := NewDeleteQuery[User](this, table)
-	q7.Where(Equal[User](this, &u.Username, "admin"))
+	q7.Where(Equal(this, &u.Username, "admin"))
 	q7.OrderAsc(this, "ID") // Order only, no limit
 	testCases1 = []tst.P1W2[*DeleteQuery[User], string, []any]{
 		{q1, "DELETE FROM `users` WHERE `Username` <> ? ORDER BY `ID` ASC LIMIT 1", []any{"root"}},
@@ -100,16 +100,16 @@ func TestDeleteExec(t *testing.T) {
 	table := "users"
 	q0 := NewDeleteQuery[User](this, "")
 	q1 := NewDeleteQuery[User](this, table)
-	q1.Where(Equal[User](this, &u.ID, 4))
+	q1.Where(Equal(this, &u.ID, 4))
 	q2 := NewDeleteQuery[User](this, table)
-	q2.Where(In[User](this, &u.Job, []string{"Sales", "UX"}))
+	q2.Where(In(this, &u.Job, []string{"Sales", "UX"}))
 	q3 := NewDeleteQuery[User](this, table)
 	q3.Where(Or[User](
-		Equal[User](this, &u.Job, "Dev"),
-		Equal[User](this, &u.Name, "Ivy"),
+		Equal(this, &u.Job, "Dev"),
+		Equal(this, &u.Name, "Ivy"),
 	))
 	q4 := NewDeleteQuery[User](this, table)
-	q4.Where(Greater[User](this, &u.ID, 10))
+	q4.Where(Greater(this, &u.ID, 10))
 	q5 := NewDeleteQuery[User](this, table) // no condition
 
 	execFn := func(test func(User) bool) func([]User) ([]User, error) {
@@ -396,7 +396,7 @@ func TestUpdateQuery(t *testing.T) {
 	q3 := NewUpdateQuery[User](this, table) // with multiple updates
 	Update(this, q3, &u.Username, "admin")
 	Update(this, q3, &u.Password, "123")
-	q3.Where(Equal[User](this, &u.Username, "root"))
+	q3.Where(Equal(this, &u.Username, "root"))
 	q4 := NewUpdateQuery[User](this, table) // has a nil pair
 	Update(this, q4, &u.Username, "admin")
 	Update(this, q4, &u.secret, "secret")
@@ -406,14 +406,14 @@ func TestUpdateQuery(t *testing.T) {
 	// UpdateQuery.Update, UpdateQuery.Updates
 	q6 := NewUpdateQuery[User](this, table)
 	q6.Update(this, "Count", 5)
-	q6.Where(Greater[User](this, &u.Count, 5))
+	q6.Where(Greater(this, &u.Count, 5))
 	updates := FieldUpdates{
 		"Code":     [2]any{5, 6},
 		"Password": [2]any{"hahaha", "horse"},
 	}
 	q7 := NewUpdateQuery[User](this, table)
 	q7.Updates(this, updates)
-	q7.Where(Equal[User](this, &u.Username, "groot"))
+	q7.Where(Equal(this, &u.Username, "groot"))
 
 	// UpdateQuery.BuildQuery
 	emptyValues := make([]any, 0)
@@ -433,7 +433,7 @@ func TestUpdateQuery(t *testing.T) {
 	q3.OrderDesc(this, "CreatedAt").Limit(1)                      // OrderDesc + Limit
 	q6.Limit(10)                                                  // Limit only
 	q7.OrderDesc(this, "CreatedAt").OrderAsc(this, "ID").Limit(1) // Mixed Orders + Limit
-	q2.Where(Equal[User](this, &u.Username, "groot"))
+	q2.Where(Equal(this, &u.Username, "groot"))
 	q2.OrderAsc(this, "Username") // Order only, no limit
 	testCases = []tst.P1W2[*UpdateQuery[User], string, []any]{
 		{q3, "UPDATE `users` SET `Username` = ?, `Password` = ? WHERE `Username` = ? ORDER BY `CreatedAt` DESC LIMIT 1", []any{"admin", "123", "root"}},
@@ -460,17 +460,17 @@ func TestUpdateExec(t *testing.T) {
 
 	q0 := NewUpdateQuery[User](this, "")    // no table
 	q1 := NewUpdateQuery[User](this, table) // no update
-	q1.Where(Equal[User](this, &u.ID, 1))
+	q1.Where(Equal(this, &u.ID, 1))
 	q2 := NewUpdateQuery[User](this, table)
-	q2.Where(Equal[User](this, &u.ID, 2))
+	q2.Where(Equal(this, &u.ID, 2))
 	q2.Update(this, "Name", "Bobby")
 	update2 := func(u User) User { u.Name = "Bobby"; return u }
 	q3 := NewUpdateQuery[User](this, table)
-	q3.Where(Equal[User](this, &u.Job, "Sales"))
+	q3.Where(Equal(this, &u.Job, "Sales"))
 	Update(this, q3, &u.Job, "Support")
 	update3 := func(u User) User { u.Job = "Support"; return u }
 	q4 := NewUpdateQuery[User](this, table)
-	q4.Where(In[User](this, &u.Job, []string{"QA", "Tester", "Admin"}))
+	q4.Where(In(this, &u.Job, []string{"QA", "Tester", "Admin"}))
 	q4.Updates(this, FieldUpdates{
 		"Name": [2]any{"...", "Anon"},
 		"Job":  [2]any{"...", "Bots"},
@@ -586,7 +586,7 @@ func TestExec(t *testing.T) {
 	// ExecTx
 	q0 := NewDeleteQuery[User](this, "") // empty table
 	q1 := NewDeleteQuery[User](this, table)
-	q1.Where(Equal[User](this, &u.ID, 1))
+	q1.Where(Equal(this, &u.ID, 1))
 
 	res1 := tst.NewResult(1, 0, nil)
 	res2 := tst.NewResult(2, 0, nil)

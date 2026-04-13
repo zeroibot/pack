@@ -93,7 +93,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func(T) qb.DualCondition[T]) (T, error) {
 	var zero T
 	this := s.Instance
-	isUnlocked := qb.Equal[T](this, lockField, false)
+	isUnlocked := qb.Equal(this, lockField, false)
 
 	// Get unlocked item
 	condition := qb.And(selectCondition, isUnlocked)

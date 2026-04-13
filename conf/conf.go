@@ -42,7 +42,7 @@ func Lookup(rq *my.Request, appKeys []string, kvSchema *model.Schema[KV]) (dict.
 	kv := kvSchema.Ref
 	this := kvSchema.Instance
 	q := qb.NewLookupQuery[KV](this, kvSchema.Table, &kv.Key, &kv.Value)
-	q.Where(qb.In[KV](this, &kv.Key, appKeys))
+	q.Where(qb.In(this, &kv.Key, appKeys))
 	lookup, err := q.Lookup(this, rq.DB)
 	if err != nil {
 		rq.Fail(my.Err500, "Failed to load app config from db")

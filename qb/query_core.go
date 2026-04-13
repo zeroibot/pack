@@ -42,7 +42,9 @@ type baseQuery struct {
 // It does not implement the BuildQuery() method; it is embedded by concrete Queries for method reuse
 type conditionQuery[T any] struct {
 	baseQuery
-	condition DualCondition[T]
+	condition Condition
+	combo     DualCondition[T]
+	useCombo  bool
 }
 
 // initialize the baseQuery
@@ -57,24 +59,32 @@ func (q *baseQuery) initialize(this *Instance, table string) {
 func (q *conditionQuery[T]) initializeRequired(this *Instance, table string) {
 	q.baseQuery.initialize(this, table)
 	// if Condition is not set later (required), defaults to false condition
-	q.condition = missingCombo[T]{}
+	q.condition = missingCondition{}
+	q.combo = missingCombo[T]{}
 }
 
 // initialize a conditionQuery with optional condition
 func (q *conditionQuery[T]) initializeOptional(this *Instance, table string) {
 	q.baseQuery.initialize(this, table)
 	// if Condition is not set later (optional), defaults to true condition
-	q.condition = matchAllCombo[T]{}
+	q.condition = matchAllCondition{}
+	q.combo = matchAllCombo[T]{}
 }
 
 // Test uses the test function of the DualCondition
 func (q *conditionQuery[T]) Test(item T) bool {
-	return q.condition.Test(item)
+	return q.combo.Test(item)
 }
 
 // Where sets the Query Condition
-func (q *conditionQuery[T]) Where(condition DualCondition[T]) {
+func (q *conditionQuery[T]) Where(condition Condition) {
+	q.useCombo = false
 	q.condition = condition
+}
+
+func (q *conditionQuery[T]) Where2(condition DualCondition[T]) {
+	q.useCombo = true
+	q.combo = condition
 }
 
 // preBuildCheck checks if the table is set
@@ -88,7 +98,13 @@ func (q *baseQuery) preBuildCheck() error {
 // preBuildCheck checks if the table is set and builds the Condition
 func (q *conditionQuery[T]) preBuildCheck() (string, []any, error) {
 	err := q.baseQuery.preBuildCheck()
-	condition, values := q.condition.BuildCondition()
+	var condition string
+	var values []any
+	if q.useCombo {
+		condition, values = q.combo.BuildCondition()
+	} else {
+		condition, values = q.condition.BuildCondition()
+	}
 	return condition, values, err
 }
 

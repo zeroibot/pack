@@ -34,7 +34,7 @@ func TestQueryCore(t *testing.T) {
 	// Where
 	q3 := new(conditionQuery[User])
 	q3.initializeRequired(this, table)
-	q3.Where(Greater[User](this, &u.Count, 5))
+	q3.Where(Greater(this, &u.Count, 5))
 	// Empty table
 	q4 := new(conditionQuery[User])
 	q4.initializeOptional(this, "")
@@ -50,6 +50,8 @@ func TestQueryCore(t *testing.T) {
 		tst.AssertEqual(t, name, actualCond, x.wantCond)
 		tst.AssertListEqualError(t, name, actualValues, x.wantValues, actualErr, x.errNotNil)
 	}
+
+	// TODO: Test Where2
 }
 
 func TestOrderedLimit(t *testing.T) {

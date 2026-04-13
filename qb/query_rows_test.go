@@ -22,14 +22,14 @@ func TestDistinctValuesQuery(t *testing.T) {
 
 	// NewDistinctValuesQuery
 	q1 := NewDistinctValuesQuery[User](this, table, &u.Username)
-	q1.Where(Equal[User](this, &u.Age, 18))
+	q1.Where(Equal(this, &u.Age, 18))
 	q2 := NewDistinctValuesQuery[User](this, table, &u.Username) // no condition
 	q3 := NewDistinctValuesQuery[User](this, "", &u.Username)    // no table
 	q4 := NewDistinctValuesQuery[User](this, table, new(string)) // invalid field (not in struct)
 	q5 := NewDistinctValuesQuery[User](this, table, &u.secret)   // private field
 	q6 := NewDistinctValuesQuery[User](this, table, &u.Extra)    // blank column
 	q7 := NewDistinctValuesQuery[User](this, table, &u.Username) // zero results
-	q7.Where(Lesser[User](this, &u.Age, 10))
+	q7.Where(Lesser(this, &u.Age, 10))
 
 	// DistinctValuesQuery.BuildQuery
 	emptyValues := make([]any, 0)
@@ -103,9 +103,9 @@ func TestLookupQuery(t *testing.T) {
 
 	// NewLookupQuery
 	q0 := NewLookupQuery[User](this, table, &u.Username, &u.Age)
-	q0.Where(Lesser[User](this, &u.Age, 10))
+	q0.Where(Lesser(this, &u.Age, 10))
 	q1 := NewLookupQuery[User](this, table, &u.Username, &u.Age)
-	q1.Where(Greater[User](this, &u.Age, 18))
+	q1.Where(Greater(this, &u.Age, 18))
 	q2 := NewLookupQuery[User](this, table, &u.Username, &u.Age)    // no condition
 	q3 := NewLookupQuery[User](this, "", &u.Username, &u.Age)       // no table
 	q4 := NewLookupQuery[User](this, table, new(string), &u.Age)    // invalid key field (not in struct)
@@ -216,9 +216,9 @@ func TestSelectRowsQuery(t *testing.T) {
 	q8.Columns(this, cols2...)
 
 	// SelectRowsQuery.Where
-	q1.Where(Greater[Product](this, &p.Price, 100.0))
-	q2.Where(Equal[Product](this, &p.Stock, 50))
-	q8.Where(Equal[Product](this, &p.Name, "Computer"))
+	q1.Where(Greater(this, &p.Price, 100.0))
+	q2.Where(Equal(this, &p.Stock, 50))
+	q8.Where(Equal(this, &p.Name, "Computer"))
 
 	// SelectRowsQuery.OrderAsc, OrderDesc, Limit, Page
 	q1.OrderDesc(this, this.Column(&p.Price)).Limit(10)
@@ -314,8 +314,8 @@ func TestGroupCountQuery(t *testing.T) {
 	q7 := NewGroupCountQuery[User, string](this, table, &u.Name)     // no results
 
 	// GroupCountQuery.Where
-	q3.Where(Greater[User](this, &u.Age, 18))
-	q7.Where(Greater[User](this, &u.ID, 10))
+	q3.Where(Greater(this, &u.Age, 18))
+	q7.Where(Greater(this, &u.ID, 10))
 
 	// GroupCountQuery.BuildQuery
 	emptyValues := make([]any, 0)
@@ -421,8 +421,8 @@ func TestGroupSumQuery(t *testing.T) {
 	q10 := NewGroupSumQuery[Product, string, float64](this, table, &p.Name, &p.Price)    // no results
 
 	// GroupSumQuery.Where
-	q3.Where(Greater[Product](this, &p.Qty, 10))
-	q10.Where(Greater[Product](this, &p.ID, 10))
+	q3.Where(Greater(this, &p.Qty, 10))
+	q10.Where(Greater(this, &p.ID, 10))
 
 	// GroupSumQuery.BuildQuery
 	emptyValues := make([]any, 0)
