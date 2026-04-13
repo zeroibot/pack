@@ -8,45 +8,45 @@ import (
 )
 
 // Get performs a SelectRowQuery at schema table
-func (s *Schema[T]) Get(rq *my.Request, condition qb.DualCondition[T]) (T, error) {
+func (s *Schema[T]) Get(rq *my.Request, condition qb.Condition) (T, error) {
 	return s.getRowAt(rq, condition, s.Table)
 }
 
 // GetAt performs a SelectRowQuery at given table
-func (s *Schema[T]) GetAt(rq *my.Request, condition qb.DualCondition[T], table string) (T, error) {
+func (s *Schema[T]) GetAt(rq *my.Request, condition qb.Condition, table string) (T, error) {
 	return s.getRowAt(rq, condition, table)
 }
 
 // GetOnly performs a SelectRowQuery at schema table and prunes the item with given field names
-func (s *Schema[T]) GetOnly(rq *my.Request, condition qb.DualCondition[T], fieldNames ...string) (dict.Object, error) {
+func (s *Schema[T]) GetOnly(rq *my.Request, condition qb.Condition, fieldNames ...string) (dict.Object, error) {
 	item, err := s.getRowAt(rq, condition, s.Table)
 	return pruneRow(item, err, fieldNames...)
 }
 
 // GetOnlyAt performs a SelectRowQuery at given table and prunes the item with given field names
-func (s *Schema[T]) GetOnlyAt(rq *my.Request, condition qb.DualCondition[T], table string, fieldNames ...string) (dict.Object, error) {
+func (s *Schema[T]) GetOnlyAt(rq *my.Request, condition qb.Condition, table string, fieldNames ...string) (dict.Object, error) {
 	item, err := s.getRowAt(rq, condition, table)
 	return pruneRow(item, err, fieldNames...)
 }
 
 // GetRows performs a SelectRowsQuery at schema table
-func (s *Schema[T]) GetRows(rq *my.Request, condition qb.DualCondition[T]) ([]T, error) {
+func (s *Schema[T]) GetRows(rq *my.Request, condition qb.Condition) ([]T, error) {
 	return s.getRowsAt(rq, condition, s.Table)
 }
 
 // GetRowsAt performs a SelectRowsQuery at given table
-func (s *Schema[T]) GetRowsAt(rq *my.Request, condition qb.DualCondition[T], table string) ([]T, error) {
+func (s *Schema[T]) GetRowsAt(rq *my.Request, condition qb.Condition, table string) ([]T, error) {
 	return s.getRowsAt(rq, condition, table)
 }
 
 // GetRowsOnly performs a SelectRowsQuery at schema table and prunes the items with given field names
-func (s *Schema[T]) GetRowsOnly(rq *my.Request, condition qb.DualCondition[T], fieldNames ...string) ([]dict.Object, error) {
+func (s *Schema[T]) GetRowsOnly(rq *my.Request, condition qb.Condition, fieldNames ...string) ([]dict.Object, error) {
 	items, err := s.getRowsAt(rq, condition, s.Table)
 	return pruneRows(items, err, fieldNames...)
 }
 
 // GetRowsOnlyAt performs a SelectRowsQuery at given table and prunes the items with given field names
-func (s *Schema[T]) GetRowsOnlyAt(rq *my.Request, condition qb.DualCondition[T], table string, fieldNames ...string) ([]dict.Object, error) {
+func (s *Schema[T]) GetRowsOnlyAt(rq *my.Request, condition qb.Condition, table string, fieldNames ...string) ([]dict.Object, error) {
 	items, err := s.getRowsAt(rq, condition, table)
 	return pruneRows(items, err, fieldNames...)
 }
@@ -74,7 +74,7 @@ func (s *Schema[T]) GetAllRowsOnlyAt(rq *my.Request, table string, fieldNames ..
 }
 
 // Common: create and execute SelectRowQuery at given table
-func (s *Schema[T]) getRowAt(rq *my.Request, condition qb.DualCondition[T], table string) (T, error) {
+func (s *Schema[T]) getRowAt(rq *my.Request, condition qb.Condition, table string) (T, error) {
 	var zero T
 	// Check that condition is set
 	if condition == nil {
@@ -95,7 +95,7 @@ func (s *Schema[T]) getRowAt(rq *my.Request, condition qb.DualCondition[T], tabl
 }
 
 // Common: create and execute SelectRowsQuery at given table
-func (s *Schema[T]) getRowsAt(rq *my.Request, condition qb.DualCondition[T], table string) ([]T, error) {
+func (s *Schema[T]) getRowsAt(rq *my.Request, condition qb.Condition, table string) ([]T, error) {
 	// Build SelectRowsQuery and execute
 	q := qb.NewFullSelectRowsQuery[T](s.Instance, table, s.Reader)
 	if condition != nil {
