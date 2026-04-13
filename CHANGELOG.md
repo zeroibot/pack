@@ -8,6 +8,7 @@
   * Update Schema Toggle
   * Update Schema Group
   * Update Schema Get
+  * Update Schema Combo
 ## v0.3.12 - Remove Result
   * Commit: 2026-04-13 10:46
   * String Colors

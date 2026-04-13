@@ -104,7 +104,7 @@ func TestDeleteExec(t *testing.T) {
 	q2 := NewDeleteQuery[User](this, table)
 	q2.Where(In(this, &u.Job, []string{"Sales", "UX"}))
 	q3 := NewDeleteQuery[User](this, table)
-	q3.Where(Or[User](
+	q3.Where(Or(
 		Equal(this, &u.Job, "Dev"),
 		Equal(this, &u.Name, "Ivy"),
 	))

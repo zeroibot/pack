@@ -11,7 +11,7 @@ import (
 type GetOrCreateParams[T any] struct {
 	Name          string
 	Owner         string
-	PreCondition  qb.DualCondition[T]
+	PreCondition  qb.Condition
 	PostCondition qb.DualCondition[T]
 	NewFn         func() T
 	UpdateFn      func(*T, ID)
@@ -20,7 +20,7 @@ type GetOrCreateParams[T any] struct {
 type GetOrCreateAndLockParams[T any] struct {
 	GetOrCreateParams[T]
 	LockField       *bool
-	LockConditionFn func(T) qb.DualCondition[T]
+	LockConditionFn func(T) qb.Condition
 }
 
 // GetOrCreate gets the item if it exists, otherwise creates and returns it
@@ -90,7 +90,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 
 // GetAndLockTx gets the item and locks it as part of a transaction
 // Note: no need to include IsLocked = true/false in conditions, as this function adds it
-func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func(T) qb.DualCondition[T]) (T, error) {
+func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondition qb.Condition, lockConditionFn func(T) qb.Condition) (T, error) {
 	var zero T
 	this := s.Instance
 	isUnlocked := qb.Equal(this, lockField, false)
@@ -117,9 +117,9 @@ func (s *Schema[T]) GetAndLockTx(rqtx *my.Request, lockField *bool, selectCondit
 
 // GetAndLockTxItems gets a list of items and locks all of them as part of a transaction
 // Note: no need to include IsLocked = true/false in conditions, as this function adds it
-func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectCondition qb.DualCondition[T], lockConditionFn func([]T) qb.DualCondition[T], numItems int) ([]T, error) {
+func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectCondition qb.Condition, lockConditionFn func([]T) qb.Condition, numItems int) ([]T, error) {
 	this := s.Instance
-	isUnlocked := qb.Equal[T](this, lockField, false)
+	isUnlocked := qb.Equal(this, lockField, false)
 
 	// Get unlocked items
 	condition := qb.And(selectCondition, isUnlocked)
@@ -153,13 +153,13 @@ func (s *Schema[T]) GetAndLockTxItems(rqtx *my.Request, lockField *bool, selectC
 func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLockParams[T]) (T, error) {
 	var zero T
 	this := s.Instance
-	isUnlocked := qb.Equal[T](this, p.LockField, false)
+	isUnlocked := qb.Equal2[T](this, p.LockField, false)
 
 	// Get or create unlocked item
 	if p.PostCondition == nil {
 		p.PostCondition = isUnlocked
 	} else {
-		p.PostCondition = qb.And(p.PostCondition, isUnlocked)
+		p.PostCondition = qb.And2(p.PostCondition, isUnlocked)
 	}
 	item, err := s.GetOrCreateTx(rqtx, &p.GetOrCreateParams)
 	if err != nil {
@@ -178,7 +178,7 @@ func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLock
 }
 
 // UpdateAndGetTx updates one time and gets it as part of a transaction
-func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updateCondition, selectCondition qb.DualCondition[T]) (T, error) {
+func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updateCondition, selectCondition qb.Condition) (T, error) {
 	var zero T
 	this := s.Instance
 
@@ -203,7 +203,7 @@ func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updat
 }
 
 // MoveItemTx inserts an item to the insertSchema and deletes the corresponding item from the deleteSchema, as part of a transaction
-func MoveItemTx[I, D any](rqtx *my.Request, insertSchema *Schema[I], item *I, deleteSchema *Schema[D], deleteCondition qb.DualCondition[D]) error {
+func MoveItemTx[I, D any](rqtx *my.Request, insertSchema *Schema[I], item *I, deleteSchema *Schema[D], deleteCondition qb.Condition) error {
 	// 1) Insert item to insertSchema
 	_, err := insertSchema.InsertTx(rqtx, item)
 	if err != nil {
