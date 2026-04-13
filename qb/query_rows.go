@@ -190,10 +190,10 @@ func (q *DistinctValuesQuery[T, V]) Query(this *Instance, dbc db.Conn) ds.Result
 }
 
 // Lookup executes the LookupQuery and returns the map[K]V lookup
-func (q *LookupQuery[T, K, V]) Lookup(this *Instance, dbc db.Conn) ds.Result[map[K]V] {
+func (q *LookupQuery[T, K, V]) Lookup(this *Instance, dbc db.Conn) (map[K]V, error) {
 	query, values, err := preReadCheck(q, dbc, q.reader)
 	if err != nil {
-		return ds.Error[map[K]V](err)
+		return nil, err
 	}
 
 	lookup := make(map[K]V)
@@ -207,10 +207,9 @@ func (q *LookupQuery[T, K, V]) Lookup(this *Instance, dbc db.Conn) ds.Result[map
 		lookup[keyResult.Value()] = valueResult.Value()
 	})
 	if err != nil {
-		return ds.Error[map[K]V](err)
+		return nil, err
 	}
-
-	return ds.NewResult(lookup, nil)
+	return lookup, nil
 }
 
 // Query executes the SelectRowsQuery and returns the list of rows
