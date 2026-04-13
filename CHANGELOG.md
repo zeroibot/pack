@@ -5,6 +5,7 @@
   * Update Schema Delete
   * Update Schema Set Flag
   * Update Schema Update
+  * Update Schema Toggle
 ## v0.3.12 - Remove Result
   * Commit: 2026-04-13 10:46
   * String Colors

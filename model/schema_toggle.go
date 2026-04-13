@@ -84,14 +84,14 @@ func (s *Schema[T]) toggleAt(rq *my.Request, Items *Schema[Item], p toggleParams
 	item := Items.Ref
 	this := s.Instance
 	q := qb.NewUpdateQuery[T](this, table)
-	var condition1 qb.DualCondition[T]
+	var condition1 qb.Condition
 	if p.byID {
-		condition1 = qb.Equal[T](this, &item.ID, p.id)
+		condition1 = qb.Equal(this, &item.ID, p.id)
 	} else {
-		condition1 = qb.Equal[T](this, &item.Code, p.code)
+		condition1 = qb.Equal(this, &item.Code, p.code)
 	}
-	condition2 := qb.Equal[T](this, &item.IsActive, !p.isActive)
-	q.Where(qb.And[T](condition1, condition2))
+	condition2 := qb.Equal(this, &item.IsActive, !p.isActive)
+	q.Where(qb.And(condition1, condition2))
 	qb.Update(this, q, &item.IsActive, p.isActive)
 
 	// Execute UpdateQuery
