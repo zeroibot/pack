@@ -17,4 +17,6 @@ func TestRequest(t *testing.T) {
 	// TODO: Request.StartTransaction
 	// TODO: Request.CommitTransaction
 	// TODO: Request.AddTxStep
+	// TODO: Request.AddDB
+	// TODO: Request.SwitchDB
 }

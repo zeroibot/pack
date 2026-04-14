@@ -19,6 +19,8 @@ var (
 	errNoDBTx   = errors.New("no db transaction")
 )
 
+const MainDB string = "main"
+
 // Task contains the Action and Target of the task
 type Task struct {
 	Action string
@@ -47,8 +49,10 @@ type Request struct {
 	Status  int
 	Now     clock.DateTime
 	// Private fields
+	this    *Instance
 	start   clock.DateTime
 	txSteps []qb.Query
+	dbMap   map[string]db.Conn
 	// Logs
 	mu   sync.RWMutex
 	logs []string
@@ -59,12 +63,13 @@ func (i *Instance) NewRequest(name string, args ...any) (*Request, error) {
 	if len(args) > 0 {
 		name = fmt.Sprintf(name, args...)
 	}
-	rq := newRequest(name)
+	rq := newRequest(i, name)
 	if i.dbConn == nil {
 		rq.Status = Err500
 		return nil, errNoDBConn
 	}
 	rq.DB = i.dbConn
+	rq.dbMap[MainDB] = i.dbConn
 	return rq, nil
 }
 
@@ -73,25 +78,48 @@ func (i *Instance) NewRequestAt(key, name string, args ...any) (*Request, error)
 	if len(args) > 0 {
 		name = fmt.Sprintf(name, args...)
 	}
-	rq := newRequest(name)
+	rq := newRequest(i, name)
 	conn, ok := i.dbConnMap[key]
 	if !ok || conn == nil {
 		rq.Status = Err500
 		return nil, errNoDBConn
 	}
 	rq.DB = conn
+	rq.dbMap[MainDB] = conn
 	return rq, nil
 }
 
 // Create a new Request object
-func newRequest(name string) *Request {
+func newRequest(this *Instance, name string) *Request {
 	return new(Request{
+		this:   this,
 		Name:   name,
 		Params: make(dict.Object),
 		Status: OK200,
 		start:  clock.DateTimeNow(),
 		logs:   make([]string, 0),
+		dbMap:  make(map[string]db.Conn),
 	})
+}
+
+// AddDB adds a database connection to the request
+func (rq *Request) AddDB(key string) bool {
+	conn, ok := rq.this.dbConnMap[key]
+	if !ok {
+		return false
+	}
+	rq.dbMap[key] = conn
+	return true
+}
+
+// SwitchDB changes the database connection of the request
+func (rq *Request) SwitchDB(key string) bool {
+	conn, ok := rq.dbMap[key]
+	if !ok {
+		return false
+	}
+	rq.DB = conn
+	return true
 }
 
 // AddLog adds a log message to the request
