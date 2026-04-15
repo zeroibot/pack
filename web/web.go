@@ -92,6 +92,12 @@ func getStatusMessage(rq *my.Request, err error) (int, string) {
 	}
 	if errors.Is(err, fail.MissingParams) {
 		status = my.Err400
+	} else if errors.Is(err, fail.MissingSession) {
+		status = my.Err401
+	} else if errors.Is(err, fail.NotAuthorized) {
+		status = my.Err403
+	} else if errors.Is(err, fail.NotFoundItem) {
+		status = my.Err404
 	}
 	return status, message
 }

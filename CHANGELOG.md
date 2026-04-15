@@ -1,6 +1,7 @@
 ## v0.3.15 - Web and Do Packages 
   * Commit:
   * Web Response Functions
+  * Web Server
 ## v0.3.14 - Request DB Switching 
   * Commit: 2026-04-14 08:30
   * Request.AddDB
