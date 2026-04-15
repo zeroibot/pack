@@ -1,9 +1,10 @@
-## v0.3.15 - Web and Do Packages 
-  * Commit:
+## v0.3.15 - Web Package
+  * Commit: 2026-04-14 20:27
   * Web Response Functions
   * Web Server
   * Web Middleware
   * Web Read Value and Body
+  * Web Register Routes
 ## v0.3.14 - Request DB Switching 
   * Commit: 2026-04-14 08:30
   * Request.AddDB
