@@ -42,9 +42,18 @@ type CmdConfig[A any] struct {
 	Handler   CmdHandler[A]
 }
 
+type cmdTask[A any] interface {
+	Cmd() CmdHandler[A]
+}
+
 // NewCommand creates a new CmdConfig
 func NewCommand[A any](command string, minParams int, docs string, handler CmdHandler[A]) *CmdConfig[A] {
 	return new(CmdConfig[A]{command, minParams, docs, handler})
+}
+
+// NewCommandTask creates a new CmdConfig
+func NewCommandTask[A any](command string, minParams int, docs string, task cmdTask[A]) *CmdConfig[A] {
+	return NewCommand[A](command, minParams, docs, task.Cmd())
 }
 
 // NewCommandMap creates a new map of command to CmdConfigs

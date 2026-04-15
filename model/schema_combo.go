@@ -48,7 +48,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 
 	numRows := len(rows)
 	if numRows > 1 {
-		rq.Fail(my.Err500, "Failed to get one %s", p.Name)
+		rq.Fail(my.Err404, "Failed to get one %s", p.Name)
 		err := fmt.Errorf("public: Multiple %s found", p.Name)
 		if isTx {
 			err = qb.Rollback(rq.Tx, err) // manual rollback
@@ -78,7 +78,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 	item := rows[0]
 	// Check if item passes PostCondition
 	if p.PostCondition != nil && p.PostCondition.Test(item) == false {
-		rq.Fail(my.Err500, "Failed to get %s", p.Name)
+		rq.Fail(my.Err404, "Failed to get %s", p.Name)
 		err := fail.NotFoundItem
 		if isTx {
 			err = qb.Rollback(rq.Tx, err) // manual rollback
