@@ -1,3 +1,6 @@
+## v0.3.16 - Do Package 
+  * Commit: 
+  * Remove App type from Daemon Instance
 ## v0.3.15 - Web Package
   * Commit: 2026-04-14 20:27
   * Web Response Functions

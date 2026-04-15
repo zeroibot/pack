@@ -10,15 +10,15 @@ import (
 	"github.com/zeroibot/pack/io"
 )
 
-type Instance[A any] struct {
+type Instance struct {
 	start    *dict.SyncMap[string, time.Time]
 	last     *dict.SyncMap[string, time.Time]
 	duration *dict.SyncMap[string, time.Duration]
 }
 
 // NewInstance creates a new Daemon Instance
-func NewInstance[A any]() *Instance[A] {
-	return new(Instance[A]{
+func NewInstance[A any]() *Instance {
+	return new(Instance{
 		start:    dict.NewSyncMap[string, time.Time](),
 		last:     dict.NewSyncMap[string, time.Time](),
 		duration: dict.NewSyncMap[string, time.Duration](),
@@ -60,7 +60,7 @@ func LoadConfig[T any](path string) (*T, error) {
 }
 
 // Run runs a task every given interval, where TimeScale = time.Hour, time.Minute, time.Second
-func (i *Instance[A]) Run(app *A, name string, task func(*A), interval int, timeScale time.Duration) {
+func (i *Instance) Run(name string, task func(), interval int, timeScale time.Duration) {
 	if interval < 0 {
 		fmt.Printf("Daemon:%s is disabled\n", name)
 		return
@@ -72,7 +72,7 @@ func (i *Instance[A]) Run(app *A, name string, task func(*A), interval int, time
 		for {
 			start := time.Now()
 			i.last.Set(name, start)
-			task(app)
+			task()
 			clock.Sleep(timeInterval, start)
 		}
 	}()
@@ -85,7 +85,7 @@ type Info struct {
 }
 
 // All returns info on all running daemons
-func (i *Instance[A]) All() map[string]Info {
+func (i *Instance) All() map[string]Info {
 	startTimes := i.start.Map()
 	lastTimes := i.last.Map()
 	durations := i.duration.Map()
