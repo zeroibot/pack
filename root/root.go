@@ -33,7 +33,7 @@ var (
 )
 
 // CmdHandler takes in a list of string parameters
-type CmdHandler[A any] = func(*A, []string)
+type CmdHandler[A any] = func(A, []string)
 
 type CmdConfig[A any] struct {
 	Command   string
@@ -43,7 +43,7 @@ type CmdConfig[A any] struct {
 }
 
 type cmdTask[A any] interface {
-	Cmd() CmdHandler[A]
+	CmdHandler() CmdHandler[A]
 }
 
 // NewCommand creates a new CmdConfig
@@ -53,7 +53,7 @@ func NewCommand[A any](command string, minParams int, docs string, handler CmdHa
 
 // NewCommandTask creates a new CmdConfig
 func NewCommandTask[A any](command string, minParams int, docs string, task cmdTask[A]) *CmdConfig[A] {
-	return NewCommand[A](command, minParams, docs, task.Cmd())
+	return NewCommand[A](command, minParams, docs, task.CmdHandler())
 }
 
 // NewCommandMap creates a new map of command to CmdConfigs
@@ -66,7 +66,7 @@ func NewCommandMap[A any](cfgs ...*CmdConfig[A]) map[string]*CmdConfig[A] {
 }
 
 // MainLoop is the main REPL of the root application
-func MainLoop[A any](app *A, cmdMap map[string]*CmdConfig[A], onExit func()) {
+func MainLoop[A any](app A, cmdMap map[string]*CmdConfig[A], onExit func()) {
 	var err error
 	var line, command string
 	var params []string
