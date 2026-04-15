@@ -26,6 +26,19 @@ func Heartbeat(w http.ResponseWriter, _ *http.Request) {
 	SendJSON(w, http.StatusOK, Response{clock.DateTimeNow(), true, okMessage})
 }
 
+// GetCtxValue gets the value from the context and type coerces into type T
+func GetCtxValue[T any](r *http.Request, key string) (T, bool) {
+	value, ok := r.Context().Value(key).(T)
+	return value, ok
+}
+
+// RequestBody reads the request body into struct type T
+func RequestBody[T any](r *http.Request) (T, error) {
+	var item T
+	err := json.NewDecoder(r.Body).Decode(&item)
+	return item, err
+}
+
 // SendJSON sends a JSON response to the client
 func SendJSON[T any](w http.ResponseWriter, statusCode int, data T) {
 	w.Header().Set("Content-Type", "application/json")
