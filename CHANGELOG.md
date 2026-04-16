@@ -1,10 +1,17 @@
+## v0.3.17 - Comb Package
+  * Commit: 2026-04-16 09:55
+  * web.RequestValidBody
+  * Comb Factorial
+  * Comb Product
+  * Comb Permutations
+  * List SumIndex and SumKey
 ## v0.3.16 - Do Package 
-  * Commit: 2026-04-14 21:31
+  * Commit: 2026-04-15 21:31
   * Remove App type from Daemon Instance
   * Data Task
   * Action Task
 ## v0.3.15 - Web Package
-  * Commit: 2026-04-14 20:27
+  * Commit: 2026-04-15 20:27
   * Web Response Functions
   * Web Server
   * Web Middleware

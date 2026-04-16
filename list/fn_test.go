@@ -116,4 +116,10 @@ func TestSumProduct(t *testing.T) {
 	}
 	tst.AssertEqual(t, "SumOf", SumOf(persons, getAge), 67)
 	tst.AssertEqual(t, "SumOf", SumOf(persons, getBalance), 53.0)
+
+	// TODO: ProductOf
+	// TODO: SumIndex
+	// TODO: SumKey
+	// TODO: ProductIndex
+	// TODO: ProductKey
 }

@@ -17,7 +17,7 @@ type Instance struct {
 }
 
 // NewInstance creates a new Daemon Instance
-func NewInstance[A any]() *Instance {
+func NewInstance() *Instance {
 	return new(Instance{
 		start:    dict.NewSyncMap[string, time.Time](),
 		last:     dict.NewSyncMap[string, time.Time](),

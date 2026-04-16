@@ -21,6 +21,10 @@ type Response struct {
 	Msg  string
 }
 
+type validatable interface {
+	IsValid() bool
+}
+
 // Heartbeat is a health check web endpoint
 func Heartbeat(w http.ResponseWriter, _ *http.Request) {
 	SendJSON(w, http.StatusOK, Response{clock.DateTimeNow(), true, okMessage})
@@ -37,6 +41,19 @@ func RequestBody[T any](r *http.Request) (T, error) {
 	var item T
 	err := json.NewDecoder(r.Body).Decode(&item)
 	return item, err
+}
+
+// RequestValidBody reads the request body into struct type T and checks if it is valid
+func RequestValidBody[T validatable](r *http.Request) (T, error) {
+	var zero T
+	item, err := RequestBody[T](r)
+	if err != nil {
+		return zero, err
+	}
+	if !item.IsValid() {
+		return zero, fail.MissingParams
+	}
+	return item, nil
 }
 
 // SendJSON sends a JSON response to the client

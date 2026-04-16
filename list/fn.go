@@ -135,11 +135,62 @@ func SumOf[T any, V number.Type](items []T, convert func(T) V) V {
 	return sum
 }
 
+// SumIndex combines SumOf and MapList
+func SumIndex[T number.Type](indexes []int, items []T) T {
+	var sum T = 0
+	numItems := len(items)
+	for _, idx := range indexes {
+		if 0 <= idx && idx < numItems {
+			sum += items[idx]
+		}
+	}
+	return sum
+}
+
+// SumKey combines SumOf and MapLookup
+func SumKey[K comparable, V number.Type](keys []K, items map[K]V) V {
+	var sum V = 0
+	for _, key := range keys {
+		sum += items[key]
+	}
+	return sum
+}
+
 // Product computes the product of number items
 func Product[T number.Type](numbers []T) T {
 	var product T = 1
 	for _, x := range numbers {
 		product *= x
+	}
+	return product
+}
+
+// ProductOf comptues the product of mapped number items
+func ProductOf[T any, V number.Type](items []T, convert func(T) V) V {
+	var product V = 1
+	for _, item := range items {
+		product *= convert(item)
+	}
+	return product
+}
+
+// ProductIndex combines ProductOf and MapList
+func ProductIndex[T number.Type](indexes []int, items []T) T {
+	var product T = 1
+	numItems := len(items)
+	for _, idx := range indexes {
+		if 0 <= idx && idx < numItems {
+			product *= items[idx]
+		}
+	}
+	return product
+}
+
+// ProductKey combines ProductOf and MapLookup
+func ProductKey[K comparable, V number.Type](keys []K, items map[K]V) V {
+	var product V = 1
+	for _, key := range keys {
+		product *= items[key]
 	}
 	return product
 }
