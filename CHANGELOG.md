@@ -1,6 +1,7 @@
-## v0.3.17 - 
+## v0.3.17 - Comb Package
   * Commit: 
   * web.RequestValidBody
+  * Comb Factorial
 ## v0.3.16 - Do Package 
   * Commit: 2026-04-14 21:31
   * Remove App type from Daemon Instance
