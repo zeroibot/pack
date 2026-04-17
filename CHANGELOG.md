@@ -1,3 +1,6 @@
+## v0.3.20 - Update Model Field Methods 
+  * Commit: 2026-04-17 16:14
+  * Update Model Field Methods
 ## v0.3.19 - Schema Order Rows
   * Commit: 2026-04-17 13:53
   * Schema GetAscRows and GetDescRows

@@ -13,12 +13,8 @@ type IDField struct {
 	ID ID `json:"-"`
 }
 
-func (x *IDField) GetID() ID {
+func (x IDField) GetID() ID {
 	return x.ID
-}
-
-func (x *IDField) SetID(id ID) {
-	x.ID = id
 }
 
 // CodeField is an embeddable Code property
@@ -44,12 +40,8 @@ type IsActiveField struct {
 	IsActive bool `json:"-"`
 }
 
-func (x *IsActiveField) GetIsActive() bool {
+func (x IsActiveField) GetIsActive() bool {
 	return x.IsActive
-}
-
-func (x *IsActiveField) SetIsActive(isActive bool) {
-	x.IsActive = isActive
 }
 
 // Identity combines IDField and CodeField
