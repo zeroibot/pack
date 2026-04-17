@@ -6,23 +6,21 @@ import (
 )
 
 type Handler = http.HandlerFunc
-type HandlerFn[A any] = func(A) Handler
-type HandlerMap[A any] = map[string]HandlerFn[A]
-type HandlerTask[A any] = map[string]task[A]
+type HandlerMap = map[string]Handler
+type HandlerTask = map[string]webTask
 
-type task[A any] interface {
-	WebHandler() HandlerFn[A]
+type webTask interface {
+	WebHandler() Handler
 }
 
 // RegisterRoutes adds handlers to the router
-func RegisterRoutes[A any](this A, mux *http.ServeMux, verb string, handlers HandlerMap[A], middlewares ...Middleware) int {
+func RegisterRoutes(mux *http.ServeMux, verb string, handlers HandlerMap, middlewares ...Middleware) int {
 	var middleware Middleware = nil
 	if len(middlewares) > 0 {
 		middleware = StackMiddlewares(middlewares...)
 	}
-	for path, handlerFn := range handlers {
+	for path, handler := range handlers {
 		pattern := fmt.Sprintf("%s %s", verb, path)
-		handler := handlerFn(this)
 		if middleware != nil {
 			mux.Handle(pattern, middleware(handler))
 		} else {
@@ -33,10 +31,10 @@ func RegisterRoutes[A any](this A, mux *http.ServeMux, verb string, handlers Han
 }
 
 // RegisterTasks adds handlers to the routers from the tasks
-func RegisterTasks[A any](this A, mux *http.ServeMux, verb string, tasks HandlerTask[A], middlewares ...Middleware) int {
-	handlers := make(HandlerMap[A])
+func RegisterTasks(mux *http.ServeMux, verb string, tasks HandlerTask, middlewares ...Middleware) int {
+	handlers := make(HandlerMap)
 	for path, task := range tasks {
 		handlers[path] = task.WebHandler()
 	}
-	return RegisterRoutes(this, mux, verb, handlers, middlewares...)
+	return RegisterRoutes(mux, verb, handlers, middlewares...)
 }
