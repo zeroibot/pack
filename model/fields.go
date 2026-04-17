@@ -41,7 +41,7 @@ func (x CreatedAtField) GetDateTime() DateTime {
 
 // IsActiveField is an embeddable IsActive property
 type IsActiveField struct {
-	IsActive bool
+	IsActive bool `json:"-"`
 }
 
 func (x *IsActiveField) GetIsActive() bool {
