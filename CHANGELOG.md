@@ -1,3 +1,7 @@
+## v0.3.19 - Schema Order Rows
+  * Commit: 
+  * Schema GetAscRows and GetDescRows
+  * Schema TopAscRows and TopDescRows
 ## v0.3.18 - Update Task Handlers 
   * Commit: 2026-04-17 09:14
   * Remove App type in root package
