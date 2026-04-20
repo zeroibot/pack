@@ -1,3 +1,6 @@
+## v0.3.22 - Fix ForkData 
+  * Commit: 2026-04-20 10:44
+  * Remove generic type from ForkData
 ## v0.3.21 - Fork Tasks
   * Commit: 2026-04-20 10:23
   * web.RequestOrigin

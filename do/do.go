@@ -20,6 +20,7 @@ var errNoMyInstance = errors.New("no My instance")
 
 type DataFn[T any] = func(*my.Request) (T, error)
 type ActionFn = func(*my.Request) error
+type ForkFn = func(*my.Request) (any, error)
 
 type CmdParamsFn = func(*my.Request, []string) error
 type WebParamsFn = func(*my.Request, *http.Request) error
@@ -39,9 +40,9 @@ type Action struct {
 	Web  WebParamsFn
 }
 
-type ForkData[T any] struct {
+type ForkData struct {
 	Name   string
-	Fork   map[string]DataFn[T]
+	Fork   map[string]ForkFn
 	WebKey WebKeyFn
 	Cmd    CmdParamsFn
 	Web    WebParamsFn
@@ -60,6 +61,13 @@ func SetMyInstance(i *my.Instance) {
 	myInstance = i
 }
 
+// Fn converts a DataFn into a ForkFn
+func Fn[T any](fn DataFn[T]) ForkFn {
+	return func(rq *my.Request) (any, error) {
+		return fn(rq)
+	}
+}
+
 // CmdHandler returns a Data root command handler
 func (t Data[T]) CmdHandler() root.CmdHandler {
 	return func(params []string) {
@@ -74,7 +82,7 @@ func (t Data[T]) CmdHandler() root.CmdHandler {
 }
 
 // CmdHandler returns a ForkData root command handler
-func (t ForkData[T]) CmdHandler() root.CmdHandler {
+func (t ForkData) CmdHandler() root.CmdHandler {
 	return func(params []string) {
 		rq, key, err := cmdFork(t.Name, params, t.Cmd)
 		if err != nil {
@@ -136,7 +144,7 @@ func (t Data[T]) WebHandler() web.Handler {
 }
 
 // WebHandler returns a ForkData web handler
-func (t ForkData[T]) WebHandler() web.Handler {
+func (t ForkData) WebHandler() web.Handler {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rq, key, err := webFork(t.Name, r, t.WebKey, t.Web)
 		if err != nil {
