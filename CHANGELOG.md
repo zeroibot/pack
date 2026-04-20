@@ -1,8 +1,9 @@
 ## v0.3.21 - Fork Tasks
-  * Commit: 
+  * Commit: 2026-04-20 10:23
   * web.RequestOrigin
   * ForkData task
   * ForkAction task
+  * Refactor common cmd and web task steps
 ## v0.3.20 - Update Model Field Methods 
   * Commit: 2026-04-17 16:14
   * Update Model Field Methods

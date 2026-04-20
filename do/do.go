@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/zeroibot/pack/dict"
 	"github.com/zeroibot/pack/fail"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/root"
@@ -24,6 +23,7 @@ type ActionFn = func(*my.Request) error
 
 type CmdParamsFn = func(*my.Request, []string) error
 type WebParamsFn = func(*my.Request, *http.Request) error
+type WebKeyFn = func(*http.Request) string
 
 type Data[T any] struct {
 	Name string
@@ -42,7 +42,7 @@ type Action struct {
 type ForkData[T any] struct {
 	Name   string
 	Fork   map[string]DataFn[T]
-	WebKey func(*http.Request) string
+	WebKey WebKeyFn
 	Cmd    CmdParamsFn
 	Web    WebParamsFn
 }
@@ -50,7 +50,7 @@ type ForkData[T any] struct {
 type ForkAction struct {
 	Name   string
 	Fork   map[string]ActionFn
-	WebKey func(*http.Request) string
+	WebKey WebKeyFn
 	Cmd    CmdParamsFn
 	Web    WebParamsFn
 }
@@ -125,21 +125,10 @@ func (t ForkAction) CmdHandler() root.CmdHandler {
 // WebHandler returns a Data web handler
 func (t Data[T]) WebHandler() web.Handler {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if myInstance == nil {
-			web.SendError(w, nil, errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, err := webBasic(t.Name, r, t.Web)
 		if err != nil {
 			web.SendError(w, rq, err)
 			return
-		}
-		if t.Web != nil {
-			err = t.Web(rq, r)
-			if err != nil {
-				web.SendError(w, rq, err)
-				return
-			}
 		}
 		data, err := t.Fn(rq)
 		web.SendDataResponse(w, rq, data, err)
@@ -149,28 +138,16 @@ func (t Data[T]) WebHandler() web.Handler {
 // WebHandler returns a ForkData web handler
 func (t ForkData[T]) WebHandler() web.Handler {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if myInstance == nil {
-			web.SendError(w, nil, errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, key, err := webFork(t.Name, r, t.WebKey, t.Web)
 		if err != nil {
 			web.SendError(w, rq, err)
 			return
 		}
-		key := t.WebKey(r)
-		if dict.NoKey(t.Fork, key) {
+		fn, ok := t.Fork[key]
+		if !ok {
 			web.SendError(w, rq, fail.InvalidOption)
 			return
 		}
-		if t.Web != nil {
-			err = t.Web(rq, r)
-			if err != nil {
-				web.SendError(w, rq, err)
-				return
-			}
-		}
-		fn := t.Fork[key]
 		data, err := fn(rq)
 		web.SendDataResponse(w, rq, data, err)
 	}
@@ -179,23 +156,30 @@ func (t ForkData[T]) WebHandler() web.Handler {
 // WebHandler returns an Action web handler
 func (t Action) WebHandler() web.Handler {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if myInstance == nil {
-			web.SendError(w, nil, errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, err := webBasic(t.Name, r, t.Web)
 		if err != nil {
 			web.SendError(w, rq, err)
 			return
 		}
-		if t.Web != nil {
-			err = t.Web(rq, r)
-			if err != nil {
-				web.SendError(w, rq, err)
-				return
-			}
-		}
 		err = t.Fn(rq)
+		web.SendActionResponse(w, rq, err)
+	}
+}
+
+// WebHandler returns a ForkAction web handler
+func (t ForkAction) WebHandler() web.Handler {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rq, key, err := webFork(t.Name, r, t.WebKey, t.Web)
+		if err != nil {
+			web.SendError(w, rq, err)
+			return
+		}
+		fn, ok := t.Fork[key]
+		if !ok {
+			web.SendError(w, rq, fail.InvalidOption)
+			return
+		}
+		err = fn(rq)
 		web.SendActionResponse(w, rq, err)
 	}
 }
@@ -230,6 +214,43 @@ func cmdFork(name string, params []string, cmdParams CmdParamsFn) (*my.Request, 
 	key, params := params[0], params[1:]
 	if cmdParams != nil {
 		err = cmdParams(rq, params)
+		if err != nil {
+			return rq, "", err
+		}
+	}
+	return rq, key, nil
+}
+
+// Common: basic web handlers
+func webBasic(name string, r *http.Request, webParams WebParamsFn) (*my.Request, error) {
+	if myInstance == nil {
+		return nil, errNoMyInstance
+	}
+	rq, err := myInstance.NewRequest(name)
+	if err != nil {
+		return rq, err
+	}
+	if webParams != nil {
+		err = webParams(rq, r)
+		if err != nil {
+			return rq, err
+		}
+	}
+	return rq, nil
+}
+
+// Common: fork web handlers
+func webFork(name string, r *http.Request, webKey WebKeyFn, webParams WebParamsFn) (*my.Request, string, error) {
+	if myInstance == nil {
+		return nil, "", errNoMyInstance
+	}
+	rq, err := myInstance.NewRequest(name)
+	if err != nil {
+		return rq, "", err
+	}
+	key := webKey(r)
+	if webParams != nil {
+		err = webParams(rq, r)
 		if err != nil {
 			return rq, "", err
 		}
