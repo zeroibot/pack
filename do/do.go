@@ -47,6 +47,14 @@ type ForkData[T any] struct {
 	Web    WebParamsFn
 }
 
+type ForkAction struct {
+	Name   string
+	Fork   map[string]ActionFn
+	WebKey func(*http.Request) string
+	Cmd    CmdParamsFn
+	Web    WebParamsFn
+}
+
 // SetMyInstance sets the My instance
 func SetMyInstance(i *my.Instance) {
 	myInstance = i
@@ -55,21 +63,10 @@ func SetMyInstance(i *my.Instance) {
 // CmdHandler returns a Data root command handler
 func (t Data[T]) CmdHandler() root.CmdHandler {
 	return func(params []string) {
-		if myInstance == nil {
-			sys.DisplayError(errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, err := cmdBasic(t.Name, params, t.Cmd)
 		if err != nil {
 			sys.DisplayError(err)
 			return
-		}
-		if t.Cmd != nil {
-			err = t.Cmd(rq, params)
-			if err != nil {
-				sys.DisplayError(err)
-				return
-			}
 		}
 		data, err := t.Fn(rq)
 		sys.DisplayData(rq, data, err)
@@ -79,28 +76,16 @@ func (t Data[T]) CmdHandler() root.CmdHandler {
 // CmdHandler returns a ForkData root command handler
 func (t ForkData[T]) CmdHandler() root.CmdHandler {
 	return func(params []string) {
-		if myInstance == nil {
-			sys.DisplayError(errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, key, err := cmdFork(t.Name, params, t.Cmd)
 		if err != nil {
 			sys.DisplayError(err)
 			return
 		}
-		key, params := params[0], params[1:]
-		if dict.NoKey(t.Fork, key) {
+		fn, ok := t.Fork[key]
+		if !ok {
 			sys.DisplayError(fail.InvalidOption)
 			return
 		}
-		if t.Cmd != nil {
-			err = t.Cmd(rq, params)
-			if err != nil {
-				sys.DisplayError(err)
-				return
-			}
-		}
-		fn := t.Fork[key]
 		data, err := fn(rq)
 		sys.DisplayData(rq, data, err)
 	}
@@ -109,23 +94,30 @@ func (t ForkData[T]) CmdHandler() root.CmdHandler {
 // CmdHandler returns an Action root command handler
 func (t Action) CmdHandler() root.CmdHandler {
 	return func(params []string) {
-		if myInstance == nil {
-			sys.DisplayError(errNoMyInstance)
-			return
-		}
-		rq, err := myInstance.NewRequest(t.Name)
+		rq, err := cmdBasic(t.Name, params, t.Cmd)
 		if err != nil {
 			sys.DisplayError(err)
 			return
 		}
-		if t.Cmd != nil {
-			err = t.Cmd(rq, params)
-			if err != nil {
-				sys.DisplayError(err)
-				return
-			}
-		}
 		err = t.Fn(rq)
+		sys.DisplayOutput(rq, err)
+	}
+}
+
+// CmdHandler returns a ForkAction root command handler
+func (t ForkAction) CmdHandler() root.CmdHandler {
+	return func(params []string) {
+		rq, key, err := cmdFork(t.Name, params, t.Cmd)
+		if err != nil {
+			sys.DisplayError(err)
+			return
+		}
+		fn, ok := t.Fork[key]
+		if !ok {
+			sys.DisplayError(fail.InvalidOption)
+			return
+		}
+		err = fn(rq)
 		sys.DisplayOutput(rq, err)
 	}
 }
@@ -206,4 +198,41 @@ func (t Action) WebHandler() web.Handler {
 		err = t.Fn(rq)
 		web.SendActionResponse(w, rq, err)
 	}
+}
+
+// Common: basic command handlers
+func cmdBasic(name string, params []string, cmdParams CmdParamsFn) (*my.Request, error) {
+	if myInstance == nil {
+		return nil, errNoMyInstance
+	}
+	rq, err := myInstance.NewRequest(name)
+	if err != nil {
+		return rq, err
+	}
+	if cmdParams != nil {
+		err = cmdParams(rq, params)
+		if err != nil {
+			return rq, err
+		}
+	}
+	return rq, nil
+}
+
+// Common: fork command handlers
+func cmdFork(name string, params []string, cmdParams CmdParamsFn) (*my.Request, string, error) {
+	if myInstance == nil {
+		return nil, "", errNoMyInstance
+	}
+	rq, err := myInstance.NewRequest(name)
+	if err != nil {
+		return rq, "", err
+	}
+	key, params := params[0], params[1:]
+	if cmdParams != nil {
+		err = cmdParams(rq, params)
+		if err != nil {
+			return rq, "", err
+		}
+	}
+	return rq, key, nil
 }
