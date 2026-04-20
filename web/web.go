@@ -9,6 +9,7 @@ import (
 
 	"github.com/zeroibot/pack/clock"
 	"github.com/zeroibot/pack/fail"
+	"github.com/zeroibot/pack/lang"
 	"github.com/zeroibot/pack/my"
 	"github.com/zeroibot/pack/str"
 )
@@ -19,6 +20,11 @@ type Response struct {
 	Data any
 	OK   bool
 	Msg  string
+}
+
+type RequestOrigin struct {
+	BrowserInfo *string
+	IPAddress   *string
 }
 
 type validatable interface {
@@ -41,6 +47,19 @@ func RequestBody[T any](r *http.Request) (T, error) {
 	var item T
 	err := json.NewDecoder(r.Body).Decode(&item)
 	return item, err
+}
+
+// GetRequestOrigin gets the BrowserInfo and IPAddress of the request
+func GetRequestOrigin(r *http.Request) RequestOrigin {
+	browser := r.UserAgent()
+	ip := r.RemoteAddr
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		ip = xff
+	}
+	return RequestOrigin{
+		BrowserInfo: lang.Ternary(browser == "", nil, new(browser)),
+		IPAddress:   lang.Ternary(ip == "", nil, new(ip)),
+	}
 }
 
 // RequestValidBody reads the request body into struct type T and checks if it is valid
@@ -122,7 +141,7 @@ func getStatusMessage(rq *my.Request, err error) (int, string) {
 	}
 	if errors.Is(err, fail.MissingParams) {
 		status = my.Err400
-	} else if errors.Is(err, fail.MissingSession) {
+	} else if errors.Is(err, fail.InvalidSession) {
 		status = my.Err401
 	} else if errors.Is(err, fail.NotAuthorized) {
 		status = my.Err403

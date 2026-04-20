@@ -8,9 +8,9 @@ import (
 )
 
 var (
+	InvalidSession = errors.New("public: Invalid session")
 	MismatchCount  = errors.New("public: Count does not match")
 	MissingParams  = errors.New("public: Missing required parameters")
-	MissingSession = errors.New("public: Missing session")
 	NotAuthorized  = errors.New("public: Not authorized")
 	NotFoundItem   = errors.New("public: Item not found")
 )
