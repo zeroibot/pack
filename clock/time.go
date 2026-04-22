@@ -6,3 +6,8 @@ import "time"
 func DateTimeNow() DateTime {
 	return StandardFormat(time.Now())
 }
+
+// TimestampNow returns the current datetime in timestamp format
+func TimestampNow() DateTime {
+	return TimestampFormat(time.Now())
+}

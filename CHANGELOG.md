@@ -1,3 +1,6 @@
+## v0.3.23 - Daemon Functions
+  * Commit: 
+  * Clock TimestampNow
 ## v0.3.22 - Fix ForkData 
   * Commit: 2026-04-20 10:44
   * Remove generic type from ForkData
