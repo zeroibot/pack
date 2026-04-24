@@ -85,12 +85,8 @@ func (s *Schema[T]) insertAt(rq *my.Request, item *T, table string, isTx bool) (
 		return 0, errors.New("no rows inserted")
 	}
 
-	// Get last inserted ID
-	id, ok := qb.LastInsertID(result)
-	if !ok {
-		rq.Fail(my.Err500, "Failed to get last inserted ID")
-		return 0, errors.New("failed to get last inserted ID")
-	}
+	// Get last inserted ID, don't fail if cannot get LastInsertID since some tables may not have ID
+	id, _ := qb.LastInsertID(result)
 
 	rq.Status = my.OK201
 	return id, nil

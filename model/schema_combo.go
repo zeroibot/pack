@@ -79,7 +79,7 @@ func (s *Schema[T]) getOrCreate(rq *my.Request, p *GetOrCreateParams[T], isTx bo
 	// Check if item passes PostCondition
 	if p.PostCondition != nil && p.PostCondition.Test(item) == false {
 		rq.Fail(my.Err404, "Failed to get %s", p.Name)
-		err := fail.NotFoundItem
+		err = fail.NotFoundItem
 		if isTx {
 			err = qb.Rollback(rq.Tx, err) // manual rollback
 		}
