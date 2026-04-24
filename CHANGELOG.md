@@ -1,6 +1,7 @@
-## v0.3.24 - 
-  * Commit: 
+## v0.3.24 - Request ExpectAffected
+  * Commit: 2026-04-24 10:37
   * Remove error on Schema Insert without InsertID
+  * Add Request ExpectAffected
 ## v0.3.23 - Daemon RunWithOffset
   * Commit: 2026-04-22 14:00
   * Clock TimestampNow

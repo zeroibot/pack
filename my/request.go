@@ -197,6 +197,11 @@ func (rq *Request) StartTransaction(numSteps int) error {
 	return nil
 }
 
+// ExpectAffected adds a AssertRowsAffected checker to the transaction
+func (rq *Request) ExpectAffected(count int) {
+	rq.Checker = qb.AssertRowsAffected(count)
+}
+
 // CommitTransaction commits the database transaction
 func (rq *Request) CommitTransaction() error {
 	if rq.DB == nil {
