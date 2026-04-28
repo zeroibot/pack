@@ -16,4 +16,9 @@ func TestTime(t *testing.T) {
 	// TODO: DateTimeNowWithExpiry
 	// TODO: TimeNow
 	// TODO: HourMinNow
+	// TODO: Parse, ParseDateTime
+	// TODO: IsExpired
+	// TODO: ExtendTime
+	// TODO: DurationSince, ElapsedSince
+	// TODO: ExtractTime
 }
