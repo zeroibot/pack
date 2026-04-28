@@ -1,6 +1,7 @@
-## v0.3.26 - 
-  * Commit:
+## v0.3.26 - Clock Functions
+  * Commit: 
   * Clock Extract Date Parts
+  * Time Now Functions
 ## v0.3.25 - Fork Name 
   * Commit: 2026-04-24 19:50
   * ForkName in ForkData and ForkAction
