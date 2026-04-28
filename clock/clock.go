@@ -1,7 +1,10 @@
 // Package clock contains time and date-related functions
 package clock
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 const (
 	dateFmt      string = "2006-01-02"
@@ -16,6 +19,11 @@ type (
 	Time     = string
 	DateTime = string
 )
+
+// Sleep pauses for a given duration, given the start time
+func Sleep(pause time.Duration, start time.Time) {
+	time.Sleep(pause - time.Since(start))
+}
 
 // DateFormat formats the given time in date format (yyyy-mm-dd)
 func DateFormat(t time.Time) Date {
@@ -42,7 +50,31 @@ func TimestampFormat(t time.Time) string {
 	return t.Format(timestampFmt)
 }
 
-// Sleep pauses for a given duration, given the start time
-func Sleep(pause time.Duration, start time.Time) {
-	time.Sleep(pause - time.Since(start))
+// IsValidDate checks if given yyyy-mm-dd date is valid
+func IsValidDate(date string) bool {
+	_, err := time.Parse(dateFmt, strings.TrimSpace(date))
+	return err == nil
+}
+
+// IsValidDateTime checks if given datetime in standard format is valid
+func IsValidDateTime(datetime string) bool {
+	_, err := time.Parse(standardFmt, strings.TrimSpace(datetime))
+	return err == nil
+}
+
+// ExtractDate returns the date part of the given datetime string
+func ExtractDate(datetime string) string {
+	if !IsValidDateTime(datetime) {
+		return ""
+	}
+	return strings.Fields(datetime)[0]
+}
+
+// ExtractYearMonth returns the year and month part of the given datetime string
+func ExtractYearMonth(datetime string) string {
+	date := ExtractDate(datetime)
+	if date == "" {
+		return ""
+	}
+	return date[0:7] // yyyy-mm
 }

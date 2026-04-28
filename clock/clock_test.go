@@ -15,4 +15,8 @@ func TestClockFormat(t *testing.T) {
 	tst.AssertEqual(t, "StandardFormat", StandardFormat(now), now.Format("2006-01-02 15:04:05"))
 	tst.AssertEqual(t, "TimestampFormat", TimestampFormat(now), now.Format("060102150405"))
 	Sleep(1*time.Second, now)
+	// TODO: IsValidDate
+	// TODO: IsValidDateTime
+	// TODO: ExtractDate
+	// TODO: ExtractYearMonth
 }
