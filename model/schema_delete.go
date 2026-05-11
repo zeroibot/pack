@@ -55,7 +55,7 @@ func (s *Schema[T]) deleteAt(rq *my.Request, condition qb.Condition, table strin
 	}
 
 	rowsDeleted := qb.RowsAffected(result)
-	if rowsDeleted != 1 {
+	if rowsDeleted > 1 {
 		rq.AddFmtLog("Deleted: %d %s", rowsDeleted, s.Name)
 	}
 	return rowsDeleted, nil
