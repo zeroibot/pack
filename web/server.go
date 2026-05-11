@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	Base string
-	Port int
+	Base     string
+	Port     int
+	CORSList []string
 }
 
 // LoadConfig loads the web Config from path

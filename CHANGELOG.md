@@ -1,4 +1,8 @@
-## v0.3.26 - Clock Functions
+## v0.3.27 - CORS Middleware
+  * Commit: 2026-05-11 09:46
+  * Add CORSList to Web Config
+  * Web NewCORSMiddleware
+## v0.3.26 - Clock Function
   * Commit: 2026-04-28 14:23
   * Clock Extract Date Parts
   * Time Now Functions
