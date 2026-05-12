@@ -48,7 +48,7 @@ func NewCORSMiddleware(appEnv sys.Env, allowedOrigins []string) Middleware {
 
 			// Handle preflight requests
 			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusNoContent)
+				w.WriteHeader(http.StatusOK)
 				return
 			}
 			next.ServeHTTP(w, r)

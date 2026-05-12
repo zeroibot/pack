@@ -1,3 +1,6 @@
+## v0.3.28 - 
+  * Commit: 
+  * CORSMiddleware Preflight returns 200
 ## v0.3.27 - CORS Middleware
   * Commit: 2026-05-11 09:46
   * Add CORSList to Web Config
