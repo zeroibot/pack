@@ -1,6 +1,7 @@
-## v0.3.28 - 
-  * Commit: 
+## v0.3.28 - CORS Preflight
+  * Commit: 2026-05-12 10:05
   * CORSMiddleware Preflight returns 200
+  * CORSMiddleware Preflight Access-Control-Max-Age
 ## v0.3.27 - CORS Middleware
   * Commit: 2026-05-11 09:46
   * Add CORSList to Web Config

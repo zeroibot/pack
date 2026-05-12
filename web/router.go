@@ -16,7 +16,9 @@ type webTask interface {
 // RegisterRoutes adds handlers to the router
 func RegisterRoutes(mux *http.ServeMux, verb string, handlers HandlerMap, middlewares ...Middleware) int {
 	var middleware Middleware = nil
-	if len(middlewares) > 0 {
+	if len(middlewares) == 1 {
+		middleware = middlewares[0]
+	} else if len(middlewares) > 1 {
 		middleware = StackMiddlewares(middlewares...)
 	}
 	for path, handler := range handlers {
