@@ -47,8 +47,9 @@ func NewCORSMiddleware(appEnv sys.Env, allowedOrigins []string) Middleware {
 			w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, User-Agent, Cache-Control")
 
 			// Handle preflight requests
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusNoContent)
+			if r.Method == http.MethodOptions {
+				w.Header().Set("Access-Control-Max-Age", "43200") // skip checking OPTIONS for 12 hours
+				w.WriteHeader(http.StatusOK)
 				return
 			}
 			next.ServeHTTP(w, r)
