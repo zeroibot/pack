@@ -1,3 +1,6 @@
+## v0.3.29 - Schema GetAndUpdateTx
+  * Commit: 2026-05-14 11:10
+  * Change UpdateAndGetTx to GetAndUpdateTx
 ## v0.3.28 - CORS Preflight
   * Commit: 2026-05-12 10:05
   * CORSMiddleware Preflight returns 200
