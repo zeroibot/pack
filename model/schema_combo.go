@@ -177,26 +177,25 @@ func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLock
 	return item, nil
 }
 
-// UpdateAndGetTx updates one time and gets it as part of a transaction
-func (s *Schema[T]) UpdateAndGetTx(rqtx *my.Request, updateFn UpdateFn[T], updateCondition, selectCondition qb.Condition) (T, error) {
+// GetAndUpdateTx updates one item and gets it as part of a transaction
+func (s *Schema[T]) GetAndUpdateTx(rqtx *my.Request, selectCondition qb.Condition, queryUpdateFn func(*qb.UpdateQuery[T], T)) (T, error) {
 	var zero T
 	this := s.Instance
-
-	// Update one item
-	q := qb.NewUpdateQuery[T](this, s.Table)
-	q.Where(updateCondition)
-	q.Limit(1)
-	updateFn(this, q)
-	err := s.update(rqtx, q, true)
-	if err != nil {
-		return zero, err
-	}
 
 	// Select one item
 	item, err := s.Get(rqtx, selectCondition)
 	if err != nil {
 		// Manual rollback on error of Get
 		return zero, qb.Rollback(rqtx.Tx, err)
+	}
+
+	// Update one item
+	q := qb.NewUpdateQuery[T](this, s.Table)
+	q.Limit(1)
+	queryUpdateFn(q, item) // decorate with Update condition and query updates
+	err = s.update(rqtx, q, true)
+	if err != nil {
+		return zero, err
 	}
 
 	return item, nil
