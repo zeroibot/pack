@@ -47,8 +47,8 @@ func (s *Server) SetHandler(handler http.Handler) {
 }
 
 // Run starts the web server
-func (s *Server) Run() {
+func (s *Server) Run() error {
 	message := fmt.Sprintf("Server started at %s", s.server.Addr)
 	fmt.Printf("[INFO] (%s) %s\n", clock.DateTimeNow(), message)
-	s.server.ListenAndServe()
+	return s.server.ListenAndServe()
 }
