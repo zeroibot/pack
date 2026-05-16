@@ -1,3 +1,6 @@
+## v0.3.30 - Secrets Package 
+  * Commit: 2026-05-16 23:38
+  * Secrets package
 ## v0.3.29 - Schema GetAndUpdateTx
   * Commit: 2026-05-14 11:10
   * Change UpdateAndGetTx to GetAndUpdateTx
