@@ -55,6 +55,16 @@ func (s *Schema[T]) TopDescRowsAt(rq *my.Request, condition qb.Condition, orderC
 	return s.topRowsAt(rq, condition, orderColumn, table, false, limit)
 }
 
+// TopOrderedRows performs a SelectRowsQuery with multiple ordered columns at schema table, with limit set
+func (s *Schema[T]) TopOrderedRows(rq *my.Request, condition qb.Condition, limit uint, columnOrders ...qb.ColumnOrder) ([]T, error) {
+	return s.topOrderedRowsAt(rq, condition, s.Table, limit, columnOrders...)
+}
+
+// TopOrderedRowsAt performs a SelectRowsQuery with multiple ordere columns at given table, with limit set
+func (s *Schema[T]) TopOrderedRowsAt(rq *my.Request, condition qb.Condition, limit uint, table string, columnOrders ...qb.ColumnOrder) ([]T, error) {
+	return s.topOrderedRowsAt(rq, condition, table, limit, columnOrders...)
+}
+
 // Common: create and execute SelectRowsQuery, with order and limit set, at given table
 func (s *Schema[T]) topRowsAt(rq *my.Request, condition qb.Condition, orderColumn string, table string, isAscending bool, limit uint) ([]T, error) {
 	// Build SelectRowsQuery and execute
