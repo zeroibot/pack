@@ -21,6 +21,13 @@ var (
 	MySQL = dbType{"mysql"}
 )
 
+const (
+	Asc  int = 1
+	Desc int = -1
+)
+
+type ColumnOrder = ds.Tuple2[string, int]
+
 // prepareIdentifier wraps the identifier depending on the database type
 func (db dbType) prepareIdentifier(identifier string) string {
 	switch db.name {
