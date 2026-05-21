@@ -84,3 +84,65 @@ func TestCombinations(t *testing.T) {
 		})
 	}
 }
+
+func TestRangeCombinations(t *testing.T) {
+	items := []string{"A", "B", "C", "D"}
+	k := 2
+	// Combinations:
+	// 0: A, B
+	// 1: A, C
+	// 2: A, D
+	// 3: B, C
+	// 4: B, D
+	// 5: C, D
+
+	tests := []struct {
+		name  string
+		start uint64
+		end   uint64
+		want  [][]string
+	}{
+		{
+			name:  "Full range",
+			start: 0,
+			end:   6,
+			want: [][]string{
+				{"A", "B"}, {"A", "C"}, {"A", "D"}, {"B", "C"}, {"B", "D"}, {"C", "D"},
+			},
+		},
+		{
+			name:  "Sub range",
+			start: 1,
+			end:   4,
+			want: [][]string{
+				{"A", "C"}, {"A", "D"}, {"B", "C"},
+			},
+		},
+		{
+			name:  "Single item",
+			start: 2,
+			end:   3,
+			want: [][]string{
+				{"A", "D"},
+			},
+		},
+		{
+			name:  "Empty range",
+			start: 3,
+			end:   3,
+			want:  nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got [][]string
+			for _, combo := range RangeCombinations(tt.start, tt.end, items, k) {
+				got = append(got, combo)
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("RangeCombinations() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
