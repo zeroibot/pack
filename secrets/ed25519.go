@@ -45,3 +45,27 @@ func GenerateEd25519Keys(pubKeyPath, privKeyPath string) error {
 	fmt.Printf("Saved Ed25519 keys to '%s' and '%s'\n", pubKeyPath, privKeyPath)
 	return nil
 }
+
+// LoadEd25519PrivateKey loads Ed25519 private key from PEM file
+func LoadEd25519PrivateKey(path string) (ed25519.PrivateKey, error) {
+	privPem, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	pemBlock, _ := pem.Decode(privPem)
+	if pemBlock == nil || pemBlock.Type != "PRIVATE KEY" {
+		return nil, fmt.Errorf("failed to decode private key PEM block")
+	}
+
+	parsedKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	privateKey, ok := parsedKey.(ed25519.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("invalid ed25519 private key")
+	}
+
+	return privateKey, nil
+}

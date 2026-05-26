@@ -1,6 +1,7 @@
 ## v0.3.33 - Ed25519 Signature 
   * Commit: 
   * Generate Ed25519 Keys
+  * Load Ed25519 Private Key from File
 ## v0.3.32 - Combinations
   * Commit: 2026-05-22 06:59 
   * Combinations
