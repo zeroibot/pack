@@ -53,6 +53,7 @@ func LoadEd25519PrivateKey(path string) (ed25519.PrivateKey, error) {
 		return nil, err
 	}
 	pemBlock, _ := pem.Decode(privPem)
+
 	if pemBlock == nil || pemBlock.Type != "PRIVATE KEY" {
 		return nil, fmt.Errorf("failed to decode private key PEM block")
 	}
@@ -68,4 +69,29 @@ func LoadEd25519PrivateKey(path string) (ed25519.PrivateKey, error) {
 	}
 
 	return privateKey, nil
+}
+
+// LoadEd25519PublicKey loads Ed25519 public key from PEM file
+func LoadEd25519PublicKey(path string) (ed25519.PublicKey, error) {
+	pubPem, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	pemBlock, _ := pem.Decode(pubPem)
+
+	if pemBlock == nil || pemBlock.Type != "PUBLIC KEY" {
+		return nil, fmt.Errorf("failed to decode public key PEM block")
+	}
+
+	parsedKey, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	publicKey, ok := parsedKey.(ed25519.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("invalid ed25519 public key")
+	}
+
+	return publicKey, nil
 }
