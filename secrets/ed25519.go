@@ -3,6 +3,7 @@ package secrets
 import (
 	"crypto/ed25519"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/pem"
 	"fmt"
 	"os"
@@ -94,4 +95,15 @@ func LoadEd25519PublicKey(path string) (ed25519.PublicKey, error) {
 	}
 
 	return publicKey, nil
+}
+
+// Ed25519SignMessage generates a message signature using Ed25519
+func Ed25519SignMessage(message string, privKeyPath string) (string, error) {
+	privKey, err := LoadEd25519PrivateKey(privKeyPath)
+	if err != nil {
+		return "", err
+	}
+
+	signature := hex.EncodeToString(ed25519.Sign(privKey, []byte(message)))
+	return signature, nil
 }

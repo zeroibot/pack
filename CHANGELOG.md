@@ -3,6 +3,7 @@
   * Generate Ed25519 Keys
   * Load Ed25519 Private Key from File
   * Load Ed25519 Public Key from File
+  * Ed25519 Sign Message
 ## v0.3.32 - Combinations
   * Commit: 2026-05-22 06:59 
   * Combinations
