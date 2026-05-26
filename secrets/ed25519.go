@@ -104,8 +104,12 @@ func Ed25519SignMessage(message, privKeyPath string) (string, error) {
 		return "", err
 	}
 
-	signature := hex.EncodeToString(ed25519.Sign(privKey, []byte(message)))
-	return signature, nil
+	return Ed25519SignMessageWithKey(message, privKey), nil
+}
+
+// Ed25519SignMessageWithKey generates a message signature using Ed25519 and the given private key
+func Ed25519SignMessageWithKey(message string, privKey ed25519.PrivateKey) string {
+	return hex.EncodeToString(ed25519.Sign(privKey, []byte(message)))
 }
 
 // Ed25519VerifySignature verifies a message signature using Ed25519
