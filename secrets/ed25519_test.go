@@ -9,4 +9,5 @@ func TestEd25519(t *testing.T) {
 	// TODO: Ed25519SignMessage
 	// TODO: Ed25519VerifySignature
 	// TODO: Ed25519SignMessageWithKey
+	// TODO: Ed25519VerifySignatureWithKey
 }
