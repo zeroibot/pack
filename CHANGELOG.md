@@ -1,3 +1,7 @@
+## v0.3.34 - Ed25519 Sign With Key
+  * Commit: 2026-05-26 9:59
+  * Ed25519 Sign Message With Key
+  * Ed25519 Verify Message With Key
 ## v0.3.33 - Ed25519 Signature 
   * Commit: 2026-05-26 09:03
   * Generate Ed25519 Keys

@@ -104,8 +104,12 @@ func Ed25519SignMessage(message, privKeyPath string) (string, error) {
 		return "", err
 	}
 
-	signature := hex.EncodeToString(ed25519.Sign(privKey, []byte(message)))
-	return signature, nil
+	return Ed25519SignMessageWithKey(message, privKey), nil
+}
+
+// Ed25519SignMessageWithKey generates a message signature using the given Ed25519 private key
+func Ed25519SignMessageWithKey(message string, privKey ed25519.PrivateKey) string {
+	return hex.EncodeToString(ed25519.Sign(privKey, []byte(message)))
 }
 
 // Ed25519VerifySignature verifies a message signature using Ed25519
@@ -115,6 +119,11 @@ func Ed25519VerifySignature(message, signature, pubKeyPath string) (bool, error)
 		return false, err
 	}
 
+	return Ed25519VerifySignatureWithKey(message, signature, pubKey)
+}
+
+// Ed25519VerifySignatureWithKey verifies a message signature using the given Ed25519 public key
+func Ed25519VerifySignatureWithKey(message, signature string, pubKey ed25519.PublicKey) (bool, error) {
 	signBytes, err := hex.DecodeString(signature)
 	if err != nil {
 		return false, err
