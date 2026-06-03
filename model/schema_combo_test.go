@@ -8,6 +8,7 @@ func TestCombo(t *testing.T) {
 	// TODO: Schema.GetAndLockTx
 	// TODO: Schema.GetAndLockTxItems
 	// TODO: Schema.GetOrCreateAndLockTx
-	// TODO: Schema.UpdateAndGetTx
+	// TODO: Schema.GetAndUpdateTx
+	// TODO: Schema.GetRowsAndUpdateTx
 	// TODO: MoveItemTx
 }

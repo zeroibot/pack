@@ -1,3 +1,6 @@
+## v0.3.35 - Schema GetRowsAndUpdateTx 
+  * Commit:2026-06-03 16:21
+  * Schema GetRowsAndUpdateTx
 ## v0.3.34 - Ed25519 Sign With Key
   * Commit: 2026-05-26 9:59
   * Ed25519 Sign Message With Key
