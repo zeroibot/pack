@@ -177,7 +177,7 @@ func (s *Schema[T]) GetOrCreateAndLockTx(rqtx *my.Request, p *GetOrCreateAndLock
 	return item, nil
 }
 
-// GetAndUpdateTx updates one item and gets it as part of a transaction
+// GetAndUpdateTx selects one item and updates it as part of a transaction
 func (s *Schema[T]) GetAndUpdateTx(rqtx *my.Request, selectCondition qb.Condition, queryUpdateFn func(*qb.UpdateQuery[T], T)) (T, error) {
 	var zero T
 	this := s.Instance
@@ -199,6 +199,27 @@ func (s *Schema[T]) GetAndUpdateTx(rqtx *my.Request, selectCondition qb.Conditio
 	}
 
 	return item, nil
+}
+
+// GetRowsAndUpdateTx selects items and updates them as part of a transaction
+func (s *Schema[T]) GetRowsAndUpdateTx(rqtx *my.Request, selectCondition qb.Condition, queryUpdateFn func(*qb.UpdateQuery[T], []T)) ([]T, error) {
+	this := s.Instance
+
+	// Select items
+	items, err := s.GetRows(rqtx, selectCondition)
+	if err != nil {
+		return nil, qb.Rollback(rqtx.Tx, err)
+	}
+
+	// Update items
+	q := qb.NewUpdateQuery[T](this, s.Table)
+	queryUpdateFn(q, items) // decorate with Update condition and query updates
+	err = s.update(rqtx, q, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return items, nil
 }
 
 // MoveItemTx inserts an item to the insertSchema and deletes the corresponding item from the deleteSchema, as part of a transaction
