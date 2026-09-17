@@ -1,3 +1,6 @@
+## v0.3.38 - Do List and Map
+  * Commit: 
+  * do.List type
 ## v0.3.37 - Hash Password
   * Commit: 2026-08-12 15:48
   * secrets.HashPassword

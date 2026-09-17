@@ -34,6 +34,8 @@ type Data[T any] struct {
 	Web  WebParamsFn
 }
 
+type List[T any] = Data[[]T]
+
 type Action struct {
 	Name string
 	Fn   ActionFn
