@@ -59,8 +59,8 @@ func nCr(n, r uint64) uint64 {
 // combinationIndices computes the indices of the idx-th combination in lexicographic order.
 func combinationIndices(n, k, idx uint64) []int {
 	indices := make([]int, k)
-	var next int = 0
-	for i := uint64(0); i < k; i++ {
+	next := 0
+	for i := range k {
 		for {
 			count := nCr(n-uint64(next)-1, k-i-1)
 			if idx < count {
