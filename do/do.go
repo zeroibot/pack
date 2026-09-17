@@ -35,6 +35,7 @@ type Data[T any] struct {
 }
 
 type List[T any] = Data[[]T]
+type Map[T any] = Data[map[string]T]
 
 type Action struct {
 	Name string

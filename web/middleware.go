@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -60,8 +61,8 @@ func NewCORSMiddleware(appEnv sys.Env, allowedOrigins []string) Middleware {
 // StackMiddlewares combines multiple middlewares into a single middleware
 func StackMiddlewares(middlewares ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
-		for i := len(middlewares) - 1; i >= 0; i-- {
-			next = middlewares[i](next)
+		for _, middleware := range slices.Backward(middlewares) {
+			next = middleware(next)
 		}
 		return next
 	}
