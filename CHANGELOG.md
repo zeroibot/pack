@@ -1,3 +1,6 @@
+## v0.3.39 - UUID Field 
+  * Commit: 
+  * model.UUIDField
 ## v0.3.38 - Do List and Map
   * Commit: 2026-09-17 11:26
   * do.List type

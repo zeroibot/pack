@@ -4,6 +4,7 @@ import "github.com/zeroibot/pack/clock"
 
 type (
 	ID       = uint
+	UUID     = string
 	Date     = clock.Date
 	DateTime = clock.DateTime
 )
@@ -15,6 +16,15 @@ type IDField struct {
 
 func (x IDField) GetID() ID {
 	return x.ID
+}
+
+// UUIDField is an embeddable UUID property
+type UUIDField struct {
+	UUID UUID
+}
+
+func (x UUIDField) GetUUID() UUID {
+	return x.UUID
 }
 
 // CodeField is an embeddable Code property
