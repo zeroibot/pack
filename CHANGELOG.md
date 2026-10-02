@@ -1,3 +1,6 @@
+## v0.3.40 - Code and UUID IsValid 
+  * Commit: 
+  * model.CodeField IsValid
 ## v0.3.39 - UUID Field 
   * Commit: 2026-09-25 14:55
   * model.UUIDField

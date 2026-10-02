@@ -36,6 +36,10 @@ func (x CodeField) GetCode() string {
 	return x.Code
 }
 
+func (x CodeField) IsValid() bool {
+	return x.Code != ""
+}
+
 // CreatedAtField is an embeddable CreatedAt property
 type CreatedAtField struct {
 	CreatedAt DateTime
