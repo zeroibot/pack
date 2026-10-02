@@ -27,6 +27,10 @@ func (x UUIDField) GetUUID() UUID {
 	return x.UUID
 }
 
+func (x UUIDField) IsValid() bool {
+	return x.UUID != ""
+}
+
 // CodeField is an embeddable Code property
 type CodeField struct {
 	Code string
