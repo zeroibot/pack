@@ -27,6 +27,10 @@ func (x UUIDField) GetUUID() UUID {
 	return x.UUID
 }
 
+func (x UUIDField) IsValid() bool {
+	return x.UUID != ""
+}
+
 // CodeField is an embeddable Code property
 type CodeField struct {
 	Code string
@@ -34,6 +38,10 @@ type CodeField struct {
 
 func (x CodeField) GetCode() string {
 	return x.Code
+}
+
+func (x CodeField) IsValid() bool {
+	return x.Code != ""
 }
 
 // CreatedAtField is an embeddable CreatedAt property
