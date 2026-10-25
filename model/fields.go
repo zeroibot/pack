@@ -81,22 +81,9 @@ type Identity struct {
 	CodeField
 }
 
-// Identity2 combines UUIDField and CodeField
-type Identity2 struct {
-	UUIDField
-	CodeField
-}
-
 // AutoItem combines IDField, CreatedAtField, IsActiveField
 type AutoItem struct {
 	IDField
-	CreatedAtField
-	IsActiveField
-}
-
-// AutoItem2 combines UUIDField, CreatedAtField, IsActiveField
-type AutoItem2 struct {
-	UUIDField
 	CreatedAtField
 	IsActiveField
 }
@@ -107,10 +94,10 @@ type Item struct {
 	CodeField
 }
 
-// Item2 combines UUIDField, CreatedAtField, IsActiveField, CodeField
-type Item2 struct {
-	AutoItem2
-	CodeField
+// UniqueItem combines IDField, CreatedAtField, IsActiveField, CodeField, UUIDField
+type UniqueItem struct {
+	Item
+	UUIDField
 }
 
 // Initialize sets the ID, CreatedAt, IsActive to default values
@@ -118,20 +105,9 @@ func (x *Item) Initialize() {
 	x.AutoItem.Initialize()
 }
 
-// Initialize sets the CreatedAt, IsActive to default values
-func (x *Item2) Initialize() {
-	x.AutoItem2.Initialize()
-}
-
 // Initialize sets the ID, CreatedAt, IsActive to default values
 func (x *AutoItem) Initialize() {
 	x.ID = 0 // for auto-increment
-	x.CreatedAt = clock.DateTimeNow()
-	x.IsActive = true
-}
-
-// Initialize sets the CreatedAt, IsActive to default values
-func (x *AutoItem2) Initialize() {
 	x.CreatedAt = clock.DateTimeNow()
 	x.IsActive = true
 }

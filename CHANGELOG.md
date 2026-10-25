@@ -1,6 +1,7 @@
 ## v0.3.41 - HiddenUUID Field
-  * Commit: 
+  * Commit: 2026-10-25 21:30
   * model.HiddenUUIDField
+  * Change Item2 to UniqueItem
 ## v0.3.40 - Code and UUID IsValid 
   * Commit: 2026-10-02 15:38
   * model.CodeField IsValid
