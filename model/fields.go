@@ -31,6 +31,19 @@ func (x UUIDField) IsValid() bool {
 	return x.UUID != ""
 }
 
+// HiddenUUIDField is an embeddable UUID property that gets hidden in JSON marshaling
+type HiddenUUIDField struct {
+	UUID UUID `json:"-"`
+}
+
+func (x HiddenUUIDField) GetUUID() UUID {
+	return x.UUID
+}
+
+func (x HiddenUUIDField) IsValid() bool {
+	return x.UUID != ""
+}
+
 // CodeField is an embeddable Code property
 type CodeField struct {
 	Code string

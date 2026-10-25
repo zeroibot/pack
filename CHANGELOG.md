@@ -1,3 +1,6 @@
+## v0.3.41 - HiddenUUID Field
+  * Commit: 
+  * model.HiddenUUIDField
 ## v0.3.40 - Code and UUID IsValid 
   * Commit: 2026-10-02 15:38
   * model.CodeField IsValid
